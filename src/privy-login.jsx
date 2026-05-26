@@ -6,22 +6,36 @@ import { useWallets, useCreateWallet, toSolanaWalletConnectors } from '@privy-io
 const APP_ID = 'cmpmoghms001v0cjpxq56w5q7';
 const RPC    = 'https://mainnet.helius-rpc.com/?api-key=a353da56-f27a-4a7a-9091-bdc6f8d66f27';
 
-// Bridge: vanilla JS reads/writes this to talk to Privy
+// Bridge — set immediately so callbacks registered before React mounts are preserved
 const bridge = { triggerLogin: null, triggerLogout: null, onReady: null, onLogout: null };
 window.__privy = bridge;
+
+function notifyReady(sol, user) {
+  const payload = {
+    address: sol.address,
+    email:   user?.email?.address ?? null,
+    signTransaction: tx => sol.signTransaction(tx),
+  };
+  if (bridge.onReady) {
+    bridge.onReady(payload);
+  } else {
+    // onReady not set yet — retry until it is (handles auto-reconnect race)
+    const t = setInterval(() => {
+      if (bridge.onReady) { clearInterval(t); bridge.onReady(payload); }
+    }, 100);
+  }
+}
 
 function PrivyInner() {
   const { ready, authenticated, login, logout, user } = usePrivy();
   const { wallets } = useWallets();
   const { createWallet } = useCreateWallet();
 
-  // Expose login/logout to vanilla JS
   useEffect(() => {
     bridge.triggerLogin  = login;
     bridge.triggerLogout = logout;
   }, [login, logout]);
 
-  // When auth state changes, notify vanilla JS
   useEffect(() => {
     if (!ready) return;
 
@@ -30,17 +44,20 @@ function PrivyInner() {
       return;
     }
 
-    const sol = wallets.find(w => w.walletClientType === 'privy');
+    // Privy v3: embedded Solana wallet has chainType === 'solana'
+    const sol = wallets.find(w =>
+      w.chainType === 'solana' || w.type === 'solana' || w.walletClientType === 'privy'
+    );
+
     if (!sol) {
-      createWallet().catch(console.error);
+      // No wallet yet — create one (ignore "already exists" errors)
+      createWallet().catch(err => {
+        if (!err?.message?.includes('already')) console.error('createWallet:', err);
+      });
       return;
     }
 
-    bridge.onReady?.({
-      address: sol.address,
-      email:   user?.email?.address ?? null,
-      signTransaction: tx => sol.signTransaction(tx),
-    });
+    notifyReady(sol, user);
   }, [ready, authenticated, wallets, user]);
 
   return null;
@@ -48,7 +65,6 @@ function PrivyInner() {
 
 function PrivyApp() {
   const solanaConnectors = toSolanaWalletConnectors({ shouldAutoConnect: false });
-
   return (
     <PrivyProvider
       appId={APP_ID}
@@ -62,9 +78,7 @@ function PrivyApp() {
           loginMessage: 'Enter your email to get your TUC wallet',
         },
         embeddedWallets: {
-          solana: {
-            createOnLogin: 'all-users',
-          },
+          solana: { createOnLogin: 'all-users' },
         },
         externalWallets: { solana: { connectors: solanaConnectors } },
         solanaClusters: [{ name: 'mainnet-beta', rpcUrl: RPC }],
@@ -75,7 +89,6 @@ function PrivyApp() {
   );
 }
 
-// Mount into a hidden div
 const el = document.createElement('div');
 el.id = '__privy-root';
 document.body.appendChild(el);

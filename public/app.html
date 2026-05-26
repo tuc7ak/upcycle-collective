@@ -806,28 +806,23 @@ function connectWithEmail() {
   window.__privy.triggerLogin();
 }
 
-/* ── Auto-reconnect (wallets + privy) ── */
+/* ── Privy bridge — wire up immediately (before load) ── */
+(function wirePrivy() {
+  if (!window.__privy) { setTimeout(wirePrivy, 50); return; }
+  window.__privy.onReady = ({ address, email, signTransaction }) => {
+    walletPubkey   = address;
+    walletProvider = { signTransaction, isPrivy: true };
+    const hdr = document.querySelector('header small');
+    if (email && hdr) hdr.textContent = email;
+    showWallet();
+  };
+  window.__privy.onLogout = () => {
+    if (walletProvider?.isPrivy) disconnect();
+  };
+})();
+
+/* ── Auto-reconnect (browser wallets) ── */
 window.addEventListener('load', async () => {
-  // Wire up Privy bridge callbacks
-  function wirePrivy() {
-    if (!window.__privy) { setTimeout(wirePrivy, 300); return; }
-
-    window.__privy.onReady = ({ address, email, signTransaction }) => {
-      walletPubkey   = address;
-      walletProvider = { signTransaction, isPrivy: true };
-      // Show email badge on wallet header
-      const hdr = document.querySelector('header small');
-      if (email && hdr) hdr.textContent = email;
-      showWallet();
-    };
-
-    window.__privy.onLogout = () => {
-      if (walletProvider?.isPrivy) disconnect();
-    };
-  }
-  wirePrivy();
-
-  // Auto-reconnect browser wallets
   for (const w of WALLETS) {
     const p = w.getProvider();
     if (p?.isConnected && p.publicKey) {
