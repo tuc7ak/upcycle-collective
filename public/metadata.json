@@ -1,0 +1,11 @@
+{
+  "name": "The Upcycle Collective",
+  "symbol": "TUC",
+  "description": "Event token for The Upcycle Collective — a community upcycling event in Kuching, Sarawak. Use TUC to pay at vendor booths and earn rewards.",
+  "image": "https://upcycle-collective.vercel.app/tuc-logo.png",
+  "external_url": "https://upcycle-collective.vercel.app",
+  "attributes": [],
+  "properties": {
+    "category": "utility"
+  }
+}
