@@ -44,15 +44,16 @@ function PrivyInner() {
       return;
     }
 
-    // Privy v3: embedded Solana wallet has chainType === 'solana'
-    const sol = wallets.find(w =>
-      w.chainType === 'solana' || w.type === 'solana' || w.walletClientType === 'privy'
-    );
+    // useWallets() from the /solana subpath only returns Solana wallets
+    const sol = wallets[0];
 
     if (!sol) {
-      // No wallet yet — create one (ignore "already exists" errors)
+      // Wallet not yet created — only try once
       createWallet().catch(err => {
-        if (!err?.message?.includes('already')) console.error('createWallet:', err);
+        // "already has embedded wallet" = it exists but not loaded yet, ignore
+        if (!err?.message?.toLowerCase().includes('already')) {
+          console.error('createWallet:', err);
+        }
       });
       return;
     }
