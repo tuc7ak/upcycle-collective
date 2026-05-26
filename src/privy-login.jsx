@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { PrivyProvider, usePrivy } from '@privy-io/react-auth';
+import { useWallets as useMainWallets } from '@privy-io/react-auth';
 import { useWallets, useCreateWallet, toSolanaWalletConnectors } from '@privy-io/react-auth/solana';
 
 const APP_ID = 'cmpmoghms001v0cjpxq56w5q7';
@@ -28,7 +29,8 @@ function notifyReady(sol, user) {
 
 function PrivyInner() {
   const { ready, authenticated, login, logout, user } = usePrivy();
-  const { wallets } = useWallets();
+  const { wallets: solWallets } = useWallets();           // Solana external wallets
+  const { wallets: allWallets } = useMainWallets();       // ALL wallets (incl. embedded)
   const { createWallet } = useCreateWallet();
 
   useEffect(() => {
@@ -44,13 +46,19 @@ function PrivyInner() {
       return;
     }
 
-    // useWallets() from the /solana subpath only returns Solana wallets
-    const sol = wallets[0];
+    // Debug: log all wallet info
+    console.log('[Privy] solWallets:', solWallets);
+    console.log('[Privy] allWallets:', allWallets);
+    console.log('[Privy] user.linkedAccounts:', user?.linkedAccounts);
+
+    // Try embedded Solana wallet from all wallets first
+    const sol = allWallets.find(w =>
+      w.walletClientType === 'privy' &&
+      (w.chainType === 'solana' || w.type === 'solana')
+    ) || solWallets[0];
 
     if (!sol) {
-      // Wallet not yet created — only try once
       createWallet().catch(err => {
-        // "already has embedded wallet" = it exists but not loaded yet, ignore
         if (!err?.message?.toLowerCase().includes('already')) {
           console.error('createWallet:', err);
         }
@@ -59,7 +67,7 @@ function PrivyInner() {
     }
 
     notifyReady(sol, user);
-  }, [ready, authenticated, wallets, user]);
+  }, [ready, authenticated, solWallets, allWallets, user]);
 
   return null;
 }
