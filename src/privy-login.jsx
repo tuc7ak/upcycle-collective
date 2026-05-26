@@ -54,7 +54,7 @@ function PrivyInner() {
     // Try embedded Solana wallet from all wallets first
     const sol = allWallets.find(w =>
       w.walletClientType === 'privy' &&
-      (w.chainType === 'solana' || w.type === 'solana')
+      w.connectorType === 'embedded'
     ) || solWallets[0];
 
     if (!sol) {
