@@ -4,20 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>The Upcycle Collective — My Wallet</title>
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.0/lib/index.iife.min.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a1a0f;color:#fff;min-height:100vh;overflow-x:hidden;}
 
     /* Header */
-    header{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid rgba(255,255,255,0.07);}
+    header{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid rgba(255,255,255,0.07);position:relative;z-index:10;}
     header img{width:32px;height:32px;border-radius:50%;object-fit:cover;}
     header h1{font-size:16px;font-weight:700;}
     header small{font-size:11px;opacity:0.45;display:block;}
+    .header-page-label{margin-left:auto;font-size:11px;font-weight:700;opacity:.35;text-transform:uppercase;letter-spacing:.08em;}
+
+    /* ── Pages ── */
+    .pages-wrap{display:flex;width:200vw;transition:transform .35s cubic-bezier(.4,0,.2,1);}
+    .page{width:100vw;min-height:calc(100vh - 65px);}
+
+    /* Page dots */
+    .page-dots{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:7px;z-index:50;}
+    .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.2);transition:background .2s, transform .2s;}
+    .dot.active{background:#4caf50;transform:scale(1.3);}
 
     /* Main */
-    main{max-width:480px;margin:0 auto;padding:20px 16px 100px;}
+    .page-inner{max-width:480px;margin:0 auto;padding:20px 16px 80px;}
 
     /* Connect */
     .connect-screen{display:flex;flex-direction:column;align-items:center;text-align:center;padding:60px 0;gap:18px;}
@@ -33,7 +43,15 @@
     .balance-label{font-size:12px;opacity:0.5;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
     .balance-amount{font-size:60px;font-weight:900;color:#7fff7f;line-height:1;}
     .balance-symbol{font-size:16px;opacity:0.6;margin-top:2px;}
-    .wallet-addr{margin-top:14px;font-size:11px;opacity:0.35;font-family:monospace;}
+
+    /* Wallet address with copy */
+    .wallet-addr-row{display:inline-flex;align-items:center;gap:6px;margin-top:14px;cursor:pointer;padding:5px 10px;border-radius:20px;transition:background .15s;}
+    .wallet-addr-row:hover{background:rgba(255,255,255,.07);}
+    .wallet-addr-row:active{background:rgba(255,255,255,.12);}
+    .wallet-addr-text{font-size:11px;opacity:.35;font-family:monospace;}
+    .wallet-copy-icon{font-size:12px;opacity:.3;}
+    .wallet-addr-row.copied .wallet-addr-text{opacity:.7;color:#7fff7f;}
+    .wallet-addr-row.copied .wallet-copy-icon{opacity:.7;}
 
     /* Action buttons */
     .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
@@ -64,6 +82,7 @@
     .tx-info{flex:1;min-width:0;}
     .tx-type{font-size:14px;font-weight:600;}
     .tx-time{font-size:11px;opacity:.4;margin-top:2px;}
+    .tx-solscan{font-size:10px;color:#4caf50;opacity:.6;margin-top:2px;display:flex;align-items:center;gap:3px;}
     .tx-amount{font-size:15px;font-weight:700;white-space:nowrap;}
     .tx-amount.pos{color:#7fff7f;}
     .tx-amount.neg{color:#ff8a65;}
@@ -73,6 +92,9 @@
     /* Top bar */
     .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
     .top-bar h2{font-size:20px;font-weight:700;}
+
+    /* Swipe hint */
+    .swipe-hint{text-align:center;font-size:11px;opacity:.25;margin-top:16px;letter-spacing:.05em;}
 
     /* ── Modal / Bottom Sheet ── */
     .sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:flex-end;}
@@ -126,6 +148,37 @@
     .wallet-logo.coinbase{background:linear-gradient(135deg,#1652f0,#0a46e4);}
     .wallet-badge{margin-left:auto;background:rgba(255,255,255,.1);border-radius:20px;font-size:11px;font-weight:700;padding:4px 10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.06em;}
     .wallet-badge.installed{background:rgba(76,175,80,.2);color:#81c784;}
+
+    /* ── Dashboard ── */
+    #page-dashboard{background:#0a1220;}
+    .dash-inner{max-width:480px;margin:0 auto;padding:20px 16px 80px;}
+    .dash-title{font-size:20px;font-weight:800;margin-bottom:4px;}
+    .dash-sub{font-size:13px;opacity:.4;margin-bottom:24px;}
+
+    .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;}
+    .stat-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:20px 16px;}
+    .stat-card.highlight{background:linear-gradient(135deg,rgba(76,175,80,.15),rgba(76,175,80,.05));border-color:rgba(76,175,80,.25);}
+    .stat-card.full{grid-column:1/-1;}
+    .stat-label{font-size:11px;opacity:.4;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+    .stat-value{font-size:36px;font-weight:900;color:#7fff7f;line-height:1;}
+    .stat-value.white{color:#fff;}
+    .stat-desc{font-size:12px;opacity:.4;margin-top:6px;}
+
+    .activity-feed{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:16px;}
+    .feed-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.4;margin-bottom:14px;}
+    .feed-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+    .feed-item:last-child{border-bottom:none;}
+    .feed-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+    .feed-dot.in{background:#4caf50;}
+    .feed-dot.out{background:#ff8a65;}
+    .feed-text{flex:1;font-size:13px;opacity:.7;}
+    .feed-time{font-size:11px;opacity:.3;}
+
+    .dash-refresh{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px;width:100%;cursor:pointer;color:rgba(255,255,255,.6);font-size:13px;font-weight:600;margin-bottom:16px;transition:background .15s;}
+    .dash-refresh:hover{background:rgba(255,255,255,.09);}
+
+    .dash-loading{text-align:center;padding:40px;opacity:.4;font-size:14px;}
+    .no-wallet-dash{text-align:center;padding:60px 20px;opacity:.4;font-size:14px;line-height:1.7;}
   </style>
 </head>
 <body>
@@ -136,49 +189,90 @@
     <h1>The Upcycle Collective</h1>
     <small>Event Wallet</small>
   </div>
+  <div class="header-page-label" id="header-page-label">Wallet</div>
 </header>
 
-<main>
-  <!-- Connect -->
-  <div class="connect-screen" id="connect-screen">
-    <div class="icon">♻️</div>
-    <h2>Connect your wallet</h2>
-    <p>View your TUC balance, send tokens, and see your full activity.</p>
-    <button class="btn btn-green" onclick="openWalletPicker()" style="max-width:260px">Connect Wallet</button>
+<!-- ── Pages ── -->
+<div class="pages-wrap" id="pages-wrap">
+
+  <!-- Page 0: Wallet -->
+  <div class="page" id="page-wallet">
+    <div class="page-inner">
+
+      <!-- Connect -->
+      <div class="connect-screen" id="connect-screen">
+        <div class="icon">♻️</div>
+        <h2>Connect your wallet</h2>
+        <p>View your TUC balance, send tokens, and see your full activity.</p>
+        <button class="btn btn-green" onclick="openWalletPicker()" style="max-width:260px">Connect Wallet</button>
+      </div>
+
+      <!-- Wallet -->
+      <div class="wallet-screen" id="wallet-screen">
+        <div class="top-bar">
+          <h2>My Wallet</h2>
+          <button class="btn-outline" onclick="disconnect()">Disconnect</button>
+        </div>
+
+        <div class="balance-card">
+          <div class="balance-label">TUC Balance</div>
+          <div class="balance-amount" id="balance">—</div>
+          <div class="balance-symbol">TUC</div>
+          <div class="wallet-addr-row" id="wallet-addr-row" onclick="copyAddressInline()">
+            <span class="wallet-addr-text" id="wallet-addr">—</span>
+            <span class="wallet-copy-icon">⎘</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="action-btn" onclick="openSend()">
+            <span class="action-icon">📤</span>Send
+          </button>
+          <button class="action-btn" onclick="openReceive()">
+            <span class="action-icon">📥</span>Receive
+          </button>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div class="section-title" style="margin-bottom:0">Activity</div>
+          <button class="btn-outline" onclick="refresh()" id="refresh-btn">↻ Refresh</button>
+        </div>
+        <div class="tx-list" id="tx-list">
+          <div class="loading">Loading…</div>
+        </div>
+
+        <div class="swipe-hint">Swipe left for dashboard →</div>
+      </div>
+
+    </div>
   </div>
 
-  <!-- Wallet -->
-  <div class="wallet-screen" id="wallet-screen">
-    <div class="top-bar">
-      <h2>My Wallet</h2>
-      <button class="btn-outline" onclick="disconnect()">Disconnect</button>
-    </div>
+  <!-- Page 1: Dashboard -->
+  <div class="page" id="page-dashboard">
+    <div class="dash-inner">
+      <div class="top-bar">
+        <div>
+          <div class="dash-title">📊 Dashboard</div>
+          <div class="dash-sub">Live event activity</div>
+        </div>
+        <button class="btn-outline" onclick="refreshDashboard()" id="dash-refresh-btn">↻ Refresh</button>
+      </div>
 
-    <div class="balance-card">
-      <div class="balance-label">TUC Balance</div>
-      <div class="balance-amount" id="balance">—</div>
-      <div class="balance-symbol">TUC</div>
-      <div class="wallet-addr" id="wallet-addr"></div>
-    </div>
+      <div id="dash-content">
+        <div class="dash-loading">Loading event data…</div>
+      </div>
 
-    <div class="actions">
-      <button class="action-btn" onclick="openSend()">
-        <span class="action-icon">📤</span>Send
-      </button>
-      <button class="action-btn" onclick="openReceive()">
-        <span class="action-icon">📥</span>Receive
-      </button>
-    </div>
-
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-      <div class="section-title" style="margin-bottom:0">Activity</div>
-      <button class="btn-outline" onclick="refresh()" id="refresh-btn">↻ Refresh</button>
-    </div>
-    <div class="tx-list" id="tx-list">
-      <div class="loading">Loading…</div>
+      <div class="swipe-hint">← Swipe right for wallet</div>
     </div>
   </div>
-</main>
+
+</div>
+
+<!-- Page dots -->
+<div class="page-dots">
+  <div class="dot active" id="dot-0" onclick="goToPage(0)"></div>
+  <div class="dot" id="dot-1" onclick="goToPage(1)"></div>
+</div>
 
 <!-- ── Receive Sheet ── -->
 <div class="sheet-bg" id="receive-sheet" onclick="closeSheet('receive-sheet')">
@@ -188,7 +282,7 @@
     <p style="font-size:13px;opacity:.55;margin-bottom:16px;">Show this QR to anyone who wants to send you TUC.</p>
     <div class="qr-box"><img id="receive-qr" width="220" height="220" alt="QR" /></div>
     <div class="addr-box" id="receive-addr"></div>
-    <button class="copy-btn" onclick="copyAddress()">Copy Address</button>
+    <button class="copy-btn" onclick="copyAddress()">⎘ Copy Address</button>
   </div>
 </div>
 
@@ -197,17 +291,13 @@
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <h2>📤 Send TUC</h2>
-
     <div id="send-status"></div>
-
     <label>Recipient wallet</label>
     <button class="scan-btn" onclick="toggleScanner()">📷 Scan QR Code</button>
     <div id="scanner-wrap"></div>
     <input id="send-to" type="text" placeholder="Or paste wallet address…" />
-
     <label>Amount (TUC)</label>
     <input id="send-amount" type="number" min="1" step="1" placeholder="e.g. 5" />
-
     <button class="btn btn-green" id="send-btn" onclick="doSend()">Send TUC</button>
   </div>
 </div>
@@ -228,10 +318,38 @@
 <script>
 const MINT  = '2hgWyBDWgw4xesu8NpwTAhHgy2gnAo5iBhsBNSasngRj';
 const RPC   = 'https://mainnet.helius-rpc.com/?api-key=a353da56-f27a-4a7a-9091-bdc6f8d66f27';
-let walletPubkey  = null;
+let walletPubkey   = null;
 let walletProvider = null;
-let scanner = null;
+let scanner        = null;
 let scannerRunning = false;
+let currentPage    = 0;
+let dashLoaded     = false;
+
+/* ── Swipe / Page navigation ── */
+let touchStartX = 0;
+let touchStartY = 0;
+
+document.addEventListener('touchstart', e => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, {passive: true});
+
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+    if (dx < 0 && currentPage === 0) goToPage(1);
+    if (dx > 0 && currentPage === 1) goToPage(0);
+  }
+}, {passive: true});
+
+function goToPage(n) {
+  currentPage = n;
+  document.getElementById('pages-wrap').style.transform = `translateX(${-n * 100}vw)`;
+  document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === n));
+  document.getElementById('header-page-label').textContent = n === 0 ? 'Wallet' : 'Dashboard';
+  if (n === 1 && !dashLoaded) loadDashboard();
+}
 
 /* ── Supported wallets ── */
 const WALLETS = [
@@ -289,7 +407,6 @@ async function connectWith(walletId) {
   try {
     const r = await p.connect();
     walletProvider = p;
-    // Solflare returns void from connect(); read publicKey from provider directly
     const pk = r?.publicKey ?? p.publicKey;
     walletPubkey = pk.toString();
     showWallet();
@@ -299,7 +416,7 @@ async function connectWith(walletId) {
 }
 
 function disconnect() {
-  walletPubkey  = null;
+  walletPubkey   = null;
   walletProvider = null;
   document.getElementById('connect-screen').style.display = '';
   document.getElementById('wallet-screen').style.display  = 'none';
@@ -309,7 +426,7 @@ async function showWallet() {
   document.getElementById('connect-screen').style.display = 'none';
   document.getElementById('wallet-screen').style.display  = 'block';
   document.getElementById('wallet-addr').textContent =
-    walletPubkey.slice(0,6)+'…'+walletPubkey.slice(-6);
+    walletPubkey.slice(0,6) + '…' + walletPubkey.slice(-6);
   await Promise.all([loadBalance(), loadTransactions()]);
 }
 
@@ -365,7 +482,6 @@ function parseTx(tx, sig, ataAddr) {
     const delta   = postAmt - preAmt;
     if (delta === 0) return null;
     const logs   = meta.logMessages ?? [];
-    const hasMemo = logs.some(l=>l.includes('Memo'));
     let type='transfer', label='';
     if (delta > 0) {
       if (delta===50)      { type='mint';   label='Check-in (+50 TUC)'; }
@@ -373,7 +489,7 @@ function parseTx(tx, sig, ataAddr) {
       else if (delta===5)  { type='reward'; label='Reward — Trivia'; }
       else                 { type='mint';   label=`Received ${delta} TUC`; }
     } else {
-      const abs = Math.abs(delta);
+      const abs  = Math.abs(delta);
       const memo = logs.find(l=>l.includes('BEER_STALL'));
       type  = 'payment';
       label = memo ? `Beer Stall (${abs} TUC)` : `Sent ${abs} TUC`;
@@ -383,14 +499,19 @@ function parseTx(tx, sig, ataAddr) {
 }
 
 function renderTx({sig,ts,delta,type,label}) {
-  const icons={mint:'🎟️',reward:'⭐',payment:'🍺',transfer:'↗️'};
-  const icon = icons[type]??'💸';
-  const sign = delta>0?'+':'';
-  const cls  = delta>0?'pos':'neg';
-  const time = ts?fmtTime(ts):'—';
+  const icons = {mint:'🎟️',reward:'⭐',payment:'🍺',transfer:'↗️'};
+  const icon  = icons[type] ?? '💸';
+  const sign  = delta > 0 ? '+' : '';
+  const cls   = delta > 0 ? 'pos' : 'neg';
+  const time  = ts ? fmtTime(ts) : '—';
+  const shortSig = sig.slice(0,8) + '…' + sig.slice(-6);
   return `<a class="tx-item" href="https://solscan.io/tx/${sig}" target="_blank" rel="noopener">
     <div class="tx-icon ${type}">${icon}</div>
-    <div class="tx-info"><div class="tx-type">${label}</div><div class="tx-time">${time}</div></div>
+    <div class="tx-info">
+      <div class="tx-type">${label}</div>
+      <div class="tx-time">${time}</div>
+      <div class="tx-solscan">↗ ${shortSig} · Solscan</div>
+    </div>
     <div class="tx-amount ${cls}">${sign}${Math.abs(delta)}</div>
   </a>`;
 }
@@ -401,6 +522,22 @@ function fmtTime(d) {
   if(diff<3600)  return Math.floor(diff/60)+'m ago';
   if(diff<86400) return Math.floor(diff/3600)+'h ago';
   return d.toLocaleDateString('en-MY',{day:'numeric',month:'short'});
+}
+
+/* ── Copy wallet address (inline in balance card) ── */
+function copyAddressInline() {
+  if (!walletPubkey) return;
+  navigator.clipboard.writeText(walletPubkey).then(() => {
+    const row = document.getElementById('wallet-addr-row');
+    const txt = document.getElementById('wallet-addr');
+    row.classList.add('copied');
+    txt.textContent = 'Copied!';
+    toast('Address copied!');
+    setTimeout(() => {
+      row.classList.remove('copied');
+      txt.textContent = walletPubkey.slice(0,6) + '…' + walletPubkey.slice(-6);
+    }, 1800);
+  });
 }
 
 /* ── Receive ── */
@@ -466,9 +603,8 @@ async function doSend() {
   const to     = document.getElementById('send-to').value.trim();
   const amount = parseInt(document.getElementById('send-amount').value);
   const btn    = document.getElementById('send-btn');
-  const status = document.getElementById('send-status');
 
-  if (!to)            { setStatus('info','Enter or scan a recipient address.'); return; }
+  if (!to)             { setStatus('info','Enter or scan a recipient address.'); return; }
   if (!amount||amount<1){ setStatus('info','Enter an amount of at least 1 TUC.'); return; }
 
   btn.disabled = true;
@@ -476,7 +612,6 @@ async function doSend() {
   setStatus('info','⏳ Preparing…');
 
   try {
-    // Step 1 — backend builds unsigned transaction
     const buildRes  = await fetch('/api/transfer', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ step:'build', from:walletPubkey, to, amount }),
@@ -484,23 +619,21 @@ async function doSend() {
     const buildData = await buildRes.json();
     if (buildData.error) { setStatus('err','❌ '+buildData.error); return; }
 
-    // Step 2 — wallet signs (user approves in wallet popup)
     setStatus('info','⏳ Approve in wallet…');
     const txBuf  = Uint8Array.from(atob(buildData.transaction), c => c.charCodeAt(0));
     const tx     = solanaWeb3.Transaction.from(txBuf);
     const signed = await walletProvider.signTransaction(tx);
 
-    // Step 3 — send signed tx to backend; organiser adds fee payer sig and broadcasts
     setStatus('info','⏳ Sending…');
-    const signedB64  = btoa(String.fromCharCode(...signed.serialize({ requireAllSignatures: false })));
-    const sendRes    = await fetch('/api/transfer', {
+    const signedB64 = btoa(String.fromCharCode(...signed.serialize({ requireAllSignatures: false })));
+    const sendRes   = await fetch('/api/transfer', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ step:'send', transaction: signedB64 }),
     });
     const sendData = await sendRes.json();
     if (sendData.error) { setStatus('err','❌ '+sendData.error); return; }
 
-    setStatus('ok', `✅ Sent! <a href="https://solscan.io/tx/${sendData.signature}" target="_blank" style="color:#a5d6a7">View on Solscan</a>`);
+    setStatus('ok', `✅ Sent! <a href="https://solscan.io/tx/${sendData.signature}" target="_blank" style="color:#a5d6a7">View on Solscan ↗</a>`);
     toast(`Sent ${amount} TUC!`);
     await loadBalance();
     await loadTransactions();
@@ -509,7 +642,7 @@ async function doSend() {
     if (e.message?.includes('rejected') || e.code===4001) {
       setStatus('err','❌ Cancelled.');
     } else {
-      setStatus('err','❌ '+( e.message ?? 'Transaction failed'));
+      setStatus('err','❌ '+(e.message ?? 'Transaction failed'));
     }
   } finally {
     btn.disabled = false;
@@ -537,6 +670,118 @@ async function refresh() {
   btn.textContent = '↻ Refreshing…';
   btn.disabled = true;
   await Promise.all([loadBalance(), loadTransactions()]);
+  btn.textContent = '↻ Refresh';
+  btn.disabled = false;
+}
+
+/* ── Dashboard ── */
+async function loadDashboard() {
+  dashLoaded = true;
+  const content = document.getElementById('dash-content');
+  content.innerHTML = '<div class="dash-loading">Fetching event data…</div>';
+
+  try {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayStartTs = Math.floor(todayStart.getTime() / 1000);
+
+    // Get recent signatures for the mint
+    const sigs = await rpc('getSignaturesForAddress', [MINT, {limit: 100}]);
+    if (!sigs?.length) { renderDashboard(0, 0, 0, []); return; }
+
+    const todaySigs = sigs.filter(s => s.blockTime && s.blockTime >= todayStartTs);
+    const totalSigs = sigs.length;
+
+    if (!todaySigs.length) { renderDashboard(0, totalSigs, 0, []); return; }
+
+    // Fetch today's transactions (limit 30 to avoid rate limits)
+    const txs = await Promise.all(
+      todaySigs.slice(0, 30).map(s =>
+        rpc('getTransaction', [s.signature, {encoding:'jsonParsed', maxSupportedTransactionVersion:0}])
+      )
+    );
+
+    const uniqueWallets = new Set();
+    const feedItems = [];
+    let totalTUCToday = 0;
+
+    txs.forEach((tx, i) => {
+      if (!tx) return;
+      const meta = tx.meta;
+      const allBalances = [...(meta?.preTokenBalances ?? []), ...(meta?.postTokenBalances ?? [])];
+      const keys = tx.transaction.message.accountKeys.map(k => k.pubkey ?? k);
+
+      // Collect unique wallet owners
+      allBalances.forEach(b => { if (b.owner) uniqueWallets.add(b.owner); });
+
+      // Calculate delta for feed
+      const pre  = meta?.preTokenBalances?.[0];
+      const post = meta?.postTokenBalances?.[0];
+      if (pre && post) {
+        const delta = Number(post.uiTokenAmount?.uiAmount ?? 0) - Number(pre.uiTokenAmount?.uiAmount ?? 0);
+        if (delta > 0) totalTUCToday += delta;
+        if (feedItems.length < 6 && delta !== 0) {
+          const owner = post.owner ?? pre.owner ?? '';
+          const ts = tx.blockTime ? new Date(tx.blockTime * 1000) : null;
+          feedItems.push({ delta, owner, ts, sig: todaySigs[i].signature });
+        }
+      }
+    });
+
+    renderDashboard(uniqueWallets.size, totalSigs, totalTUCToday, feedItems);
+  } catch(e) {
+    console.error(e);
+    document.getElementById('dash-content').innerHTML =
+      '<div class="dash-loading">Could not load data.</div>';
+  }
+}
+
+function renderDashboard(activeToday, totalTxns, tucToday, feed) {
+  const content = document.getElementById('dash-content');
+
+  const feedHtml = feed.length ? feed.map(f => {
+    const short = f.owner ? f.owner.slice(0,6)+'…'+f.owner.slice(-4) : '—';
+    const time  = f.ts ? fmtTime(f.ts) : '—';
+    const isIn  = f.delta > 0;
+    return `<div class="feed-item">
+      <div class="feed-dot ${isIn ? 'in' : 'out'}"></div>
+      <div class="feed-text">${short} · ${isIn ? '+' : ''}${f.delta} TUC</div>
+      <div class="feed-time">${time}</div>
+    </div>`;
+  }).join('') : '<div style="opacity:.4;font-size:13px;padding:12px 0">No activity yet today</div>';
+
+  content.innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-card highlight full">
+        <div class="stat-label">Active wallets today</div>
+        <div class="stat-value">${activeToday}</div>
+        <div class="stat-desc">${activeToday === 1 ? 'person' : 'people'} transacted today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total transactions</div>
+        <div class="stat-value white">${totalTxns}</div>
+        <div class="stat-desc">All time on this token</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">TUC distributed today</div>
+        <div class="stat-value white">${tucToday}</div>
+        <div class="stat-desc">Tokens earned today</div>
+      </div>
+    </div>
+
+    <div class="activity-feed">
+      <div class="feed-title">Recent activity</div>
+      ${feedHtml}
+    </div>
+  `;
+}
+
+async function refreshDashboard() {
+  const btn = document.getElementById('dash-refresh-btn');
+  btn.textContent = '↻ Refreshing…';
+  btn.disabled = true;
+  dashLoaded = false;
+  await loadDashboard();
   btn.textContent = '↻ Refresh';
   btn.disabled = false;
 }
