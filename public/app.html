@@ -6,6 +6,7 @@
   <title>The Upcycle Collective — My Wallet</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.0/lib/index.iife.min.js"></script>
+  <script src="/privy-login.js" defer></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a1a0f;color:#fff;min-height:100vh;overflow-x:hidden;}
@@ -204,7 +205,12 @@
         <div class="icon">♻️</div>
         <h2>Connect your wallet</h2>
         <p>View your TUC balance, send tokens, and see your full activity.</p>
-        <button class="btn btn-green" onclick="openWalletPicker()" style="max-width:260px">Connect Wallet</button>
+        <button class="btn btn-green" onclick="connectWithEmail()" style="max-width:260px;margin-bottom:10px">
+          ✉️ Continue with Email
+        </button>
+        <button class="btn" onclick="openWalletPicker()" style="max-width:260px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);font-size:14px">
+          👻 Connect Wallet
+        </button>
       </div>
 
       <!-- Wallet -->
@@ -416,10 +422,13 @@ async function connectWith(walletId) {
 }
 
 function disconnect() {
+  if (walletProvider?.isPrivy) window.__privy?.triggerLogout?.();
   walletPubkey   = null;
   walletProvider = null;
   document.getElementById('connect-screen').style.display = '';
   document.getElementById('wallet-screen').style.display  = 'none';
+  const hdr = document.querySelector('header small');
+  if (hdr) hdr.textContent = 'Event Wallet';
 }
 
 async function showWallet() {
@@ -786,8 +795,39 @@ async function refreshDashboard() {
   btn.disabled = false;
 }
 
-/* ── Auto-reconnect ── */
+/* ── Privy email connect ── */
+function connectWithEmail() {
+  if (!window.__privy?.triggerLogin) {
+    toast('Loading Privy, please wait…', true);
+    // Retry after privy-login.js finishes loading
+    setTimeout(connectWithEmail, 800);
+    return;
+  }
+  window.__privy.triggerLogin();
+}
+
+/* ── Auto-reconnect (wallets + privy) ── */
 window.addEventListener('load', async () => {
+  // Wire up Privy bridge callbacks
+  function wirePrivy() {
+    if (!window.__privy) { setTimeout(wirePrivy, 300); return; }
+
+    window.__privy.onReady = ({ address, email, signTransaction }) => {
+      walletPubkey   = address;
+      walletProvider = { signTransaction, isPrivy: true };
+      // Show email badge on wallet header
+      const hdr = document.querySelector('header small');
+      if (email && hdr) hdr.textContent = email;
+      showWallet();
+    };
+
+    window.__privy.onLogout = () => {
+      if (walletProvider?.isPrivy) disconnect();
+    };
+  }
+  wirePrivy();
+
+  // Auto-reconnect browser wallets
   for (const w of WALLETS) {
     const p = w.getProvider();
     if (p?.isConnected && p.publicKey) {

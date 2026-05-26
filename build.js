@@ -1,14 +1,13 @@
 const { build } = require('esbuild');
 
-const entryPoints = [
-  'src/api/checkin.js',
-  'src/api/reward.js',
-  'src/api/pay/beer-stall.js',
-  'src/api/transfer.js',
-];
-
+// API bundle (Node.js serverless functions)
 build({
-  entryPoints,
+  entryPoints: [
+    'src/api/checkin.js',
+    'src/api/reward.js',
+    'src/api/pay/beer-stall.js',
+    'src/api/transfer.js',
+  ],
   bundle:   true,
   platform: 'node',
   target:   'node22',
@@ -17,4 +16,17 @@ build({
   outbase:  'src/api',
 });
 
-console.log('Build complete → api/');
+// Privy frontend bundle (browser)
+build({
+  entryPoints: ['src/privy-login.jsx'],
+  bundle:   true,
+  platform: 'browser',
+  target:   'es2020',
+  format:   'iife',
+  outfile:  'public/privy-login.js',
+  jsx:      'automatic',
+  minify:   true,
+  define:   { 'process.env.NODE_ENV': '"production"' },
+});
+
+console.log('Build complete → api/ + public/privy-login.js');
