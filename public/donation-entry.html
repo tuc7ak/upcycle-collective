@@ -195,19 +195,9 @@
   <p id="total-supply" style="font-size:36px;font-weight:900;color:#7fff7f;margin-bottom:32px;">—</p>
 
   <div class="card">
-    <label for="wallet">Attendee Wallet Address</label>
-    <button class="scan-btn" onclick="toggleScanner()">📷 Scan QR Code</button>
+    <button class="scan-btn" onclick="toggleScanner()">📷 Scan Wallet QR</button>
     <div id="scanner-wrap"><div id="qr-reader"></div></div>
-    <input
-      id="wallet"
-      type="text"
-      placeholder="Or paste wallet address here…"
-      autocomplete="off"
-      autocorrect="off"
-      autocapitalize="off"
-      spellcheck="false"
-    />
-    <p class="hint">Scan the attendee's QR code or paste their wallet address</p>
+    <input id="wallet" type="hidden" />
 
     <button id="checkin-btn" onclick="doCheckin()">Check In (+50 TUC)</button>
 
@@ -312,7 +302,7 @@
 
     async function doCheckin() {
       const wallet = getWallet();
-      if (!wallet) { alert('Paste the attendee wallet address first.'); return; }
+      if (!wallet) { alert('Scan the attendee QR code first.'); return; }
       const btn = document.getElementById('checkin-btn');
       btn.disabled = true;
       btn.textContent = 'Processing…';
@@ -341,7 +331,7 @@
 
     async function doReward(type) {
       const wallet = getWallet();
-      if (!wallet) { alert('Paste the attendee wallet address first.'); return; }
+      if (!wallet) { alert('Scan the attendee QR code first.'); return; }
       try {
         const res  = await fetch(`${BASE}/api/reward`, {
           method: 'POST',
