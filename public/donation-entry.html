@@ -191,6 +191,8 @@
   <div class="logo">♻️</div>
   <h1>The Upcycle Collective</h1>
   <p class="subtitle">Event Check-in · Staff Terminal</p>
+  <p style="font-size:13px;opacity:0.6;margin-bottom:8px;">Total TUC Minted</p>
+  <p id="total-supply" style="font-size:36px;font-weight:900;color:#7fff7f;margin-bottom:32px;">—</p>
 
   <div class="card">
     <label for="wallet">Attendee Wallet Address</label>
@@ -237,6 +239,23 @@
 
   <script>
     const BASE = '';
+    const MINT  = '2hgWyBDWgw4xesu8NpwTAhHgy2gnAo5iBhsBNSasngRj';
+    const RPC   = 'https://mainnet.helius-rpc.com/?api-key=a353da56-f27a-4a7a-9091-bdc6f8d66f27';
+
+    async function loadTotalSupply() {
+      try {
+        const r = await fetch(RPC, {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({jsonrpc:'2.0',id:1,method:'getTokenSupply',params:[MINT]}),
+        });
+        const data = await r.json();
+        const amount = data?.result?.value?.uiAmount ?? 0;
+        document.getElementById('total-supply').textContent = amount.toLocaleString() + ' TUC';
+      } catch { document.getElementById('total-supply').textContent = '—'; }
+    }
+
+    loadTotalSupply();
+
     let scanner = null;
     let scannerRunning = false;
 
@@ -308,6 +327,7 @@
           showResult('success', '✅ Checked in!', `+${data.tokensAwarded} TUC`, wallet.slice(0,16) + '…', data.signature);
           document.getElementById('wallet').value = '';
           stopScanner();
+          loadTotalSupply();
         } else {
           showResult('error', '❌ Failed', '', data.error || 'Unknown error', null);
         }
@@ -331,6 +351,7 @@
         const data = await res.json();
         if (data.success) {
           showResult('success', '✅ Reward given!', `+${data.tokensAwarded} TUC`, `${type.replace('_', ' ')} · ${wallet.slice(0,16)}…`, data.signature);
+          loadTotalSupply();
         } else {
           showResult('error', '❌ Failed', '', data.error || 'Unknown error', null);
         }
