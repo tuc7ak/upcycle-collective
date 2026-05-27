@@ -106,6 +106,7 @@ function PrivyApp() {
         },
         embeddedWallets: {
           solana: { createOnLogin: 'all-users' },
+          showWalletUIs: false,
         },
         externalWallets: { solana: { connectors: solanaConnectors } },
         solanaClusters: [{ name: 'mainnet-beta', rpcUrl: RPC }],
