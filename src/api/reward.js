@@ -8,8 +8,8 @@ const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = requi
 
 const REWARDS = {
   recycle_bag: 10,
-  trivia_easy: 5,
-  trivia_hard: 10,
+  beer: 10,
+  merchandise: 50,
 };
 
 module.exports = async function handler(req, res) {

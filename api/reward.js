@@ -44563,8 +44563,8 @@ var {
 var { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require_utils4();
 var REWARDS = {
   recycle_bag: 10,
-  trivia_easy: 5,
-  trivia_hard: 10
+  beer: 10,
+  merchandise: 50
 };
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return jsonErr(res, 405, "POST only");
