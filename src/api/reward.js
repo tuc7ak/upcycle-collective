@@ -1,9 +1,10 @@
-const { PublicKey } = require('@solana/web3.js');
+const { PublicKey, Transaction, sendAndConfirmTransaction } = require('@solana/web3.js');
 const {
   TOKEN_2022_PROGRAM_ID,
   getAssociatedTokenAddressSync,
-  mintTo,
+  createMintToInstruction,
 } = require('@solana/spl-token');
+const { createMemoInstruction } = require('@solana/spl-memo');
 const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require('./_utils');
 
 const REWARDS = {
@@ -38,9 +39,11 @@ module.exports = async function handler(req, res) {
       mint, attendeePubkey, false, TOKEN_2022_PROGRAM_ID,
     );
 
-    const signature = await mintTo(
-      connection, organiser, mint, tokenAccount, organiser, amount, [], {}, TOKEN_2022_PROGRAM_ID,
-    );
+    const tx = new Transaction()
+      .add(createMintToInstruction(mint, tokenAccount, organiser.publicKey, amount, [], TOKEN_2022_PROGRAM_ID))
+      .add(createMemoInstruction(`TUC:${reward.toUpperCase()}`, [organiser.publicKey]));
+
+    const signature = await sendAndConfirmTransaction(connection, tx, [organiser]);
 
     return jsonOk(res, { success: true, wallet, reward, tokensAwarded: amount, signature });
   } catch (err) {

@@ -495,18 +495,23 @@ function parseTx(tx, sig, ataAddr) {
     const postAmt = Number(post?.uiTokenAmount?.uiAmount ?? 0);
     const delta   = postAmt - preAmt;
     if (delta === 0) return null;
-    const logs   = meta.logMessages ?? [];
+    const logs = meta.logMessages ?? [];
+    const memoLog = logs.find(l => l.includes('Memo (len'));
+    const memo = memoLog ? (memoLog.match(/"([^"]+)"/) ?? [])[1] ?? '' : '';
+
     let type='transfer', label='';
     if (delta > 0) {
-      if (delta===50)      { type='mint';   label='Check-in (+50 TUC)'; }
-      else if (delta===10) { type='reward'; label='Reward — Recycle Bag'; }
-      else if (delta===5)  { type='reward'; label='Reward — Trivia'; }
-      else                 { type='mint';   label=`Received ${delta} TUC`; }
+      if      (memo.includes('CHECKIN'))     { type='mint';    label='Check-in (+50 TUC)'; }
+      else if (memo.includes('RECYCLE_BAG')) { type='reward';  label='Reward — Recycle Bag'; }
+      else if (memo.includes('BEER'))        { type='reward';  label='Reward — Beer'; }
+      else if (memo.includes('MERCHANDISE')) { type='reward';  label='Reward — Merchandise'; }
+      else if (delta===50)                   { type='mint';    label='Check-in (+50 TUC)'; }
+      else if (delta===10)                   { type='reward';  label='Reward (+10 TUC)'; }
+      else                                   { type='mint';    label=`Received ${delta} TUC`; }
     } else {
-      const abs  = Math.abs(delta);
-      const memo = logs.find(l=>l.includes('BEER_STALL'));
+      const abs = Math.abs(delta);
       type  = 'payment';
-      label = memo ? `Beer Stall (${abs} TUC)` : `Sent ${abs} TUC`;
+      label = memo.includes('BEER_STALL') ? `Beer Stall (${abs} TUC)` : `Sent ${abs} TUC`;
     }
     return {sig,ts,delta,type,label};
   } catch { return null; }

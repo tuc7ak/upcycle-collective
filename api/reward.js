@@ -23231,7 +23231,7 @@ var require_index_cjs = __commonJS({
         };
       }
     };
-    var Transaction = class _Transaction {
+    var Transaction2 = class _Transaction {
       /**
        * The first (payer) Transaction signature
        *
@@ -24090,7 +24090,7 @@ Message: ${transactionMessage}.
         this.name = "SolanaJSONRPCError";
       }
     };
-    async function sendAndConfirmTransaction(connection, transaction, signers, options) {
+    async function sendAndConfirmTransaction2(connection, transaction, signers, options) {
       const sendOptions = options && {
         skipPreflight: options.skipPreflight,
         preflightCommitment: options.preflightCommitment || options.commitment,
@@ -24660,7 +24660,7 @@ Message: ${transactionMessage}.
        * Generate a transaction that creates a new Nonce account
        */
       static createNonceAccount(params) {
-        const transaction = new Transaction();
+        const transaction = new Transaction2();
         if ("basePubkey" in params && "seed" in params) {
           transaction.add(_SystemProgram.createAccountWithSeed({
             fromPubkey: params.fromPubkey,
@@ -24880,21 +24880,21 @@ Message: ${transactionMessage}.
               return false;
             }
             if (programInfo.data.length !== data.length) {
-              transaction = transaction || new Transaction();
+              transaction = transaction || new Transaction2();
               transaction.add(SystemProgram.allocate({
                 accountPubkey: program.publicKey,
                 space: data.length
               }));
             }
             if (!programInfo.owner.equals(programId)) {
-              transaction = transaction || new Transaction();
+              transaction = transaction || new Transaction2();
               transaction.add(SystemProgram.assign({
                 accountPubkey: program.publicKey,
                 programId
               }));
             }
             if (programInfo.lamports < balanceNeeded) {
-              transaction = transaction || new Transaction();
+              transaction = transaction || new Transaction2();
               transaction.add(SystemProgram.transfer({
                 fromPubkey: payer.publicKey,
                 toPubkey: program.publicKey,
@@ -24902,7 +24902,7 @@ Message: ${transactionMessage}.
               }));
             }
           } else {
-            transaction = new Transaction().add(SystemProgram.createAccount({
+            transaction = new Transaction2().add(SystemProgram.createAccount({
               fromPubkey: payer.publicKey,
               newAccountPubkey: program.publicKey,
               lamports: balanceNeeded > 0 ? balanceNeeded : 1,
@@ -24911,7 +24911,7 @@ Message: ${transactionMessage}.
             }));
           }
           if (transaction !== null) {
-            await sendAndConfirmTransaction(connection, transaction, [payer, program], {
+            await sendAndConfirmTransaction2(connection, transaction, [payer, program], {
               commitment: "confirmed"
             });
           }
@@ -24932,7 +24932,7 @@ Message: ${transactionMessage}.
             bytesLength: 0,
             bytesLengthPadding: 0
           }, data2);
-          const transaction = new Transaction().add({
+          const transaction = new Transaction2().add({
             keys: [{
               pubkey: program.publicKey,
               isSigner: true,
@@ -24941,7 +24941,7 @@ Message: ${transactionMessage}.
             programId,
             data: data2
           });
-          transactions.push(sendAndConfirmTransaction(connection, transaction, [payer, program], {
+          transactions.push(sendAndConfirmTransaction2(connection, transaction, [payer, program], {
             commitment: "confirmed"
           }));
           if (connection._rpcEndpoint.includes("solana.com")) {
@@ -24959,7 +24959,7 @@ Message: ${transactionMessage}.
             instruction: 1
             // Finalize instruction
           }, data2);
-          const transaction = new Transaction().add({
+          const transaction = new Transaction2().add({
             keys: [{
               pubkey: program.publicKey,
               isSigner: true,
@@ -28118,7 +28118,7 @@ Message: ${transactionMessage}.
           }) => {
             return {
               meta,
-              transaction: Transaction.populate(transaction.message, transaction.signatures)
+              transaction: Transaction2.populate(transaction.message, transaction.signatures)
             };
           })
         };
@@ -28193,7 +28193,7 @@ Message: ${transactionMessage}.
         const signatures = result.transaction.signatures;
         return {
           ...result,
-          transaction: Transaction.populate(message, signatures)
+          transaction: Transaction2.populate(message, signatures)
         };
       }
       /**
@@ -28480,15 +28480,15 @@ Message: ${transactionMessage}.
           return res2.result;
         }
         let transaction;
-        if (transactionOrMessage instanceof Transaction) {
+        if (transactionOrMessage instanceof Transaction2) {
           let originalTx = transactionOrMessage;
-          transaction = new Transaction();
+          transaction = new Transaction2();
           transaction.feePayer = originalTx.feePayer;
           transaction.instructions = transactionOrMessage.instructions;
           transaction.nonceInfo = originalTx.nonceInfo;
           transaction.signatures = originalTx.signatures;
         } else {
-          transaction = Transaction.populate(transactionOrMessage);
+          transaction = Transaction2.populate(transactionOrMessage);
           transaction._message = transaction._json = void 0;
         }
         if (configOrSigners !== void 0 && !Array.isArray(configOrSigners)) {
@@ -30294,7 +30294,7 @@ Message: ${transactionMessage}.
        *   an address generated with `from`, a seed, and the Stake programId
        */
       static createAccountWithSeed(params) {
-        const transaction = new Transaction();
+        const transaction = new Transaction2();
         transaction.add(SystemProgram.createAccountWithSeed({
           fromPubkey: params.fromPubkey,
           newAccountPubkey: params.stakePubkey,
@@ -30319,7 +30319,7 @@ Message: ${transactionMessage}.
        * Generate a Transaction that creates a new Stake account
        */
       static createAccount(params) {
-        const transaction = new Transaction();
+        const transaction = new Transaction2();
         transaction.add(SystemProgram.createAccount({
           fromPubkey: params.fromPubkey,
           newAccountPubkey: params.stakePubkey,
@@ -30351,7 +30351,7 @@ Message: ${transactionMessage}.
         } = params;
         const type = STAKE_INSTRUCTION_LAYOUTS.Delegate;
         const data = encodeData(type);
-        return new Transaction().add({
+        return new Transaction2().add({
           keys: [{
             pubkey: stakePubkey,
             isSigner: false,
@@ -30418,7 +30418,7 @@ Message: ${transactionMessage}.
             isWritable: false
           });
         }
-        return new Transaction().add({
+        return new Transaction2().add({
           keys,
           programId: this.programId,
           data
@@ -30465,7 +30465,7 @@ Message: ${transactionMessage}.
             isWritable: false
           });
         }
-        return new Transaction().add({
+        return new Transaction2().add({
           keys,
           programId: this.programId,
           data
@@ -30507,7 +30507,7 @@ Message: ${transactionMessage}.
        * Generate a Transaction that splits Stake tokens into another stake account
        */
       static split(params, rentExemptReserve) {
-        const transaction = new Transaction();
+        const transaction = new Transaction2();
         transaction.add(SystemProgram.createAccount({
           fromPubkey: params.authorizedPubkey,
           newAccountPubkey: params.splitStakePubkey,
@@ -30530,7 +30530,7 @@ Message: ${transactionMessage}.
           seed,
           lamports
         } = params;
-        const transaction = new Transaction();
+        const transaction = new Transaction2();
         transaction.add(SystemProgram.allocate({
           accountPubkey: splitStakePubkey,
           basePubkey,
@@ -30563,7 +30563,7 @@ Message: ${transactionMessage}.
         } = params;
         const type = STAKE_INSTRUCTION_LAYOUTS.Merge;
         const data = encodeData(type);
-        return new Transaction().add({
+        return new Transaction2().add({
           keys: [{
             pubkey: stakePubkey,
             isSigner: false,
@@ -30632,7 +30632,7 @@ Message: ${transactionMessage}.
             isWritable: false
           });
         }
-        return new Transaction().add({
+        return new Transaction2().add({
           keys,
           programId: this.programId,
           data
@@ -30648,7 +30648,7 @@ Message: ${transactionMessage}.
         } = params;
         const type = STAKE_INSTRUCTION_LAYOUTS.Deactivate;
         const data = encodeData(type);
-        return new Transaction().add({
+        return new Transaction2().add({
           keys: [{
             pubkey: stakePubkey,
             isSigner: false,
@@ -30883,7 +30883,7 @@ Message: ${transactionMessage}.
        * Generate a transaction that creates a new Vote account.
        */
       static createAccount(params) {
-        const transaction = new Transaction();
+        const transaction = new Transaction2();
         transaction.add(SystemProgram.createAccount({
           fromPubkey: params.fromPubkey,
           newAccountPubkey: params.votePubkey,
@@ -30925,7 +30925,7 @@ Message: ${transactionMessage}.
           isSigner: true,
           isWritable: false
         }];
-        return new Transaction().add({
+        return new Transaction2().add({
           keys,
           programId: this.programId,
           data
@@ -30966,7 +30966,7 @@ Message: ${transactionMessage}.
           isSigner: true,
           isWritable: false
         }];
-        return new Transaction().add({
+        return new Transaction2().add({
           keys,
           programId: this.programId,
           data
@@ -30999,7 +30999,7 @@ Message: ${transactionMessage}.
           isSigner: true,
           isWritable: false
         }];
-        return new Transaction().add({
+        return new Transaction2().add({
           keys,
           programId: this.programId,
           data
@@ -31043,7 +31043,7 @@ Message: ${transactionMessage}.
           isSigner: true,
           isWritable: false
         }];
-        return new Transaction().add({
+        return new Transaction2().add({
           keys,
           programId: this.programId,
           data
@@ -31315,7 +31315,7 @@ Message: ${transactionMessage}.
     exports2.Struct = Struct;
     exports2.SystemInstruction = SystemInstruction;
     exports2.SystemProgram = SystemProgram;
-    exports2.Transaction = Transaction;
+    exports2.Transaction = Transaction2;
     exports2.TransactionExpiredBlockheightExceededError = TransactionExpiredBlockheightExceededError;
     exports2.TransactionExpiredNonceInvalidError = TransactionExpiredNonceInvalidError;
     exports2.TransactionExpiredTimeoutError = TransactionExpiredTimeoutError;
@@ -31335,7 +31335,7 @@ Message: ${transactionMessage}.
     exports2.VoteProgram = VoteProgram;
     exports2.clusterApiUrl = clusterApiUrl;
     exports2.sendAndConfirmRawTransaction = sendAndConfirmRawTransaction;
-    exports2.sendAndConfirmTransaction = sendAndConfirmTransaction;
+    exports2.sendAndConfirmTransaction = sendAndConfirmTransaction2;
   }
 });
 
@@ -41532,7 +41532,7 @@ var require_mintTo = __commonJS({
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.mintToInstructionData = void 0;
-    exports2.createMintToInstruction = createMintToInstruction;
+    exports2.createMintToInstruction = createMintToInstruction2;
     exports2.decodeMintToInstruction = decodeMintToInstruction;
     exports2.decodeMintToInstructionUnchecked = decodeMintToInstructionUnchecked;
     var buffer_layout_1 = require_Layout();
@@ -41543,7 +41543,7 @@ var require_mintTo = __commonJS({
     var internal_js_1 = require_internal2();
     var types_js_1 = require_types();
     exports2.mintToInstructionData = (0, buffer_layout_1.struct)([(0, buffer_layout_1.u8)("instruction"), (0, buffer_layout_utils_1.u64)("amount")]);
-    function createMintToInstruction(mint, destination, authority, amount, multiSigners = [], programId = constants_js_1.TOKEN_PROGRAM_ID) {
+    function createMintToInstruction2(mint, destination, authority, amount, multiSigners = [], programId = constants_js_1.TOKEN_PROGRAM_ID) {
       const keys = (0, internal_js_1.addSigners)([
         { pubkey: mint, isSigner: false, isWritable: true },
         { pubkey: destination, isSigner: false, isWritable: true }
@@ -41623,12 +41623,12 @@ var require_mintTo2 = __commonJS({
       });
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.mintTo = mintTo2;
+    exports2.mintTo = mintTo;
     var web3_js_1 = require_index_cjs();
     var constants_js_1 = require_constants2();
     var mintTo_js_1 = require_mintTo();
     var internal_js_1 = require_internal();
-    function mintTo2(connection_1, payer_1, mint_1, destination_1, authority_1, amount_1) {
+    function mintTo(connection_1, payer_1, mint_1, destination_1, authority_1, amount_1) {
       return __awaiter(this, arguments, void 0, function* (connection, payer, mint, destination, authority, amount, multiSigners = [], confirmOptions, programId = constants_js_1.TOKEN_PROGRAM_ID) {
         const [authorityPublicKey, signers] = (0, internal_js_1.getSigners)(authority, multiSigners);
         const transaction = new web3_js_1.Transaction().add((0, mintTo_js_1.createMintToInstruction)(mint, destination, authorityPublicKey, amount, multiSigners, programId));
@@ -44377,6 +44377,29 @@ var require_cjs4 = __commonJS({
   }
 });
 
+// node_modules/@solana/spl-memo/lib/cjs/index.js
+var require_cjs5 = __commonJS({
+  "node_modules/@solana/spl-memo/lib/cjs/index.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.createMemoInstruction = exports2.MEMO_PROGRAM_ID = void 0;
+    var buffer_1 = require("buffer");
+    var web3_js_1 = require_index_cjs();
+    exports2.MEMO_PROGRAM_ID = new web3_js_1.PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
+    function createMemoInstruction2(memo, signerPubkeys) {
+      const keys = signerPubkeys == null ? [] : signerPubkeys.map(function(key) {
+        return { pubkey: key, isSigner: true, isWritable: false };
+      });
+      return new web3_js_1.TransactionInstruction({
+        keys,
+        programId: exports2.MEMO_PROGRAM_ID,
+        data: buffer_1.Buffer.from(memo, "utf8")
+      });
+    }
+    exports2.createMemoInstruction = createMemoInstruction2;
+  }
+});
+
 // node_modules/base-x/src/index.js
 var require_src3 = __commonJS({
   "node_modules/base-x/src/index.js"(exports2, module2) {
@@ -44554,12 +44577,13 @@ var require_utils4 = __commonJS({
 });
 
 // src/api/reward.js
-var { PublicKey } = require_index_cjs();
+var { PublicKey, Transaction, sendAndConfirmTransaction } = require_index_cjs();
 var {
   TOKEN_2022_PROGRAM_ID,
   getAssociatedTokenAddressSync,
-  mintTo
+  createMintToInstruction
 } = require_cjs4();
+var { createMemoInstruction } = require_cjs5();
 var { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require_utils4();
 var REWARDS = {
   recycle_bag: 10,
@@ -44589,17 +44613,8 @@ module.exports = async function handler(req, res) {
       false,
       TOKEN_2022_PROGRAM_ID
     );
-    const signature = await mintTo(
-      connection,
-      organiser,
-      mint,
-      tokenAccount,
-      organiser,
-      amount,
-      [],
-      {},
-      TOKEN_2022_PROGRAM_ID
-    );
+    const tx = new Transaction().add(createMintToInstruction(mint, tokenAccount, organiser.publicKey, amount, [], TOKEN_2022_PROGRAM_ID)).add(createMemoInstruction(`TUC:${reward.toUpperCase()}`, [organiser.publicKey]));
+    const signature = await sendAndConfirmTransaction(connection, tx, [organiser]);
     return jsonOk(res, { success: true, wallet, reward, tokensAwarded: amount, signature });
   } catch (err) {
     console.error("[reward]", err);

@@ -1,9 +1,10 @@
-const { PublicKey } = require('@solana/web3.js');
+const { PublicKey, Transaction, sendAndConfirmTransaction } = require('@solana/web3.js');
 const {
   TOKEN_2022_PROGRAM_ID,
   getOrCreateAssociatedTokenAccount,
-  mintTo,
+  createMintToInstruction,
 } = require('@solana/spl-token');
+const { createMemoInstruction } = require('@solana/spl-memo');
 const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require('./_utils');
 
 const CHECKIN_AMOUNT = 50;
@@ -37,17 +38,11 @@ module.exports = async function handler(req, res) {
       TOKEN_2022_PROGRAM_ID,
     );
 
-    const signature = await mintTo(
-      connection,
-      organiser,
-      mint,
-      tokenAccount.address,
-      organiser,
-      CHECKIN_AMOUNT,
-      [],
-      {},
-      TOKEN_2022_PROGRAM_ID,
-    );
+    const tx = new Transaction()
+      .add(createMintToInstruction(mint, tokenAccount.address, organiser.publicKey, CHECKIN_AMOUNT, [], TOKEN_2022_PROGRAM_ID))
+      .add(createMemoInstruction('TUC:CHECKIN', [organiser.publicKey]));
+
+    const signature = await sendAndConfirmTransaction(connection, tx, [organiser]);
 
     return jsonOk(res, {
       success: true,
