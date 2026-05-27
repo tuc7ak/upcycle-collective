@@ -1,7 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { PrivyProvider, usePrivy } from '@privy-io/react-auth';
-import { useWallets as useMainWallets } from '@privy-io/react-auth';
 import { useWallets, useCreateWallet, toSolanaWalletConnectors } from '@privy-io/react-auth/solana';
 
 const APP_ID = process.env.PRIVY_APP_ID;
@@ -15,7 +14,12 @@ function notifyReady(sol, user) {
   const payload = {
     address: sol.address,
     email:   user?.email?.address ?? null,
-    signTransaction: tx => sol.signTransaction(tx),
+    // Adapt Privy v3 Uint8Array API → legacy Transaction API that app.html expects
+    signTransaction: async (legacyTx) => {
+      const bytes = legacyTx.serialize({ requireAllSignatures: false, verifySignatures: false });
+      const { signedTransaction } = await sol.signTransaction({ transaction: bytes });
+      return { serialize: () => signedTransaction };
+    },
   };
   if (bridge.onReady) {
     bridge.onReady(payload);
@@ -29,9 +33,11 @@ function notifyReady(sol, user) {
 
 function PrivyInner() {
   const { ready, authenticated, login, logout, user } = usePrivy();
-  const { wallets: solWallets } = useWallets();           // Solana external wallets
-  const { wallets: allWallets } = useMainWallets();       // ALL wallets (incl. embedded)
+  // useWallets from /solana returns ConnectedStandardSolanaWallet[] — includes embedded + external
+  const { wallets: solWallets } = useWallets();
   const { createWallet } = useCreateWallet();
+  // Retry counter — incremented to re-trigger the effect when wallet exists but isn't ready yet
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     bridge.triggerLogin  = login;
@@ -46,28 +52,40 @@ function PrivyInner() {
       return;
     }
 
-    // Debug: log all wallet info
-    console.log('[Privy] solWallets:', solWallets);
-    console.log('[Privy] allWallets:', allWallets);
-    console.log('[Privy] user.linkedAccounts:', user?.linkedAccounts);
+    // Find the embedded Privy Solana wallet by matching address from linkedAccounts.
+    // This is robust: linkedAccounts is always populated after login, even before
+    // the wallet object appears in solWallets.
+    const embeddedAccount = user?.linkedAccounts?.find(
+      a => a.type === 'wallet' && a.walletClient === 'privy' && a.chainType === 'solana'
+    );
 
-    // Try embedded Solana wallet from all wallets first
-    const sol = allWallets.find(w =>
-      w.walletClientType === 'privy' &&
-      w.connectorType === 'embedded'
-    ) || solWallets[0];
+    const sol = embeddedAccount
+      ? solWallets.find(w => w.address === embeddedAccount.address)
+      : solWallets[0];
+
+    console.log('[Privy] solWallets:', solWallets);
+    console.log('[Privy] embeddedAccount:', embeddedAccount);
+    console.log('[Privy] sol found:', !!sol);
 
     if (!sol) {
-      createWallet().catch(err => {
-        if (!err?.message?.toLowerCase().includes('already')) {
-          console.error('createWallet:', err);
-        }
-      });
+      createWallet()
+        .then(() => {
+          // wallet just created — solWallets will update and re-trigger this effect
+        })
+        .catch(err => {
+          const msg = err?.message?.toLowerCase() ?? '';
+          if (msg.includes('already')) {
+            // Wallet exists but not in solWallets yet (timing). Retry after a short delay.
+            setTimeout(() => setRetryCount(n => n + 1), 600);
+          } else {
+            console.error('[Privy] createWallet error:', err);
+          }
+        });
       return;
     }
 
     notifyReady(sol, user);
-  }, [ready, authenticated, solWallets, allWallets, user]);
+  }, [ready, authenticated, solWallets, user, retryCount]);
 
   return null;
 }
