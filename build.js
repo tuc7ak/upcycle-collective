@@ -1,4 +1,5 @@
 const { build } = require('esbuild');
+require('dotenv').config();
 
 // API bundle (Node.js serverless functions)
 build({
@@ -26,7 +27,11 @@ build({
   outfile:  'public/privy-login.js',
   jsx:      'automatic',
   minify:   true,
-  define:   { 'process.env.NODE_ENV': '"production"' },
+  define:   {
+    'process.env.NODE_ENV':    '"production"',
+    'process.env.PRIVY_APP_ID': JSON.stringify(process.env.PRIVY_APP_ID),
+    'process.env.HELIUS_RPC':   JSON.stringify(process.env.HELIUS_RPC),
+  },
 });
 
 console.log('Build complete → api/ + public/privy-login.js');

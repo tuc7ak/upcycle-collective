@@ -23,6 +23,7 @@
     "react-dom": "^19.2.6"
   },
   "devDependencies": {
+    "dotenv": "^17.4.2",
     "esbuild": "^0.28.0"
   }
 }

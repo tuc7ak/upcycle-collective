@@ -4,8 +4,8 @@ import { PrivyProvider, usePrivy } from '@privy-io/react-auth';
 import { useWallets as useMainWallets } from '@privy-io/react-auth';
 import { useWallets, useCreateWallet, toSolanaWalletConnectors } from '@privy-io/react-auth/solana';
 
-const APP_ID = 'cmpmoghms001v0cjpxq56w5q7';
-const RPC    = 'https://mainnet.helius-rpc.com/?api-key=a353da56-f27a-4a7a-9091-bdc6f8d66f27';
+const APP_ID = process.env.PRIVY_APP_ID;
+const RPC    = process.env.HELIUS_RPC;
 
 // Bridge — set immediately so callbacks registered before React mounts are preserved
 const bridge = { triggerLogin: null, triggerLogout: null, onReady: null, onLogout: null };
