@@ -184,6 +184,43 @@
     #html5-qrcode-button-camera-permission,
     #html5-qrcode-button-camera-stop,
     #html5-qrcode-anchor-scan-type-change { display: none !important; }
+
+    .wallet-status {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 14px; border-radius: 12px; margin-bottom: 14px;
+      font-size: 13px; font-weight: 600;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.45);
+    }
+    .wallet-status.ready {
+      background: rgba(76,175,80,0.15);
+      border-color: rgba(76,175,80,0.4);
+      color: #a5d6a7;
+    }
+    .wallet-status .dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(255,255,255,0.2);
+    }
+    .wallet-status.ready .dot { background: #4caf50; }
+
+    .checkin-reminder {
+      display: none;
+      background: rgba(76,175,80,0.2);
+      border: 1px solid rgba(76,175,80,0.5);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 700;
+      color: #7fff7f;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
   </style>
 </head>
 <body>
@@ -203,6 +240,13 @@
     <button class="scan-btn" onclick="toggleScanner()">📷 Scan Wallet QR</button>
     <div id="scanner-wrap"><div id="qr-reader"></div></div>
     <input id="wallet" type="hidden" />
+    <div class="wallet-status" id="wallet-status">
+      <div class="dot"></div>
+      <span id="wallet-status-text">No wallet scanned</span>
+    </div>
+    <div class="checkin-reminder" id="checkin-reminder">
+      ☝️ Don't forget to Check In!
+    </div>
 
     <button id="checkin-btn" onclick="doCheckin()">Check In (+50 TUC)</button>
 
@@ -254,6 +298,23 @@
     let scanner = null;
     let scannerRunning = false;
 
+    function setWalletReady(address) {
+      document.getElementById('wallet').value = address;
+      const status = document.getElementById('wallet-status');
+      status.classList.add('ready');
+      document.getElementById('wallet-status-text').textContent =
+        address.slice(0, 6) + '…' + address.slice(-6);
+      document.getElementById('checkin-reminder').style.display = 'block';
+    }
+
+    function clearWallet() {
+      document.getElementById('wallet').value = '';
+      const status = document.getElementById('wallet-status');
+      status.classList.remove('ready');
+      document.getElementById('wallet-status-text').textContent = 'No wallet scanned';
+      document.getElementById('checkin-reminder').style.display = 'none';
+    }
+
     async function toggleScanner() {
       if (scannerRunning) { stopScanner(); return; }
       const wrap = document.getElementById('scanner-wrap');
@@ -265,7 +326,7 @@
           { facingMode: 'environment' },
           { fps: 10, qrbox: { width: 250, height: 250 } },
           (text) => {
-            document.getElementById('wallet').value = text.trim();
+            setWalletReady(text.trim());
             stopScanner();
           },
           () => {}
@@ -320,7 +381,7 @@
         const data = await res.json();
         if (data.success) {
           showResult('success', '✅ Checked in!', `+${data.tokensAwarded} TUC`, wallet.slice(0,16) + '…', data.signature);
-          document.getElementById('wallet').value = '';
+          clearWallet();
           stopScanner();
           loadTotalSupply();
         } else {
@@ -346,6 +407,7 @@
         const data = await res.json();
         if (data.success) {
           showResult('success', '✅ Reward given!', `+${data.tokensAwarded} TUC`, `${type.replace('_', ' ')} · ${wallet.slice(0,16)}…`, data.signature);
+          clearWallet();
           loadTotalSupply();
         } else {
           showResult('error', '❌ Failed', '', data.error || 'Unknown error', null);
