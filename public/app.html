@@ -190,7 +190,6 @@
     <h1>The Upcycle Collective</h1>
     <small>Event Wallet</small>
   </div>
-  <button class="btn-dashboard" id="btn-dashboard" onclick="toggleDashboard()">📊 Dashboard</button>
 </header>
 
 <!-- ── Pages ── -->
@@ -216,7 +215,10 @@
       <!-- Wallet -->
       <div class="wallet-screen" id="wallet-screen">
         <div class="top-bar">
-          <h2>My Wallet</h2>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <h2>My Wallet</h2>
+            <button class="btn-dashboard" id="btn-dashboard" onclick="toggleDashboard()">📊 Dashboard</button>
+          </div>
           <button class="btn-outline" onclick="disconnect()">Disconnect</button>
         </div>
 
@@ -256,9 +258,12 @@
   <div class="page" id="page-dashboard">
     <div class="dash-inner">
       <div class="top-bar">
-        <div>
-          <div class="dash-title">📊 Dashboard</div>
-          <div class="dash-sub">Live event activity</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div>
+            <div class="dash-title">📊 Dashboard</div>
+            <div class="dash-sub">Live event activity</div>
+          </div>
+          <button class="btn-outline" onclick="goToPage(0)" style="font-size:12px;padding:7px 12px;">← Wallet</button>
         </div>
         <button class="btn-outline" onclick="refreshDashboard()" id="dash-refresh-btn">↻ Refresh</button>
       </div>
@@ -350,8 +355,6 @@ document.addEventListener('touchend', e => {
 function goToPage(n) {
   currentPage = n;
   document.getElementById('pages-wrap').style.transform = `translateX(${-n * 100}vw)`;
-  const btn = document.getElementById('btn-dashboard');
-  if (btn) btn.textContent = n === 0 ? '📊 Dashboard' : '← Wallet';
   if (n === 1 && !dashLoaded) loadDashboard();
 }
 
