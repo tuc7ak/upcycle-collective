@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Upcycle Collective — Check-in</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -162,6 +163,27 @@
 
     .reward-btn:hover { background: rgba(255,255,255,0.2); }
     .reward-btn .amount { font-size: 22px; font-weight: 900; color: #7fff7f; display: block; }
+
+    .scan-btn {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .scan-btn:hover { background: rgba(255,255,255,0.18); }
+
+    #scanner-wrap { border-radius: 14px; overflow: hidden; margin-bottom: 12px; display: none; }
+    #scanner-wrap video { width: 100% !important; }
+    #html5-qrcode-button-camera-permission,
+    #html5-qrcode-button-camera-stop,
+    #html5-qrcode-anchor-scan-type-change { display: none !important; }
   </style>
 </head>
 <body>
@@ -171,17 +193,19 @@
   <p class="subtitle">Event Check-in · Staff Terminal</p>
 
   <div class="card">
-    <label for="wallet">Attendee Phantom Wallet Address</label>
+    <label for="wallet">Attendee Wallet Address</label>
+    <button class="scan-btn" onclick="toggleScanner()">📷 Scan QR Code</button>
+    <div id="scanner-wrap"><div id="qr-reader"></div></div>
     <input
       id="wallet"
       type="text"
-      placeholder="Paste wallet address here…"
+      placeholder="Or paste wallet address here…"
       autocomplete="off"
       autocorrect="off"
       autocapitalize="off"
       spellcheck="false"
     />
-    <p class="hint">Open Phantom → tap address at top → Copy</p>
+    <p class="hint">Scan the attendee's QR code or paste their wallet address</p>
 
     <button id="checkin-btn" onclick="doCheckin()">Check In (+50 TUC)</button>
 
@@ -212,7 +236,40 @@
   </div>
 
   <script>
-    const BASE = ''; // empty = same origin (works on Vercel)
+    const BASE = '';
+    let scanner = null;
+    let scannerRunning = false;
+
+    async function toggleScanner() {
+      if (scannerRunning) { stopScanner(); return; }
+      const wrap = document.getElementById('scanner-wrap');
+      wrap.style.display = 'block';
+      document.getElementById('qr-reader').innerHTML = '';
+      scanner = new Html5Qrcode('qr-reader');
+      try {
+        await scanner.start(
+          { facingMode: 'environment' },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          (text) => {
+            document.getElementById('wallet').value = text.trim();
+            stopScanner();
+          },
+          () => {}
+        );
+        scannerRunning = true;
+      } catch (e) {
+        wrap.style.display = 'none';
+        alert('Camera access denied');
+      }
+    }
+
+    function stopScanner() {
+      if (scanner && scannerRunning) {
+        scanner.stop().catch(() => {});
+        scannerRunning = false;
+      }
+      document.getElementById('scanner-wrap').style.display = 'none';
+    }
 
     function getWallet() {
       return document.getElementById('wallet').value.trim();
@@ -250,6 +307,7 @@
         if (data.success) {
           showResult('success', '✅ Checked in!', `+${data.tokensAwarded} TUC`, wallet.slice(0,16) + '…', data.signature);
           document.getElementById('wallet').value = '';
+          stopScanner();
         } else {
           showResult('error', '❌ Failed', '', data.error || 'Unknown error', null);
         }
