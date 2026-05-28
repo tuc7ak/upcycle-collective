@@ -381,16 +381,6 @@ const WALLETS = [
     getProvider() { return (window.solflare?.isSolflare || window.solflare?.connect) ? window.solflare : null; },
     url: 'https://solflare.com',
   },
-  {
-    id: 'backpack', name: 'Backpack', logo: '🎒', cls: 'backpack',
-    getProvider() { return window.backpack?.solana ?? null; },
-    url: 'https://backpack.app',
-  },
-  {
-    id: 'coinbase', name: 'Coinbase Wallet', logo: '🔵', cls: 'coinbase',
-    getProvider() { return window.coinbaseSolana ?? null; },
-    url: 'https://www.coinbase.com/wallet',
-  },
 ];
 
 /* ── RPC ── */
