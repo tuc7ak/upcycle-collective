@@ -103,7 +103,9 @@
     .sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:flex-end;}
     .sheet-bg.open{display:flex;}
     .sheet{background:#111f14;border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;margin:0 auto;max-height:90vh;overflow-y:auto;}
-    .sheet-handle{width:40px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;margin:0 auto 20px;}
+    .sheet-handle{display:none;}
+    .sheet-close{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:rgba(229,57,53,.2);border:1.5px solid rgba(229,57,53,.5);color:#ef5350;font-size:18px;font-weight:700;cursor:pointer;margin-bottom:16px;line-height:1;transition:background .15s;}
+    .sheet-close:hover{background:rgba(229,57,53,.35);}
     .sheet h2{font-size:18px;font-weight:700;margin-bottom:20px;}
 
     /* Receive sheet */
@@ -290,7 +292,7 @@
 <!-- ── Receive Sheet ── -->
 <div class="sheet-bg" id="receive-sheet" onclick="closeSheet('receive-sheet')">
   <div class="sheet" onclick="event.stopPropagation()">
-    <div class="sheet-handle"></div>
+    <button class="sheet-close" onclick="closeSheet('receive-sheet')">✕</button>
     <h2>📥 Receive TUC</h2>
     <p style="font-size:13px;opacity:.55;margin-bottom:16px;">Show this QR to anyone who wants to send you TUC.</p>
     <div class="qr-box"><img id="receive-qr" width="220" height="220" alt="QR" /></div>
@@ -302,7 +304,7 @@
 <!-- ── Send Sheet ── -->
 <div class="sheet-bg" id="send-sheet" onclick="closeSheet('send-sheet')">
   <div class="sheet" onclick="event.stopPropagation()">
-    <div class="sheet-handle"></div>
+    <button class="sheet-close" onclick="closeSheet('send-sheet')">✕</button>
     <h2>📤 Send TUC</h2>
     <div id="send-status"></div>
     <label>Recipient wallet</label>
