@@ -75,15 +75,42 @@
       margin-bottom: 14px;
     }
 
-    .wallet-addr {
-      font-size: 11px;
-      font-family: monospace;
-      opacity: 0.38;
-      text-align: center;
-      word-break: break-all;
-      cursor: pointer;
+    .wallet-box {
+      width: 100%;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 12px 14px;
     }
-    .wallet-addr:hover { opacity: 0.6; }
+    .wallet-box-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0.4;
+      margin-bottom: 6px;
+    }
+    .wallet-addr {
+      font-size: 12px;
+      font-family: monospace;
+      word-break: break-all;
+      opacity: 0.75;
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+    .copy-btn {
+      width: 100%;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 9px;
+      transition: background 0.15s;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.18); }
 
     /* ── History feed ────────────────────────── */
     .history-wrap {
@@ -205,8 +232,12 @@
   <div class="qr-card">
     <div class="qr-label">Solana Pay</div>
     <div id="qr-wrap"><canvas id="qr-canvas"></canvas></div>
-    <div class="qr-hint">Open Phantom → tap the scan icon<br>Scan this QR to pay</div>
-    <div class="wallet-addr" id="wallet-addr" title="Click to copy" onclick="copyWallet()">—</div>
+    <div class="qr-hint">Open TUC Wallet → tap the scan icon<br>Scan this QR to pay</div>
+    <div class="wallet-box">
+      <div class="wallet-box-label">Vendor Wallet Address</div>
+      <div class="wallet-addr" id="wallet-addr">Loading…</div>
+      <button class="copy-btn" id="copy-btn" onclick="copyWallet()" disabled>📋 Copy Address</button>
+    </div>
   </div>
 
   <div class="error-bar" id="error-bar"></div>
@@ -251,10 +282,12 @@
 
       // Generate Solana Pay QR
       const solanaPayUrl = `solana:${BASE_URL}/api/pay/${vendorId}`;
-      QRCode.toCanvas(document.getElementById('qr-canvas'), solanaPayUrl, {
-        width: 220, margin: 0,
-        color: { dark: '#000000', light: '#ffffff' },
-      });
+      QRCode.toCanvas(
+        document.getElementById('qr-canvas'),
+        solanaPayUrl,
+        { width: 220, margin: 0, color: { dark: '#000000', light: '#ffffff' } },
+        (err) => { if (err) showError('QR generation failed: ' + err.message); }
+      );
 
       // Load history immediately then poll
       loadHistory();
@@ -266,15 +299,17 @@
     function copyWallet() {
       if (!fullWalletAddr) return;
       navigator.clipboard.writeText(fullWalletAddr).then(() => {
-        const el = document.getElementById('wallet-addr');
-        el.textContent = 'Copied!';
-        setTimeout(() => displayWallet(fullWalletAddr), 1500);
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ Copied!';
+        setTimeout(() => { btn.textContent = '📋 Copy Address'; }, 2000);
       });
     }
     function displayWallet(addr) {
+      if (fullWalletAddr === addr) return;
       fullWalletAddr = addr;
-      document.getElementById('wallet-addr').textContent =
-        addr.slice(0, 8) + '…' + addr.slice(-8);
+      document.getElementById('wallet-addr').textContent = addr;
+      const btn = document.getElementById('copy-btn');
+      btn.disabled = false;
     }
 
     // ── History feed ──────────────────────────────────────────────────────
