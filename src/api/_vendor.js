@@ -71,7 +71,7 @@ function createVendorHandler(vendorId) {
         attendeeATA, mint, vendorATA, attendeePubkey, cost, TOKEN_DECIMALS, [], TOKEN_2022_PROGRAM_ID,
       ));
 
-      tx.add(createMemoInstruction(`TUC:${vendor.memo}:${cost}`, [organiser.publicKey]));
+      tx.add(createMemoInstruction(`TUC:${vendor.memo}`, [organiser.publicKey]));
 
       tx.partialSign(organiser);
 
