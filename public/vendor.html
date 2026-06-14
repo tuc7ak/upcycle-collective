@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TUC — Vendor</title>
-  <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -65,7 +65,7 @@
       margin-bottom: 18px;
       box-shadow: 0 0 36px rgba(76,175,80,0.2);
     }
-    #qr-wrap canvas { display: block; }
+    #qr-wrap img, #qr-wrap canvas { display: block; }
 
     .qr-hint {
       font-size: 13px;
@@ -231,7 +231,7 @@
 
   <div class="qr-card">
     <div class="qr-label">Solana Pay</div>
-    <div id="qr-wrap"><canvas id="qr-canvas"></canvas></div>
+    <div id="qr-wrap"><div id="qr-canvas"></div></div>
     <div class="qr-hint">Open TUC Wallet → tap the scan icon<br>Scan this QR to pay</div>
     <div class="wallet-box">
       <div class="wallet-box-label">Vendor Wallet Address</div>
@@ -282,12 +282,13 @@
 
       // Generate Solana Pay QR
       const solanaPayUrl = `solana:${BASE_URL}/api/pay/${vendorId}`;
-      QRCode.toCanvas(
-        document.getElementById('qr-canvas'),
-        solanaPayUrl,
-        { width: 220, margin: 0, color: { dark: '#000000', light: '#ffffff' } },
-        (err) => { if (err) showError('QR generation failed: ' + err.message); }
-      );
+      new QRCode(document.getElementById('qr-canvas'), {
+        text: solanaPayUrl,
+        width: 220,
+        height: 220,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+      });
 
       // Load history immediately then poll
       loadHistory();
