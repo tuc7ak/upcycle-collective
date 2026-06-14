@@ -1,13 +1,17 @@
 const { build } = require('esbuild');
 require('dotenv').config();
 
-// API bundle (Node.js serverless functions)
 build({
   entryPoints: [
     'src/api/checkin.js',
     'src/api/reward.js',
-    'src/api/pay/beer-stall.js',
     'src/api/transfer.js',
+    'src/api/pay/beer-stall.js',
+    'src/api/pay/food-booth.js',
+    'src/api/pay/merch.js',
+    'src/api/pay/vip.js',
+    'src/api/pay/game-zone.js',
+    'src/api/pay/spice-market.js',
   ],
   bundle:   true,
   platform: 'node',
@@ -17,7 +21,6 @@ build({
   outbase:  'src/api',
 });
 
-// Privy frontend bundle (browser)
 build({
   entryPoints: ['src/privy-login.jsx'],
   bundle:   true,
