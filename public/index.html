@@ -449,6 +449,21 @@
     .f-links a:hover { color: var(--black); }
     .f-copy { font-size: 12px; color: var(--grey); }
 
+    /* ── NAV Solana badge ── */
+    .nav-solana {
+      display: flex; align-items: center; gap: 6px;
+      margin-right: 12px;
+    }
+    .nav-solana-label { font-size: 10px; color: var(--grey); font-weight: 600; white-space: nowrap; }
+    .nav-solana-img { height: 22px; object-fit: contain; }
+
+    /* ── FOOTER Solana badge ── */
+    .f-solana {
+      display: flex; align-items: center; gap: 6px;
+    }
+    .f-solana-label { font-size: 10px; color: var(--grey); font-weight: 600; white-space: nowrap; }
+    .f-solana-img { height: 22px; object-fit: contain; }
+
     @media (max-width: 768px) {
       nav { padding: 14px 20px; }
       .nav-links { display: none; }
@@ -477,6 +492,10 @@
     <a href="#how">How it works</a>
     <a href="#wallet">Wallet</a>
     <a href="#solana">Solana</a>
+  </div>
+  <div class="nav-solana">
+    <span class="nav-solana-label">Supported by</span>
+    <img src="solana-stmy.png" alt="Solana Superteam Malaysia" class="nav-solana-img" />
   </div>
   <a href="app.html" class="nav-cta">Open Wallet</a>
 </nav>
@@ -508,8 +527,8 @@
   <div class="cards">
     <div class="card" data-reveal data-reveal-delay="1"><span class="icon">🪙</span><h3>A real digital token</h3><p>Every TUC you earn or spend is recorded permanently on Solana — transparent and verifiable by anyone, anytime.</p></div>
     <div class="card" data-reveal data-reveal-delay="2"><span class="icon">🛍️</span><h3>Earned by doing good</h3><p>Get 10 TUC at check-in. Earn more by donating recycle bags. Every bag = +10 tokens, instantly minted to your wallet.</p></div>
-    <div class="card" data-reveal data-reveal-delay="3"><span class="icon">♻️</span><h3>Spent at stations</h3><p>Use TUC at upcycle workshops, swap corners, spice markets, lucky draws, and more. No cash required.</p></div>
-    <div class="card" data-reveal data-reveal-delay="4"><span class="icon">❤️</span><h3>Backed by real action</h3><p>All donated items go to the Salvation Army. Your generosity has a real-world impact beyond the token.</p></div>
+    <div class="card" data-reveal data-reveal-delay="3"><span class="icon">♻️</span><h3>Spent at stations</h3><p>Use TUC at upcycle workshops, swap corners, lucky draws, and more.</p></div>
+    <div class="card" data-reveal data-reveal-delay="4"><span class="icon">❤️</span><h3>Backed by real action</h3><p>All donated items go to Donation Partners. Your generosity has a real-world impact beyond the token.</p></div>
   </div>
 </div>
 
@@ -638,6 +657,10 @@
     <a href="app.html">Wallet</a>
     <a href="staff.html">Staff</a>
     <a href="https://solscan.io/token/2hgWyBDWgw4xesu8NpwTAhHgy2gnAo5iBhsBNSasngRj" target="_blank" rel="noopener">Solscan</a>
+  </div>
+  <div class="f-solana">
+    <span class="f-solana-label">Supported by</span>
+    <img src="solana-stmy.png" alt="Solana Superteam Malaysia" class="f-solana-img" />
   </div>
 </div>
 
