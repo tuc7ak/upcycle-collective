@@ -142,30 +142,89 @@
       display: grid; grid-template-columns: 1fr 1fr;
       gap: 72px; align-items: center; margin-top: 52px;
     }
-    .wallet-mock {
-      background: #fff; border-radius: 22px; padding: 28px;
-      border: 1.5px solid #c6f0d8; color: var(--black);
+    /* ── PHONE MOCKUP ── */
+    .phone-outer {
+      display: flex; justify-content: center; align-items: flex-start;
     }
-    .wm-header {
+    .phone-frame {
+      width: 260px; flex-shrink: 0;
+      background: #111; border-radius: 44px;
+      padding: 10px;
+      box-shadow: 0 0 0 1px #2a2a2a, 0 0 0 3px #111, 0 32px 64px rgba(0,0,0,.18);
+      position: relative;
+    }
+    .phone-island {
+      position: absolute; top: 17px; left: 50%; transform: translateX(-50%);
+      width: 72px; height: 20px; background: #000; border-radius: 20px; z-index: 10;
+    }
+    .phone-frame::before {
+      content:''; position:absolute; left:-3px; top:82px;
+      width:3px; height:28px; background:#222; border-radius:2px 0 0 2px;
+      box-shadow: 0 38px 0 #222;
+    }
+    .phone-frame::after {
+      content:''; position:absolute; right:-3px; top:100px;
+      width:3px; height:46px; background:#222; border-radius:0 2px 2px 0;
+    }
+    .phone-screen {
+      background: #0a1a0f; border-radius: 34px; overflow: hidden;
+      width: 100%; font-family: -apple-system, 'Segoe UI', sans-serif;
+    }
+    .ps-status {
+      display: flex; justify-content: space-between; padding: 14px 18px 4px;
+      font-size: 8px; font-weight: 700; color: rgba(255,255,255,.4);
+    }
+    .ps-header {
       display: flex; align-items: center; gap: 8px;
-      padding-bottom: 18px; margin-bottom: 18px;
-      border-bottom: 1px solid #e0f5ea;
+      padding: 10px 14px 10px; border-bottom: 1px solid rgba(255,255,255,.06);
     }
-    .wm-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green-light); }
-    .wm-title { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--grey); }
-    .wm-bal { font-size: 48px; font-weight: 900; color: var(--green); line-height: 1; }
-    .wm-unit { font-size: 12px; color: var(--grey); margin-top: 4px; margin-bottom: 20px; }
-    .wm-addr { font-size: 10px; color: #bbb; word-break: break-all; line-height: 1.5; }
-    .wm-txs { margin-top: 20px; }
-    .wm-tx {
-      display: flex; justify-content: space-between;
-      padding: 9px 0; border-bottom: 1px solid #e8f8ef;
-      font-size: 12px;
+    .ps-logo { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
+    .ps-title { font-size: 11px; font-weight: 700; color: #fff; flex: 1; }
+    .ps-dash {
+      font-size: 9px; font-weight: 700; padding: 3px 8px;
+      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
+      border-radius: 6px; color: rgba(255,255,255,.6);
     }
-    .wm-tx:last-child { border-bottom: none; }
-    .wm-tx .lbl { color: var(--grey); }
-    .wm-tx .plus  { color: var(--green); font-weight: 700; }
-    .wm-tx .minus { color: #ef4444; font-weight: 700; }
+    .ps-balance-card {
+      margin: 12px 10px;
+      background: linear-gradient(135deg, #1a3a1f, #0f2a14);
+      border: 1px solid rgba(76,175,80,.25); border-radius: 14px;
+      padding: 18px 14px; text-align: center;
+    }
+    .ps-bal-label { font-size: 8px; opacity: .5; text-transform: uppercase; letter-spacing: .08em; color: #fff; margin-bottom: 4px; }
+    .ps-bal-num { font-size: 40px; font-weight: 900; color: #7fff7f; line-height: 1; }
+    .ps-bal-sym { font-size: 10px; opacity: .5; color: #fff; margin-top: 2px; }
+    .ps-addr { font-size: 8px; color: rgba(255,255,255,.25); margin-top: 8px; font-family: monospace; }
+    .ps-actions {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 7px; margin: 0 10px 12px;
+    }
+    .ps-action {
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
+      border-radius: 10px; padding: 10px 6px; text-align: center;
+      font-size: 9px; font-weight: 600; color: #fff;
+    }
+    .ps-action .ai { font-size: 16px; display: block; margin-bottom: 4px; }
+    .ps-label { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.35); padding: 0 12px; margin-bottom: 6px; }
+    .ps-txs { padding: 0 10px 16px; display: flex; flex-direction: column; gap: 5px; }
+    .ps-tx {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06);
+      border-radius: 10px; padding: 8px 10px;
+    }
+    .ps-tx-icon {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 11px;
+    }
+    .ps-tx-icon.mint { background: rgba(76,175,80,.2); }
+    .ps-tx-icon.reward { background: rgba(33,150,243,.18); }
+    .ps-tx-icon.spend { background: rgba(255,152,0,.18); }
+    .ps-tx-info { flex: 1; min-width: 0; }
+    .ps-tx-name { font-size: 9px; font-weight: 600; color: #fff; }
+    .ps-tx-time { font-size: 7px; color: rgba(255,255,255,.3); margin-top: 1px; }
+    .ps-tx-amt { font-size: 10px; font-weight: 700; white-space: nowrap; }
+    .ps-tx-amt.pos { color: #7fff7f; }
+    .ps-tx-amt.neg { color: #ff8a65; }
 
     .wallet-points { display: flex; flex-direction: column; gap: 22px; }
     .wp { display: flex; gap: 14px; align-items: flex-start; }
@@ -406,21 +465,55 @@
         </div>
       </div>
     </div>
-    <div class="wallet-mock">
-      <div class="wm-header">
-        <div class="wm-dot"></div>
-        <div class="wm-title">TUC WALLET</div>
-      </div>
-      <div class="wm-bal">35</div>
-      <div class="wm-unit">TUC Tokens</div>
-      <div class="wm-addr">7xKp…mN3q · Solana Mainnet</div>
-      <div class="wm-txs">
-        <div class="wm-tx"><span class="lbl">Check-in reward</span><span class="plus">+10</span></div>
-        <div class="wm-tx"><span class="lbl">Recycle bag donated</span><span class="plus">+10</span></div>
-        <div class="wm-tx"><span class="lbl">Recycle bag donated</span><span class="plus">+10</span></div>
-        <div class="wm-tx"><span class="lbl">Upcycle workshop</span><span class="minus">−15</span></div>
-        <div class="wm-tx"><span class="lbl">Lucky draw entry</span><span class="minus">−5</span></div>
-        <div class="wm-tx"><span class="lbl">Swap corner</span><span class="minus">−10</span></div>
+    <div class="phone-outer">
+      <div class="phone-frame">
+        <div class="phone-island"></div>
+        <div class="phone-screen">
+          <div class="ps-status"><span>9:41</span><span>●●● 100%</span></div>
+          <div class="ps-header">
+            <img class="ps-logo" src="logo.png" alt="TUC" />
+            <div class="ps-title">The Upcycle Collective</div>
+            <div class="ps-dash">Dashboard →</div>
+          </div>
+          <div class="ps-balance-card">
+            <div class="ps-bal-label">💳 My Wallet</div>
+            <div class="ps-bal-num">35</div>
+            <div class="ps-bal-sym">TUC Tokens</div>
+            <div class="ps-addr">7xKp…mN3q · Solana</div>
+          </div>
+          <div class="ps-actions">
+            <div class="ps-action"><span class="ai">↑</span>Send</div>
+            <div class="ps-action"><span class="ai">↓</span>Receive</div>
+          </div>
+          <div class="ps-label">Recent Activity</div>
+          <div class="ps-txs">
+            <div class="ps-tx">
+              <div class="ps-tx-icon mint">🪙</div>
+              <div class="ps-tx-info"><div class="ps-tx-name">Check-in reward</div><div class="ps-tx-time">TUC:CHECKIN · 10:02 AM</div></div>
+              <div class="ps-tx-amt pos">+10</div>
+            </div>
+            <div class="ps-tx">
+              <div class="ps-tx-icon reward">♻️</div>
+              <div class="ps-tx-info"><div class="ps-tx-name">Recycle bag donated</div><div class="ps-tx-time">TUC:RECYCLE_UNIT · 10:15 AM</div></div>
+              <div class="ps-tx-amt pos">+10</div>
+            </div>
+            <div class="ps-tx">
+              <div class="ps-tx-icon reward">♻️</div>
+              <div class="ps-tx-info"><div class="ps-tx-name">Recycle bag donated</div><div class="ps-tx-time">TUC:RECYCLE_UNIT · 11:03 AM</div></div>
+              <div class="ps-tx-amt pos">+10</div>
+            </div>
+            <div class="ps-tx">
+              <div class="ps-tx-icon spend">✂️</div>
+              <div class="ps-tx-info"><div class="ps-tx-name">Upcycle workshop</div><div class="ps-tx-time">Station 1 · 2:10 PM</div></div>
+              <div class="ps-tx-amt neg">−15</div>
+            </div>
+            <div class="ps-tx">
+              <div class="ps-tx-icon spend">🎰</div>
+              <div class="ps-tx-info"><div class="ps-tx-name">Lucky draw entry</div><div class="ps-tx-time">Final draw · 9:20 PM</div></div>
+              <div class="ps-tx-amt neg">−5</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -473,7 +566,7 @@
 
 <!-- FOOTER -->
 <div class="footer-inner">
-  <div class="f-logo" style="display:flex;align-items:center;gap:8px"><img src="logo.png" alt="" style="height:28px;width:28px;border-radius:6px;object-fit:cover"> <span>The Upcycle Collective</span></div>
+  <div class="f-logo" style="display:flex;align-items:center;gap:10px"><img src="logo.png" alt="TUC" style="height:32px;width:32px;border-radius:8px;object-fit:cover"> <span>The Upcycle Collective</span></div>
   <div class="f-copy">Built on Solana · Kuching, Sarawak · July 21, 2026</div>
   <div class="f-links">
     <a href="app.html">Wallet</a>
