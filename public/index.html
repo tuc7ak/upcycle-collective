@@ -143,86 +143,130 @@
       gap: 72px; align-items: center; margin-top: 52px;
     }
     /* ── PHONE MOCKUP ── */
+    @keyframes float {
+      0%,100% { transform: translateY(0px) rotate(-1.5deg); }
+      50%      { transform: translateY(-14px) rotate(-1.5deg); }
+    }
+
     .phone-outer {
-      display: flex; justify-content: center; align-items: flex-start;
+      display: flex; justify-content: center; align-items: center;
+      padding: 20px 0 40px;
     }
+
     .phone-frame {
-      width: 260px; flex-shrink: 0;
-      background: #111; border-radius: 44px;
-      padding: 10px;
-      box-shadow: 0 0 0 1px #2a2a2a, 0 0 0 3px #111, 0 32px 64px rgba(0,0,0,.18);
-      position: relative;
+      width: 300px; flex-shrink: 0; position: relative;
+      border-radius: 54px;
+      background: linear-gradient(145deg, #3a3a3c, #1c1c1e);
+      padding: 13px;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.12),
+        inset 0 0 0 1px rgba(255,255,255,0.06),
+        0 50px 100px rgba(0,0,0,0.28),
+        0 20px 40px rgba(0,0,0,0.18),
+        0 0 80px rgba(34,197,94,0.08);
+      animation: float 5s ease-in-out infinite;
     }
+
     .phone-island {
-      position: absolute; top: 17px; left: 50%; transform: translateX(-50%);
-      width: 72px; height: 20px; background: #000; border-radius: 20px; z-index: 10;
+      position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+      width: 88px; height: 24px; background: #000;
+      border-radius: 20px; z-index: 10;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
     }
-    .phone-frame::before {
-      content:''; position:absolute; left:-3px; top:82px;
-      width:3px; height:28px; background:#222; border-radius:2px 0 0 2px;
-      box-shadow: 0 38px 0 #222;
+
+    .phone-btn-l {
+      position: absolute; left: -3.5px; top: 100px;
+      width: 3.5px; border-radius: 2px 0 0 2px;
+      background: linear-gradient(145deg,#3a3a3c,#2a2a2c);
+      box-shadow: 0 34px 0 #3a3a3c, 0 68px 0 #3a3a3c;
+      height: 30px;
     }
-    .phone-frame::after {
-      content:''; position:absolute; right:-3px; top:100px;
-      width:3px; height:46px; background:#222; border-radius:0 2px 2px 0;
+    .phone-btn-r {
+      position: absolute; right: -3.5px; top: 120px;
+      width: 3.5px; height: 56px; border-radius: 0 2px 2px 0;
+      background: linear-gradient(145deg,#3a3a3c,#2a2a2c);
     }
+
     .phone-screen {
-      background: #0a1a0f; border-radius: 34px; overflow: hidden;
-      width: 100%; font-family: -apple-system, 'Segoe UI', sans-serif;
+      background: #0a1a0f; border-radius: 42px; overflow: hidden;
+      width: 100%; font-family: -apple-system, 'SF Pro Display', 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
+
     .ps-status {
-      display: flex; justify-content: space-between; padding: 14px 18px 4px;
-      font-size: 8px; font-weight: 700; color: rgba(255,255,255,.4);
+      display: flex; justify-content: space-between;
+      padding: 16px 22px 6px;
+      font-size: 10px; font-weight: 700; color: rgba(255,255,255,.5);
+      letter-spacing: .02em;
     }
+
     .ps-header {
-      display: flex; align-items: center; gap: 8px;
-      padding: 10px 14px 10px; border-bottom: 1px solid rgba(255,255,255,.06);
+      display: flex; align-items: center; gap: 9px;
+      padding: 10px 16px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
     }
-    .ps-logo { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
-    .ps-title { font-size: 11px; font-weight: 700; color: #fff; flex: 1; }
+    .ps-logo { width: 26px; height: 26px; border-radius: 8px; object-fit: cover; }
+    .ps-title { font-size: 12px; font-weight: 700; color: #fff; flex: 1; }
     .ps-dash {
-      font-size: 9px; font-weight: 700; padding: 3px 8px;
+      font-size: 10px; font-weight: 700; padding: 4px 10px;
       background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
-      border-radius: 6px; color: rgba(255,255,255,.6);
+      border-radius: 8px; color: rgba(255,255,255,.55); white-space: nowrap;
     }
+
     .ps-balance-card {
-      margin: 12px 10px;
-      background: linear-gradient(135deg, #1a3a1f, #0f2a14);
-      border: 1px solid rgba(76,175,80,.25); border-radius: 14px;
-      padding: 18px 14px; text-align: center;
+      margin: 14px 12px 12px;
+      background: linear-gradient(135deg, #1a3a1f 0%, #0f2a14 100%);
+      border: 1px solid rgba(76,175,80,.3); border-radius: 18px;
+      padding: 20px 16px; text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.06);
     }
-    .ps-bal-label { font-size: 8px; opacity: .5; text-transform: uppercase; letter-spacing: .08em; color: #fff; margin-bottom: 4px; }
-    .ps-bal-num { font-size: 40px; font-weight: 900; color: #7fff7f; line-height: 1; }
-    .ps-bal-sym { font-size: 10px; opacity: .5; color: #fff; margin-top: 2px; }
-    .ps-addr { font-size: 8px; color: rgba(255,255,255,.25); margin-top: 8px; font-family: monospace; }
+    .ps-bal-label {
+      font-size: 9px; letter-spacing: .1em; text-transform: uppercase;
+      color: rgba(255,255,255,.45); margin-bottom: 6px;
+    }
+    .ps-bal-num { font-size: 52px; font-weight: 900; color: #7fff7f; line-height: 1; letter-spacing: -1px; }
+    .ps-bal-sym { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 3px; }
+    .ps-addr {
+      font-size: 9px; color: rgba(255,255,255,.2); margin-top: 10px;
+      font-family: 'SF Mono', monospace; letter-spacing: .02em;
+    }
+
     .ps-actions {
       display: grid; grid-template-columns: 1fr 1fr;
-      gap: 7px; margin: 0 10px 12px;
+      gap: 8px; margin: 0 12px 14px;
     }
     .ps-action {
-      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
-      border-radius: 10px; padding: 10px 6px; text-align: center;
-      font-size: 9px; font-weight: 600; color: #fff;
+      background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.09);
+      border-radius: 14px; padding: 12px 8px; text-align: center;
+      font-size: 10px; font-weight: 600; color: #fff;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
     }
-    .ps-action .ai { font-size: 16px; display: block; margin-bottom: 4px; }
-    .ps-label { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.35); padding: 0 12px; margin-bottom: 6px; }
-    .ps-txs { padding: 0 10px 16px; display: flex; flex-direction: column; gap: 5px; }
+    .ps-action .ai { font-size: 20px; display: block; margin-bottom: 5px; }
+
+    .ps-section-label {
+      font-size: 9px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: rgba(255,255,255,.3);
+      padding: 0 14px; margin-bottom: 8px;
+    }
+
+    .ps-txs { padding: 0 12px 18px; display: flex; flex-direction: column; gap: 6px; }
     .ps-tx {
-      display: flex; align-items: center; gap: 8px;
-      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06);
-      border-radius: 10px; padding: 8px 10px;
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.07);
+      border-radius: 13px; padding: 9px 12px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
     }
     .ps-tx-icon {
-      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center; font-size: 11px;
+      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 13px;
     }
-    .ps-tx-icon.mint { background: rgba(76,175,80,.2); }
-    .ps-tx-icon.reward { background: rgba(33,150,243,.18); }
-    .ps-tx-icon.spend { background: rgba(255,152,0,.18); }
+    .ps-tx-icon.mint   { background: rgba(76,175,80,.22); }
+    .ps-tx-icon.reward { background: rgba(74,222,128,.15); }
+    .ps-tx-icon.spend  { background: rgba(255,152,0,.18); }
     .ps-tx-info { flex: 1; min-width: 0; }
-    .ps-tx-name { font-size: 9px; font-weight: 600; color: #fff; }
-    .ps-tx-time { font-size: 7px; color: rgba(255,255,255,.3); margin-top: 1px; }
-    .ps-tx-amt { font-size: 10px; font-weight: 700; white-space: nowrap; }
+    .ps-tx-name { font-size: 10px; font-weight: 600; color: #fff; }
+    .ps-tx-time { font-size: 8px; color: rgba(255,255,255,.28); margin-top: 2px; }
+    .ps-tx-amt  { font-size: 12px; font-weight: 800; white-space: nowrap; }
     .ps-tx-amt.pos { color: #7fff7f; }
     .ps-tx-amt.neg { color: #ff8a65; }
 
@@ -342,7 +386,7 @@
 <!-- HERO -->
 <div class="section hero">
   <div class="hero-pill"><div class="dot"></div> Live on Solana Mainnet</div>
-  <h1>Give things away.<br><em>Earn your place.</em></h1>
+  <h1>Connecting people,<br>circulating value,<br><em>inspiring change.</em></h1>
   <p class="sub">TUC is a community token for The Upcycle Collective — earn tokens by donating, spend them at stations, all powered by the Solana blockchain.</p>
   <div class="hero-btns">
     <a href="app.html" class="btn-dark">Open My Wallet →</a>
@@ -468,6 +512,8 @@
     <div class="phone-outer">
       <div class="phone-frame">
         <div class="phone-island"></div>
+        <div class="phone-btn-l"></div>
+        <div class="phone-btn-r"></div>
         <div class="phone-screen">
           <div class="ps-status"><span>9:41</span><span>●●● 100%</span></div>
           <div class="ps-header">
@@ -479,13 +525,13 @@
             <div class="ps-bal-label">💳 My Wallet</div>
             <div class="ps-bal-num">35</div>
             <div class="ps-bal-sym">TUC Tokens</div>
-            <div class="ps-addr">7xKp…mN3q · Solana</div>
+            <div class="ps-addr">7xKp…mN3q · Solana Mainnet</div>
           </div>
           <div class="ps-actions">
             <div class="ps-action"><span class="ai">↑</span>Send</div>
             <div class="ps-action"><span class="ai">↓</span>Receive</div>
           </div>
-          <div class="ps-label">Recent Activity</div>
+          <div class="ps-section-label">Recent Activity</div>
           <div class="ps-txs">
             <div class="ps-tx">
               <div class="ps-tx-icon mint">🪙</div>
