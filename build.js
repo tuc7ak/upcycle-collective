@@ -6,6 +6,7 @@ build({
     'src/api/checkin.js',
     'src/api/reward.js',
     'src/api/transfer.js',
+    'src/api/vendor-history.js',
     'src/api/pay/beer-stall.js',
     'src/api/pay/food-booth.js',
     'src/api/pay/merch.js',
