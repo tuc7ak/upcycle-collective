@@ -8,9 +8,9 @@ const { createMemoInstruction } = require('@solana/spl-memo');
 const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require('./_utils');
 
 const REWARDS = {
-  recycle_bag: 10,
-  beer: 10,
-  merchandise: 50,
+  recycle_unit: 10,
+  draft_1: 5,
+  draft_2: 20,
 };
 
 module.exports = async function handler(req, res) {

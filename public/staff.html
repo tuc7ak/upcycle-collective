@@ -228,14 +228,6 @@
   <div class="logo">♻️</div>
   <h1>The Upcycle Collective</h1>
   <p class="subtitle">Event Check-in · Staff Terminal</p>
-  <p style="font-size:13px;opacity:0.6;margin-bottom:8px;">Total TUC Minted</p>
-  <p id="total-supply" style="font-size:36px;font-weight:900;color:#7fff7f;margin-bottom:12px;">—</p>
-  <p style="font-size:11px;opacity:0.45;margin-bottom:4px;">TUC Contract Address</p>
-  <a href="https://solscan.io/token/2hgWyBDWgw4xesu8NpwTAhHgy2gnAo5iBhsBNSasngRj" target="_blank" rel="noopener"
-     style="font-size:11px;font-family:monospace;color:#7fff7f;opacity:0.7;word-break:break-all;margin-bottom:32px;display:block;">
-    2hgWyBDWgw4xesu8NpwTAhHgy2gnAo5iBhsBNSasngRj
-  </a>
-
   <div class="card">
     <button class="scan-btn" onclick="toggleScanner()">📷 Scan Wallet QR</button>
     <div id="scanner-wrap"><div id="qr-reader"></div></div>
@@ -248,7 +240,7 @@
       👇🏻 Don't forget to Check In!
     </div>
 
-    <button id="checkin-btn" onclick="doCheckin()">Check In (+50 TUC)</button>
+    <button id="checkin-btn" onclick="doCheckin()">Check In (+10 TUC)</button>
 
     <div class="result" id="result">
       <strong id="result-title"></strong>
@@ -261,39 +253,23 @@
   <div class="reward-section">
     <h2>Manual Rewards</h2>
     <div class="reward-buttons">
-      <div class="reward-btn" onclick="doReward('recycle_bag')">
+      <div class="reward-btn" onclick="doReward('recycle_unit')">
         <span class="amount">+10</span>
-        Recycle Bag
+        Recycle Unit
       </div>
-      <div class="reward-btn" onclick="doReward('beer')">
-        <span class="amount">+10</span>
-        Beer
+      <div class="reward-btn" onclick="doReward('draft_1')">
+        <span class="amount">+5</span>
+        Draft 1
       </div>
-      <div class="reward-btn" onclick="doReward('merchandise')">
-        <span class="amount">+50</span>
-        Merchandise
+      <div class="reward-btn" onclick="doReward('draft_2')">
+        <span class="amount">+20</span>
+        Draft 2
       </div>
     </div>
   </div>
 
   <script>
     const BASE = '';
-    const MINT  = '2hgWyBDWgw4xesu8NpwTAhHgy2gnAo5iBhsBNSasngRj';
-    const RPC   = 'https://mainnet.helius-rpc.com/?api-key=a353da56-f27a-4a7a-9091-bdc6f8d66f27';
-
-    async function loadTotalSupply() {
-      try {
-        const r = await fetch(RPC, {
-          method: 'POST', headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({jsonrpc:'2.0',id:1,method:'getTokenSupply',params:[MINT]}),
-        });
-        const data = await r.json();
-        const amount = data?.result?.value?.uiAmount ?? 0;
-        document.getElementById('total-supply').textContent = amount.toLocaleString() + ' TUC';
-      } catch { document.getElementById('total-supply').textContent = '—'; }
-    }
-
-    loadTotalSupply();
 
     let scanner = null;
     let scannerRunning = false;
@@ -383,7 +359,6 @@
           showResult('success', '✅ Checked in!', `+${data.tokensAwarded} TUC`, wallet.slice(0,16) + '…', data.signature);
           clearWallet();
           stopScanner();
-          loadTotalSupply();
         } else {
           showResult('error', '❌ Failed', '', data.error || 'Unknown error', null);
         }
@@ -391,7 +366,7 @@
         showResult('error', '❌ Network error', '', e.message, null);
       } finally {
         btn.disabled = false;
-        btn.textContent = 'Check In (+50 TUC)';
+        btn.textContent = 'Check In (+10 TUC)';
       }
     }
 
@@ -408,7 +383,6 @@
         if (data.success) {
           showResult('success', '✅ Reward given!', `+${data.tokensAwarded} TUC`, `${type.replace('_', ' ')} · ${wallet.slice(0,16)}…`, data.signature);
           clearWallet();
-          loadTotalSupply();
         } else {
           showResult('error', '❌ Failed', '', data.error || 'Unknown error', null);
         }

@@ -7,7 +7,7 @@ const {
 const { createMemoInstruction } = require('@solana/spl-memo');
 const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require('./_utils');
 
-const CHECKIN_AMOUNT = 50;
+const CHECKIN_AMOUNT = 10;
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return jsonErr(res, 405, 'POST only');

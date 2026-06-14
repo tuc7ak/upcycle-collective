@@ -44585,7 +44585,7 @@ var {
 } = require_cjs4();
 var { createMemoInstruction } = require_cjs5();
 var { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require_utils4();
-var CHECKIN_AMOUNT = 50;
+var CHECKIN_AMOUNT = 10;
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return jsonErr(res, 405, "POST only");
   const { wallet } = req.body ?? {};

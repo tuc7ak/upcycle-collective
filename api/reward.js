@@ -44586,9 +44586,9 @@ var {
 var { createMemoInstruction } = require_cjs5();
 var { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require_utils4();
 var REWARDS = {
-  recycle_bag: 10,
-  beer: 10,
-  merchandise: 50
+  recycle_unit: 10,
+  draft_1: 5,
+  draft_2: 20
 };
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return jsonErr(res, 405, "POST only");
