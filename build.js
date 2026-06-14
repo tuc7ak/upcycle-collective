@@ -7,6 +7,7 @@ build({
     'src/api/reward.js',
     'src/api/transfer.js',
     'src/api/vendor-history.js',
+    'src/api/tokenomics.js',
     'src/api/pay/drinks.js',
     'src/api/pay/food-booth.js',
     'src/api/pay/merch.js',
