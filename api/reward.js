@@ -39813,7 +39813,7 @@ var require_mint = __commonJS({
     exports2.getMinimumBalanceForRentExemptMint = getMinimumBalanceForRentExemptMint;
     exports2.getMinimumBalanceForRentExemptMintWithExtensions = getMinimumBalanceForRentExemptMintWithExtensions;
     exports2.getAssociatedTokenAddress = getAssociatedTokenAddress;
-    exports2.getAssociatedTokenAddressSync = getAssociatedTokenAddressSync2;
+    exports2.getAssociatedTokenAddressSync = getAssociatedTokenAddressSync;
     var buffer_layout_1 = require_Layout();
     var buffer_layout_utils_1 = require_cjs();
     var web3_js_1 = require_index_cjs();
@@ -39886,7 +39886,7 @@ var require_mint = __commonJS({
         return address;
       });
     }
-    function getAssociatedTokenAddressSync2(mint, owner, allowOwnerOffCurve = false, programId = constants_js_1.TOKEN_PROGRAM_ID, associatedTokenProgramId = constants_js_1.ASSOCIATED_TOKEN_PROGRAM_ID) {
+    function getAssociatedTokenAddressSync(mint, owner, allowOwnerOffCurve = false, programId = constants_js_1.TOKEN_PROGRAM_ID, associatedTokenProgramId = constants_js_1.ASSOCIATED_TOKEN_PROGRAM_ID) {
       if (!allowOwnerOffCurve && !web3_js_1.PublicKey.isOnCurve(owner.toBuffer()))
         throw new errors_js_1.TokenOwnerOffCurveError();
       const [address] = web3_js_1.PublicKey.findProgramAddressSync([owner.toBuffer(), programId.toBuffer(), mint.toBuffer()], associatedTokenProgramId);
@@ -41491,14 +41491,14 @@ var require_getOrCreateAssociatedTokenAccount = __commonJS({
       });
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.getOrCreateAssociatedTokenAccount = getOrCreateAssociatedTokenAccount;
+    exports2.getOrCreateAssociatedTokenAccount = getOrCreateAssociatedTokenAccount2;
     var web3_js_1 = require_index_cjs();
     var constants_js_1 = require_constants2();
     var errors_js_1 = require_errors();
     var associatedTokenAccount_js_1 = require_associatedTokenAccount();
     var account_js_1 = require_account();
     var mint_js_1 = require_mint();
-    function getOrCreateAssociatedTokenAccount(connection_1, payer_1, mint_1, owner_1) {
+    function getOrCreateAssociatedTokenAccount2(connection_1, payer_1, mint_1, owner_1) {
       return __awaiter(this, arguments, void 0, function* (connection, payer, mint, owner, allowOwnerOffCurve = false, commitment, confirmOptions, programId = constants_js_1.TOKEN_PROGRAM_ID, associatedTokenProgramId = constants_js_1.ASSOCIATED_TOKEN_PROGRAM_ID) {
         const associatedToken = (0, mint_js_1.getAssociatedTokenAddressSync)(mint, owner, allowOwnerOffCurve, programId, associatedTokenProgramId);
         let account;
@@ -44580,7 +44580,7 @@ var require_utils4 = __commonJS({
 var { PublicKey, Transaction, sendAndConfirmTransaction } = require_index_cjs();
 var {
   TOKEN_2022_PROGRAM_ID,
-  getAssociatedTokenAddressSync,
+  getOrCreateAssociatedTokenAccount,
   createMintToInstruction
 } = require_cjs4();
 var { createMemoInstruction } = require_cjs5();
@@ -44607,13 +44607,17 @@ module.exports = async function handler(req, res) {
     const connection = getConnection();
     const organiser = getOrganiser();
     const mint = getMintPublicKey();
-    const tokenAccount = getAssociatedTokenAddressSync(
+    const tokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      organiser,
       mint,
       attendeePubkey,
       false,
+      "confirmed",
+      {},
       TOKEN_2022_PROGRAM_ID
     );
-    const tx = new Transaction().add(createMintToInstruction(mint, tokenAccount, organiser.publicKey, amount, [], TOKEN_2022_PROGRAM_ID)).add(createMemoInstruction(`TUC:${reward.toUpperCase()}`, [organiser.publicKey]));
+    const tx = new Transaction().add(createMintToInstruction(mint, tokenAccount.address, organiser.publicKey, amount, [], TOKEN_2022_PROGRAM_ID)).add(createMemoInstruction(`TUC:${reward.toUpperCase()}`, [organiser.publicKey]));
     const signature = await sendAndConfirmTransaction(connection, tx, [organiser]);
     return jsonOk(res, { success: true, wallet, reward, tokensAwarded: amount, signature });
   } catch (err) {

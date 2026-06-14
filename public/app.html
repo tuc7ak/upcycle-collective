@@ -498,24 +498,28 @@ function parseTx(tx, sig, ataAddr) {
 
     let type='transfer', label='';
     if (delta > 0) {
-      if      (memo.includes('CHECKIN'))     { type='mint';    label='Check-in (+50 TUC)'; }
-      else if (memo.includes('RECYCLE_BAG')) { type='reward';  label='Reward — Recycle Bag'; }
-      else if (memo.includes('BEER'))        { type='reward';  label='Reward — Beer'; }
-      else if (memo.includes('MERCHANDISE')) { type='reward';  label='Reward — Merchandise'; }
-      else if (delta===50)                   { type='mint';    label='Check-in (+50 TUC)'; }
-      else if (delta===10)                   { type='reward';  label='Reward (+10 TUC)'; }
-      else                                   { type='mint';    label=`Received ${delta} TUC`; }
+      if      (memo.includes('CHECKIN'))      { type='mint';    label=`Check-in (+${delta} TUC)`; }
+      else if (memo.includes('RECYCLE_UNIT')) { type='reward';  label=`Recycle Bag (+${delta} TUC)`; }
+      else if (memo.includes('DRAFT_1'))      { type='reward';  label=`Draft 1 (+${delta} TUC)`; }
+      else if (memo.includes('DRAFT_2'))      { type='reward';  label=`Draft 2 (+${delta} TUC)`; }
+      else                                    { type='mint';    label=`Received ${delta} TUC`; }
     } else {
       const abs = Math.abs(delta);
-      type  = 'payment';
-      label = memo.includes('BEER_STALL') ? `Beer Stall (${abs} TUC)` : `Sent ${abs} TUC`;
+      type = 'payment';
+      if      (memo.includes('DRINKS'))       { label=`Drinks (${abs} TUC)`; }
+      else if (memo.includes('FOOD_BOOTH'))   { label=`Food Booth (${abs} TUC)`; }
+      else if (memo.includes('MERCH'))        { label=`Merch (${abs} TUC)`; }
+      else if (memo.includes('VIP_UPGRADE'))  { label=`VIP Upgrade (${abs} TUC)`; }
+      else if (memo.includes('GAME_ZONE'))    { label=`Game Zone (${abs} TUC)`; }
+      else if (memo.includes('SPICE_MARKET')) { label=`Spice Market (${abs} TUC)`; }
+      else                                    { label=`Sent ${abs} TUC`; }
     }
     return {sig,ts,delta,type,label};
   } catch { return null; }
 }
 
 function renderTx({sig,ts,delta,type,label}) {
-  const icons = {mint:'🎟️',reward:'⭐',payment:'🍺',transfer:'↗️'};
+  const icons = {mint:'🎟️',reward:'⭐',payment:'🛍️',transfer:'↗️'};
   const icon  = icons[type] ?? '💸';
   const sign  = delta > 0 ? '+' : '';
   const cls   = delta > 0 ? 'pos' : 'neg';

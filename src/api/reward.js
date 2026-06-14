@@ -1,7 +1,7 @@
 const { PublicKey, Transaction, sendAndConfirmTransaction } = require('@solana/web3.js');
 const {
   TOKEN_2022_PROGRAM_ID,
-  getAssociatedTokenAddressSync,
+  getOrCreateAssociatedTokenAccount,
   createMintToInstruction,
 } = require('@solana/spl-token');
 const { createMemoInstruction } = require('@solana/spl-memo');
@@ -35,12 +35,12 @@ module.exports = async function handler(req, res) {
     const organiser  = getOrganiser();
     const mint       = getMintPublicKey();
 
-    const tokenAccount = getAssociatedTokenAddressSync(
-      mint, attendeePubkey, false, TOKEN_2022_PROGRAM_ID,
+    const tokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection, organiser, mint, attendeePubkey, false, 'confirmed', {}, TOKEN_2022_PROGRAM_ID,
     );
 
     const tx = new Transaction()
-      .add(createMintToInstruction(mint, tokenAccount, organiser.publicKey, amount, [], TOKEN_2022_PROGRAM_ID))
+      .add(createMintToInstruction(mint, tokenAccount.address, organiser.publicKey, amount, [], TOKEN_2022_PROGRAM_ID))
       .add(createMemoInstruction(`TUC:${reward.toUpperCase()}`, [organiser.publicKey]));
 
     const signature = await sendAndConfirmTransaction(connection, tx, [organiser]);

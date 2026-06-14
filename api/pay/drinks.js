@@ -44675,7 +44675,7 @@ var require_vendor = __commonJS({
 
 // src/api/pay/drinks.js
 var { createVendorHandler } = require_vendor();
-module.exports = createVendorHandler("beer-stall");
+module.exports = createVendorHandler("drinks");
 /*! Bundled license information:
 
 @noble/hashes/utils.js:
