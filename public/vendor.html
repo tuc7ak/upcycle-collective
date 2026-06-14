@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TUC — Vendor</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -35,82 +34,49 @@
       text-align: center;
     }
 
-    /* ── QR card ─────────────────────────────── */
-    .qr-card {
+    /* ── Wallet card ─────────────────────────── */
+    .wallet-card {
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.15);
       border-radius: 24px;
-      padding: 28px 28px 22px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      padding: 24px;
       width: 100%;
       max-width: 360px;
       margin-bottom: 12px;
     }
 
-    .qr-label {
-      font-size: 12px;
+    .wallet-card-label {
+      font-size: 10px;
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      opacity: 0.5;
-      margin-bottom: 18px;
+      opacity: 0.45;
+      margin-bottom: 10px;
     }
 
-    #qr-wrap {
-      background: #fff;
-      border-radius: 16px;
-      padding: 14px;
-      margin-bottom: 18px;
-      box-shadow: 0 0 36px rgba(76,175,80,0.2);
-    }
-    #qr-wrap img, #qr-wrap canvas { display: block; }
-
-    .qr-hint {
+    .wallet-addr {
       font-size: 13px;
-      opacity: 0.55;
-      text-align: center;
-      line-height: 1.5;
+      font-family: monospace;
+      word-break: break-all;
+      line-height: 1.6;
+      opacity: 0.85;
       margin-bottom: 14px;
     }
 
-    .wallet-box {
-      width: 100%;
-      background: rgba(0,0,0,0.25);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
-      padding: 12px 14px;
-    }
-    .wallet-box-label {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      opacity: 0.4;
-      margin-bottom: 6px;
-    }
-    .wallet-addr {
-      font-size: 12px;
-      font-family: monospace;
-      word-break: break-all;
-      opacity: 0.75;
-      margin-bottom: 10px;
-      line-height: 1.5;
-    }
     .copy-btn {
       width: 100%;
       background: rgba(255,255,255,0.1);
       border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 8px;
+      border-radius: 10px;
       color: #fff;
       cursor: pointer;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 600;
-      padding: 9px;
+      padding: 11px;
       transition: background 0.15s;
     }
-    .copy-btn:hover { background: rgba(255,255,255,0.18); }
+    .copy-btn:hover  { background: rgba(255,255,255,0.18); }
+    .copy-btn:disabled { opacity: 0.35; cursor: default; }
 
     /* ── History feed ────────────────────────── */
     .history-wrap {
@@ -134,10 +100,7 @@
       opacity: 0.5;
     }
 
-    .refresh-badge {
-      font-size: 11px;
-      opacity: 0.38;
-    }
+    .refresh-badge { font-size: 11px; opacity: 0.38; }
 
     .history-list { display: flex; flex-direction: column; gap: 8px; }
 
@@ -149,7 +112,9 @@
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 12px;
       padding: 12px 14px;
+      cursor: pointer;
     }
+    .tx-row:hover { background: rgba(255,255,255,0.1); }
     .tx-row.new {
       border-color: rgba(76,175,80,0.45);
       background: rgba(76,175,80,0.1);
@@ -160,40 +125,15 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    .tx-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: #4caf50; flex-shrink: 0;
-    }
+    .tx-dot { width: 8px; height: 8px; border-radius: 50%; background: #4caf50; flex-shrink: 0; }
 
     .tx-body { flex: 1; min-width: 0; }
-    .tx-amount {
-      font-size: 16px;
-      font-weight: 800;
-      color: #7fff7f;
-      line-height: 1;
-      margin-bottom: 3px;
-    }
-    .tx-memo {
-      font-size: 11px;
-      opacity: 0.45;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .tx-amount { font-size: 16px; font-weight: 800; color: #7fff7f; line-height: 1; margin-bottom: 3px; }
+    .tx-memo   { font-size: 11px; opacity: 0.45; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .tx-time {
-      font-size: 11px;
-      opacity: 0.4;
-      text-align: right;
-      flex-shrink: 0;
-    }
+    .tx-time { font-size: 11px; opacity: 0.4; text-align: right; flex-shrink: 0; }
 
-    .empty-state {
-      text-align: center;
-      opacity: 0.35;
-      font-size: 14px;
-      padding: 24px 0;
-    }
+    .empty-state { text-align: center; opacity: 0.35; font-size: 14px; padding: 24px 0; }
 
     .total-row {
       display: flex;
@@ -227,17 +167,12 @@
 
   <div class="logo">♻️</div>
   <div class="vendor-name" id="vendor-name">Loading…</div>
-  <div class="subtitle">TUC Vendor — Scan to pay</div>
+  <div class="subtitle">TUC Vendor Terminal</div>
 
-  <div class="qr-card">
-    <div class="qr-label">Solana Pay</div>
-    <div id="qr-wrap"><div id="qr-canvas"></div></div>
-    <div class="qr-hint">Open TUC Wallet → tap the scan icon<br>Scan this QR to pay</div>
-    <div class="wallet-box">
-      <div class="wallet-box-label">Vendor Wallet Address</div>
-      <div class="wallet-addr" id="wallet-addr">Loading…</div>
-      <button class="copy-btn" id="copy-btn" onclick="copyWallet()" disabled>📋 Copy Address</button>
-    </div>
+  <div class="wallet-card">
+    <div class="wallet-card-label">Vendor Wallet Address</div>
+    <div class="wallet-addr" id="wallet-addr">Loading…</div>
+    <button class="copy-btn" id="copy-btn" onclick="copyWallet()" disabled>📋 Copy Address</button>
   </div>
 
   <div class="error-bar" id="error-bar"></div>
@@ -258,9 +193,8 @@
 
   <script>
     const BASE_URL = 'https://upcycle-collective.vercel.app';
-    const REFRESH_INTERVAL = 15000; // 15 seconds
+    const REFRESH_INTERVAL = 15000;
 
-    // ── Vendor config ─────────────────────────────────────────────────────
     const VENDOR_NAMES = {
       'drinks':       'Drinks 🍺',
       'food-booth':   'Food Booth 🍛',
@@ -279,18 +213,6 @@
     } else {
       document.getElementById('vendor-name').textContent = name;
       document.title = `${name} — TUC`;
-
-      // Generate Solana Pay QR
-      const solanaPayUrl = `solana:${BASE_URL}/api/pay/${vendorId}`;
-      new QRCode(document.getElementById('qr-canvas'), {
-        text: solanaPayUrl,
-        width: 220,
-        height: 220,
-        colorDark: '#000000',
-        colorLight: '#ffffff',
-      });
-
-      // Load history immediately then poll
       loadHistory();
       setInterval(loadHistory, REFRESH_INTERVAL);
     }
@@ -309,18 +231,16 @@
       if (fullWalletAddr === addr) return;
       fullWalletAddr = addr;
       document.getElementById('wallet-addr').textContent = addr;
-      const btn = document.getElementById('copy-btn');
-      btn.disabled = false;
+      document.getElementById('copy-btn').disabled = false;
     }
 
     // ── History feed ──────────────────────────────────────────────────────
-    let knownSigs = new Set();
-    let sessionTotal = 0;
+    let knownSigs  = new Set();
     let isFirstLoad = true;
 
     async function loadHistory() {
       try {
-        const r = await fetch(`${BASE_URL}/api/vendor-history?id=${vendorId}`);
+        const r    = await fetch(`${BASE_URL}/api/vendor-history?id=${vendorId}`);
         const data = await r.json();
 
         if (data.error) { showError(data.error); return; }
@@ -337,11 +257,9 @@
 
         const list = document.getElementById('history-list');
         list.innerHTML = '';
-
         txs.forEach(tx => {
           const isNew = !isFirstLoad && !knownSigs.has(tx.signature);
           knownSigs.add(tx.signature);
-          if (isNew) sessionTotal += tx.amount;
 
           const row = document.createElement('div');
           row.className = 'tx-row' + (isNew ? ' new' : '');
@@ -353,20 +271,17 @@
             </div>
             <div class="tx-time">${relativeTime(tx.blockTime)}</div>
           `;
-          row.title = tx.signature;
           row.onclick = () => window.open(`https://solscan.io/tx/${tx.signature}`, '_blank');
-          row.style.cursor = 'pointer';
           list.appendChild(row);
         });
 
-        // Total row
         const totalTUC = txs.reduce((s, t) => s + t.amount, 0);
         document.getElementById('total-row').style.display = 'flex';
         document.getElementById('total-value').textContent = `${totalTUC} TUC`;
 
         isFirstLoad = false;
         setRefreshBadge();
-      } catch (e) {
+      } catch {
         showError('Failed to load history');
         setRefreshBadge();
       }
@@ -375,7 +290,7 @@
     function relativeTime(blockTime) {
       if (!blockTime) return '?';
       const diff = Math.floor(Date.now() / 1000) - blockTime;
-      if (diff < 60)  return `${diff}s ago`;
+      if (diff < 60)   return `${diff}s ago`;
       if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
       return `${Math.floor(diff / 3600)}h ago`;
     }
@@ -386,14 +301,8 @@
         `Updated ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
     }
 
-    function showError(msg) {
-      const el = document.getElementById('error-bar');
-      el.textContent = msg;
-      el.classList.add('active');
-    }
-    function hideError() {
-      document.getElementById('error-bar').classList.remove('active');
-    }
+    function showError(msg) { const el = document.getElementById('error-bar'); el.textContent = msg; el.classList.add('active'); }
+    function hideError()    { document.getElementById('error-bar').classList.remove('active'); }
   </script>
 
 </body>
