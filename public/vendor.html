@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TUC — Vendor Terminal</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -16,93 +17,154 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-      padding: 24px 16px 40px;
+      padding: 24px 16px 48px;
     }
 
-    .logo { font-size: 40px; margin-bottom: 6px; }
+    .logo { font-size: 36px; margin-bottom: 4px; margin-top: 4px; }
 
     .vendor-name {
-      font-size: 30px;
+      font-size: 26px;
       font-weight: 800;
       margin-bottom: 2px;
       text-align: center;
     }
 
     .subtitle {
-      font-size: 14px;
-      opacity: 0.6;
-      margin-bottom: 32px;
+      font-size: 13px;
+      opacity: 0.55;
+      margin-bottom: 28px;
       text-align: center;
     }
 
+    /* ── Scanner ─────────────────────────────── */
+    .scan-btn {
+      width: 100%;
+      max-width: 480px;
+      padding: 13px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .scan-btn:hover { background: rgba(255,255,255,0.18); }
+
+    #scanner-wrap {
+      width: 100%;
+      max-width: 480px;
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 10px;
+      display: none;
+    }
+    #scanner-wrap video { width: 100% !important; }
+    #html5-qrcode-button-camera-permission,
+    #html5-qrcode-button-camera-stop,
+    #html5-qrcode-anchor-scan-type-change { display: none !important; }
+
+    /* ── Wallet status ───────────────────────── */
+    .wallet-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      max-width: 480px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.45);
+    }
+    .wallet-status.ready {
+      background: rgba(76,175,80,0.15);
+      border-color: rgba(76,175,80,0.4);
+      color: #a5d6a7;
+    }
+    .wallet-status .dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(255,255,255,0.2);
+    }
+    .wallet-status.ready .dot { background: #4caf50; }
+    .wallet-clear {
+      margin-left: auto;
+      font-size: 16px;
+      cursor: pointer;
+      opacity: 0.5;
+      line-height: 1;
+    }
+    .wallet-clear:hover { opacity: 1; }
+
+    /* ── Section label ───────────────────────── */
     .section-label {
       font-size: 11px;
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      opacity: 0.55;
-      margin-bottom: 12px;
+      opacity: 0.5;
+      margin-bottom: 10px;
       width: 100%;
       max-width: 480px;
     }
 
+    /* ── Items grid ──────────────────────────── */
     .items-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px;
       width: 100%;
       max-width: 480px;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
     .item-btn {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.18);
       border-radius: 16px;
       color: #fff;
       cursor: pointer;
-      padding: 20px 12px;
+      padding: 18px 10px;
       text-align: center;
-      transition: background 0.15s, transform 0.1s;
+      transition: background 0.15s, transform 0.1s, border-color 0.15s;
     }
-    .item-btn:hover  { background: rgba(255,255,255,0.18); }
+    .item-btn:hover { background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.3); }
     .item-btn:active { transform: scale(0.96); }
-
     .item-btn .amount {
       display: block;
-      font-size: 32px;
+      font-size: 28px;
       font-weight: 900;
       color: #7fff7f;
       line-height: 1;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
-    .item-btn .item-name {
-      font-size: 14px;
-      font-weight: 600;
-      opacity: 0.9;
-    }
+    .item-btn .item-name { font-size: 13px; font-weight: 600; opacity: 0.9; }
 
-    /* Custom amount row (for Spice Market etc.) */
+    /* ── Custom amount ───────────────────────── */
     .custom-row {
       display: flex;
       gap: 10px;
       width: 100%;
       max-width: 480px;
-      margin-bottom: 32px;
+      margin-bottom: 28px;
     }
     .custom-row input {
       flex: 1;
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.22);
       border-radius: 12px;
       color: #fff;
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 700;
-      padding: 14px 16px;
+      padding: 13px 15px;
       outline: none;
     }
-    .custom-row input::placeholder { opacity: 0.4; }
+    .custom-row input::placeholder { opacity: 0.38; }
     .custom-row input:focus { border-color: #7fff7f; }
     .custom-row button {
       background: #4caf50;
@@ -110,164 +172,168 @@
       border-radius: 12px;
       color: #fff;
       cursor: pointer;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 700;
-      padding: 14px 20px;
+      padding: 13px 18px;
       transition: background 0.15s;
     }
     .custom-row button:hover { background: #43a047; }
 
-    /* QR overlay */
+    /* ── QR overlay ──────────────────────────── */
     .qr-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(10, 35, 20, 0.97);
+      background: rgba(8, 28, 16, 0.97);
       z-index: 100;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      padding: 28px 20px;
     }
     .qr-overlay.active { display: flex; }
 
-    .qr-header {
-      font-size: 22px;
-      font-weight: 800;
-      margin-bottom: 6px;
-      text-align: center;
+    .qr-wallet-badge {
+      display: none;
+      align-items: center;
+      gap: 7px;
+      background: rgba(76,175,80,0.15);
+      border: 1px solid rgba(76,175,80,0.35);
+      border-radius: 20px;
+      color: #a5d6a7;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 14px;
+      margin-bottom: 16px;
     }
-    .qr-sub {
-      font-size: 15px;
-      opacity: 0.65;
-      margin-bottom: 28px;
-      text-align: center;
-    }
-    .qr-cost {
-      font-size: 52px;
-      font-weight: 900;
-      color: #7fff7f;
-      margin-bottom: 28px;
-      line-height: 1;
-    }
+    .qr-wallet-badge.visible { display: flex; }
+    .qr-wallet-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: #4caf50; flex-shrink: 0; }
+
+    .qr-vendor { font-size: 20px; font-weight: 800; margin-bottom: 3px; text-align: center; }
+    .qr-item   { font-size: 14px; opacity: 0.6; margin-bottom: 20px; text-align: center; }
+    .qr-cost   { font-size: 48px; font-weight: 900; color: #7fff7f; margin-bottom: 22px; line-height: 1; }
 
     #qr-canvas-wrap {
       background: #fff;
-      border-radius: 20px;
-      padding: 18px;
-      margin-bottom: 24px;
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 40px rgba(76,175,80,0.25);
     }
     #qr-canvas-wrap canvas { display: block; }
 
-    .qr-instruction {
-      font-size: 14px;
-      opacity: 0.6;
-      margin-bottom: 28px;
-      text-align: center;
-      line-height: 1.5;
-    }
+    .qr-instruction { font-size: 13px; opacity: 0.55; margin-bottom: 20px; text-align: center; line-height: 1.5; }
 
     .timer-bar-wrap {
-      width: 260px;
-      height: 6px;
-      background: rgba(255,255,255,0.15);
-      border-radius: 3px;
-      margin-bottom: 28px;
-      overflow: hidden;
+      width: 240px; height: 5px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 3px; margin-bottom: 22px; overflow: hidden;
     }
-    .timer-bar {
-      height: 100%;
-      background: #4caf50;
-      border-radius: 3px;
-      width: 100%;
-      transition: width 1s linear;
-    }
+    .timer-bar { height: 100%; background: #4caf50; border-radius: 3px; width: 100%; transition: width 1s linear; }
 
     .cancel-btn {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.22);
       border-radius: 12px;
       color: #fff;
       cursor: pointer;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
-      padding: 14px 32px;
+      padding: 13px 28px;
       transition: background 0.15s;
     }
-    .cancel-btn:hover { background: rgba(255,255,255,0.18); }
+    .cancel-btn:hover { background: rgba(255,255,255,0.15); }
 
-    /* Success flash */
+    /* ── Success overlay ─────────────────────── */
     .success-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(22, 101, 52, 0.98);
+      background: rgba(16, 64, 32, 0.98);
       z-index: 200;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 24px;
+      text-align: center;
     }
     .success-overlay.active { display: flex; }
-    .success-icon { font-size: 80px; margin-bottom: 16px; }
-    .success-title { font-size: 32px; font-weight: 900; margin-bottom: 8px; }
-    .success-amount { font-size: 52px; font-weight: 900; color: #7fff7f; margin-bottom: 24px; }
+    .success-icon { font-size: 72px; margin-bottom: 12px; }
+    .success-title { font-size: 28px; font-weight: 900; margin-bottom: 6px; }
+    .success-amount { font-size: 48px; font-weight: 900; color: #7fff7f; margin-bottom: 6px; }
+    .success-wallet { font-size: 12px; opacity: 0.5; margin-bottom: 28px; }
     .next-btn {
       background: #fff;
       border: none;
       border-radius: 14px;
       color: #0f4c2a;
       cursor: pointer;
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 800;
-      padding: 18px 48px;
-      transition: opacity 0.15s;
+      padding: 16px 44px;
     }
     .next-btn:hover { opacity: 0.9; }
 
-    /* Error state */
-    .error-msg {
-      background: rgba(244,67,54,0.2);
-      border: 1px solid #f44336;
-      border-radius: 12px;
-      color: #fff;
+    /* ── Error ───────────────────────────────── */
+    .error-bar {
       display: none;
-      font-size: 14px;
-      margin-top: 12px;
-      padding: 12px 16px;
+      background: rgba(244,67,54,0.18);
+      border: 1px solid #f44336;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 13px;
+      margin-bottom: 10px;
+      padding: 10px 14px;
       text-align: center;
       width: 100%;
       max-width: 480px;
     }
-    .error-msg.active { display: block; }
+    .error-bar.active { display: block; }
   </style>
 </head>
 <body>
 
   <div class="logo">♻️</div>
   <div class="vendor-name" id="vendor-name">Loading…</div>
-  <div class="subtitle">TUC Vendor Terminal · Scan to pay</div>
+  <div class="subtitle">TUC Vendor Terminal</div>
 
-  <div class="section-label">Select item</div>
+  <!-- Scanner -->
+  <button class="scan-btn" onclick="toggleScanner()">📷 Scan Attendee Wallet</button>
+  <div id="scanner-wrap"><div id="qr-reader"></div></div>
+
+  <!-- Wallet status indicator -->
+  <div class="wallet-status" id="wallet-status">
+    <div class="dot"></div>
+    <span id="wallet-status-text">No wallet scanned</span>
+    <span class="wallet-clear" id="wallet-clear" onclick="clearWallet()" style="display:none">✕</span>
+  </div>
+
+  <div class="error-bar" id="error-bar"></div>
+
+  <!-- Items -->
+  <div class="section-label" id="items-label">Charge attendee</div>
   <div class="items-grid" id="items-grid"></div>
 
+  <!-- Custom amount (Spice Market etc.) -->
   <div id="custom-section" style="display:none; width:100%; max-width:480px;">
     <div class="section-label">Custom amount</div>
     <div class="custom-row">
-      <input id="custom-amount" type="number" min="1" placeholder="TUC amount" />
-      <button onclick="openQR('Custom', parseInt(document.getElementById('custom-amount').value))">Show QR</button>
+      <input id="custom-amount" type="number" min="1" placeholder="Enter TUC amount" />
+      <button onclick="handleItemTap('Custom', parseInt(document.getElementById('custom-amount').value||'0'))">Show QR</button>
     </div>
   </div>
 
-  <div class="error-msg" id="error-msg"></div>
-
-  <!-- QR overlay -->
+  <!-- QR overlay (Solana Pay) -->
   <div class="qr-overlay" id="qr-overlay">
-    <div class="qr-header" id="qr-header"></div>
-    <div class="qr-sub" id="qr-sub"></div>
-    <div class="qr-cost" id="qr-cost"></div>
+    <div class="qr-wallet-badge" id="qr-wallet-badge">
+      <div class="dot"></div>
+      <span id="qr-wallet-text"></span>
+    </div>
+    <div class="qr-vendor" id="qr-vendor"></div>
+    <div class="qr-item"   id="qr-item"></div>
+    <div class="qr-cost"   id="qr-cost"></div>
     <div id="qr-canvas-wrap"><canvas id="qr-canvas"></canvas></div>
-    <div class="qr-instruction">Ask attendee to open Phantom and scan this QR</div>
+    <div class="qr-instruction">Ask attendee to open Phantom → Scan</div>
     <div class="timer-bar-wrap"><div class="timer-bar" id="timer-bar"></div></div>
     <button class="cancel-btn" onclick="closeQR()">✕ Cancel</button>
   </div>
@@ -277,14 +343,15 @@
     <div class="success-icon">✅</div>
     <div class="success-title">Payment Received!</div>
     <div class="success-amount" id="success-amount"></div>
+    <div class="success-wallet" id="success-wallet"></div>
     <button class="next-btn" onclick="closeSuccess()">Next Customer</button>
   </div>
 
   <script>
     const BASE_URL = 'https://upcycle-collective.vercel.app';
+    const QR_TIMEOUT_SECS = 120;
 
-    // ── Vendor config ──────────────────────────────────────────────
-    // Each vendor gets their URL: /vendor.html?id=beer-stall
+    // ── Vendor config ─────────────────────────────────────────────────────
     const VENDORS = {
       'beer-stall': {
         name: 'Beer Stall 🍺',
@@ -297,17 +364,17 @@
       'food-booth': {
         name: 'Food Booth 🍛',
         items: [
-          { name: 'Meal Set',  cost: 8 },
-          { name: 'Snack',     cost: 3 },
-          { name: 'Drink',     cost: 2 },
+          { name: 'Meal Set', cost: 8 },
+          { name: 'Snack',    cost: 3 },
+          { name: 'Drink',    cost: 2 },
         ],
       },
       'merch': {
         name: 'Merch 👕',
         items: [
-          { name: 'T-Shirt',   cost: 15 },
-          { name: 'Tote Bag',  cost: 10 },
-          { name: 'Sticker',   cost: 3  },
+          { name: 'T-Shirt',  cost: 15 },
+          { name: 'Tote Bag', cost: 10 },
+          { name: 'Sticker',  cost: 3  },
         ],
       },
       'vip': {
@@ -330,13 +397,13 @@
       },
     };
 
-    // ── Init ───────────────────────────────────────────────────────
-    const params = new URLSearchParams(window.location.search);
+    // ── Init ──────────────────────────────────────────────────────────────
+    const params   = new URLSearchParams(window.location.search);
     const vendorId = params.get('id') || 'beer-stall';
-    const vendor = VENDORS[vendorId];
+    const vendor   = VENDORS[vendorId];
 
     if (!vendor) {
-      document.body.innerHTML = '<p style="color:#f44;padding:40px;text-align:center">Unknown vendor ID. Use ?id=beer-stall in the URL.</p>';
+      document.body.innerHTML = '<p style="color:#f44;padding:40px;text-align:center">Unknown vendor ID.<br>Use <b>?id=beer-stall</b> in the URL.</p>';
     } else {
       document.getElementById('vendor-name').textContent = vendor.name;
       document.title = `${vendor.name} — TUC`;
@@ -345,45 +412,100 @@
       vendor.items.forEach(item => {
         const btn = document.createElement('div');
         btn.className = 'item-btn';
-        btn.innerHTML = `<span class="amount">+${item.cost}</span><span class="item-name">${item.name}</span>`;
-        btn.onclick = () => openQR(item.name, item.cost);
+        btn.innerHTML = `<span class="amount">${item.cost} TUC</span><span class="item-name">${item.name}</span>`;
+        btn.onclick = () => handleItemTap(item.name, item.cost);
         grid.appendChild(btn);
       });
 
+      if (vendor.items.length === 0) document.getElementById('items-label').style.display = 'none';
+
       if (vendor.customAmount) {
         document.getElementById('custom-section').style.display = 'block';
-        if (vendor.items.length === 0) {
-          document.querySelector('.section-label').style.display = 'none';
-        }
       }
     }
 
-    // ── QR overlay ─────────────────────────────────────────────────
+    // ── Scanner ───────────────────────────────────────────────────────────
+    let scanner = null;
+    let scannerRunning = false;
+    let scannedWallet = '';
+
+    async function toggleScanner() {
+      if (scannerRunning) { stopScanner(); return; }
+      const wrap = document.getElementById('scanner-wrap');
+      wrap.style.display = 'block';
+      document.getElementById('qr-reader').innerHTML = '';
+      scanner = new Html5Qrcode('qr-reader');
+      try {
+        await scanner.start(
+          { facingMode: 'environment' },
+          { fps: 10, qrbox: { width: 240, height: 240 } },
+          (text) => { setWalletReady(text.trim()); stopScanner(); },
+          () => {}
+        );
+        scannerRunning = true;
+      } catch {
+        wrap.style.display = 'none';
+        showError('Camera access denied.');
+      }
+    }
+
+    function stopScanner() {
+      if (scanner && scannerRunning) { scanner.stop().catch(() => {}); scannerRunning = false; }
+      document.getElementById('scanner-wrap').style.display = 'none';
+    }
+
+    function setWalletReady(address) {
+      scannedWallet = address;
+      const status = document.getElementById('wallet-status');
+      status.classList.add('ready');
+      document.getElementById('wallet-status-text').textContent =
+        address.slice(0, 6) + '…' + address.slice(-6);
+      document.getElementById('wallet-clear').style.display = 'block';
+      hideError();
+    }
+
+    function clearWallet() {
+      scannedWallet = '';
+      const status = document.getElementById('wallet-status');
+      status.classList.remove('ready');
+      document.getElementById('wallet-status-text').textContent = 'No wallet scanned';
+      document.getElementById('wallet-clear').style.display = 'none';
+    }
+
+    // ── Item tap → QR ─────────────────────────────────────────────────────
+    function handleItemTap(itemName, cost) {
+      if (!cost || cost < 1 || isNaN(cost)) { showError('Enter a valid amount.'); return; }
+      hideError();
+      openQR(itemName, cost);
+    }
+
+    // ── QR overlay ────────────────────────────────────────────────────────
     let timerInterval = null;
-    const QR_TIMEOUT_SECS = 120;
 
     function openQR(itemName, cost) {
-      if (!cost || cost < 1 || isNaN(cost)) {
-        showError('Please enter a valid amount.');
-        return;
+      const solanaPayUrl = `solana:${BASE_URL}/api/pay/${vendorId}?amount=${cost}`;
+
+      // wallet badge in overlay
+      const badge = document.getElementById('qr-wallet-badge');
+      if (scannedWallet) {
+        document.getElementById('qr-wallet-text').textContent =
+          scannedWallet.slice(0, 6) + '…' + scannedWallet.slice(-6);
+        badge.classList.add('visible');
+      } else {
+        badge.classList.remove('visible');
       }
-      hideError();
 
-      const payUrl = `${BASE_URL}/api/pay/${vendorId}?amount=${cost}`;
-      const solanaPayUrl = `solana:${payUrl}`;
-
-      document.getElementById('qr-header').textContent = vendor.name;
-      document.getElementById('qr-sub').textContent = itemName;
-      document.getElementById('qr-cost').textContent = `${cost} TUC`;
+      document.getElementById('qr-vendor').textContent = vendor.name;
+      document.getElementById('qr-item').textContent   = itemName;
+      document.getElementById('qr-cost').textContent   = `${cost} TUC`;
 
       QRCode.toCanvas(document.getElementById('qr-canvas'), solanaPayUrl, {
-        width: 240,
-        margin: 0,
+        width: 240, margin: 0,
         color: { dark: '#000000', light: '#ffffff' },
       });
 
       document.getElementById('qr-overlay').classList.add('active');
-      startTimer();
+      startTimer(cost, itemName);
     }
 
     function closeQR() {
@@ -391,14 +513,13 @@
       clearInterval(timerInterval);
     }
 
-    function startTimer() {
+    function startTimer(cost, itemName) {
       const bar = document.getElementById('timer-bar');
       bar.style.transition = 'none';
       bar.style.width = '100%';
-
-      let remaining = QR_TIMEOUT_SECS;
       clearInterval(timerInterval);
 
+      let remaining = QR_TIMEOUT_SECS;
       requestAnimationFrame(() => {
         bar.style.transition = `width ${QR_TIMEOUT_SECS}s linear`;
         bar.style.width = '0%';
@@ -406,33 +527,34 @@
 
       timerInterval = setInterval(() => {
         remaining--;
-        if (remaining <= 0) {
-          clearInterval(timerInterval);
-          closeQR();
-        }
+        if (remaining <= 0) { clearInterval(timerInterval); closeQR(); }
       }, 1000);
     }
 
-    // ── Success overlay ────────────────────────────────────────────
+    // ── Success ───────────────────────────────────────────────────────────
     function showSuccess(cost) {
       closeQR();
       document.getElementById('success-amount').textContent = `${cost} TUC`;
+      document.getElementById('success-wallet').textContent = scannedWallet
+        ? scannedWallet.slice(0, 8) + '…' + scannedWallet.slice(-8)
+        : '';
       document.getElementById('success-overlay').classList.add('active');
-      setTimeout(closeSuccess, 5000);
+      setTimeout(closeSuccess, 6000);
     }
 
     function closeSuccess() {
       document.getElementById('success-overlay').classList.remove('active');
+      clearWallet();
     }
 
-    // ── Error ──────────────────────────────────────────────────────
+    // ── Error ─────────────────────────────────────────────────────────────
     function showError(msg) {
-      const el = document.getElementById('error-msg');
+      const el = document.getElementById('error-bar');
       el.textContent = msg;
       el.classList.add('active');
     }
     function hideError() {
-      document.getElementById('error-msg').classList.remove('active');
+      document.getElementById('error-bar').classList.remove('active');
     }
   </script>
 
