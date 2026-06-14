@@ -262,7 +262,7 @@
 
     // ── Vendor config ─────────────────────────────────────────────────────
     const VENDOR_NAMES = {
-      'beer-stall':   'Beer Stall 🍺',
+      'drinks':       'Drinks 🍺',
       'food-booth':   'Food Booth 🍛',
       'merch':        'Merch 👕',
       'vip':          'VIP Upgrade ⭐',
@@ -271,11 +271,11 @@
     };
 
     const params   = new URLSearchParams(window.location.search);
-    const vendorId = params.get('id') || 'beer-stall';
+    const vendorId = params.get('id') || 'drinks';
     const name     = VENDOR_NAMES[vendorId];
 
     if (!name) {
-      document.body.innerHTML = '<p style="color:#f44;padding:40px;text-align:center">Unknown vendor ID.<br>Use <b>?id=beer-stall</b> in the URL.</p>';
+      document.body.innerHTML = '<p style="color:#f44;padding:40px;text-align:center">Unknown vendor ID.<br>Use <b>?id=drinks</b> in the URL.</p>';
     } else {
       document.getElementById('vendor-name').textContent = name;
       document.title = `${name} — TUC`;

@@ -17185,9 +17185,9 @@ var require_event_target = __commonJS({
        *     the listener would be automatically removed when invoked.
        * @public
        */
-      addEventListener(type, handler2, options = {}) {
+      addEventListener(type, handler, options = {}) {
         for (const listener of this.listeners(type)) {
-          if (!options[kForOnEventAttribute] && listener[kListener] === handler2 && !listener[kForOnEventAttribute]) {
+          if (!options[kForOnEventAttribute] && listener[kListener] === handler && !listener[kForOnEventAttribute]) {
             return;
           }
         }
@@ -17198,7 +17198,7 @@ var require_event_target = __commonJS({
               data: isBinary ? data : data.toString()
             });
             event[kTarget] = this;
-            callListener(handler2, this, event);
+            callListener(handler, this, event);
           };
         } else if (type === "close") {
           wrapper = function onClose(code, message) {
@@ -17208,7 +17208,7 @@ var require_event_target = __commonJS({
               wasClean: this._closeFrameReceived && this._closeFrameSent
             });
             event[kTarget] = this;
-            callListener(handler2, this, event);
+            callListener(handler, this, event);
           };
         } else if (type === "error") {
           wrapper = function onError(error) {
@@ -17217,19 +17217,19 @@ var require_event_target = __commonJS({
               message: error.message
             });
             event[kTarget] = this;
-            callListener(handler2, this, event);
+            callListener(handler, this, event);
           };
         } else if (type === "open") {
           wrapper = function onOpen() {
             const event = new Event("open");
             event[kTarget] = this;
-            callListener(handler2, this, event);
+            callListener(handler, this, event);
           };
         } else {
           return;
         }
         wrapper[kForOnEventAttribute] = !!options[kForOnEventAttribute];
-        wrapper[kListener] = handler2;
+        wrapper[kListener] = handler;
         if (options.once) {
           this.once(type, wrapper);
         } else {
@@ -17243,9 +17243,9 @@ var require_event_target = __commonJS({
        * @param {(Function|Object)} handler The listener to remove
        * @public
        */
-      removeEventListener(type, handler2) {
+      removeEventListener(type, handler) {
         for (const listener of this.listeners(type)) {
-          if (listener[kListener] === handler2 && !listener[kForOnEventAttribute]) {
+          if (listener[kListener] === handler && !listener[kForOnEventAttribute]) {
             this.removeListener(type, listener);
             break;
           }
@@ -17886,15 +17886,15 @@ var require_websocket = __commonJS({
           }
           return null;
         },
-        set(handler2) {
+        set(handler) {
           for (const listener of this.listeners(method)) {
             if (listener[kForOnEventAttribute]) {
               this.removeListener(method, listener);
               break;
             }
           }
-          if (typeof handler2 !== "function") return;
-          this.addEventListener(method, handler2, {
+          if (typeof handler !== "function") return;
+          this.addEventListener(method, handler, {
             [kForOnEventAttribute]: true
           });
         }
@@ -22175,7 +22175,7 @@ var require_index_cjs = __commonJS({
     var buffer = require("buffer");
     var ed25519 = require_ed25519();
     var BN = require_bn();
-    var bs582 = require_bs58();
+    var bs58 = require_bs58();
     var sha256 = require_sha256();
     var borsh = require_lib();
     var BufferLayout = require_Layout();
@@ -22212,7 +22212,7 @@ var require_index_cjs = __commonJS({
       return Object.freeze(n);
     }
     var BN__default = /* @__PURE__ */ _interopDefaultCompat(BN);
-    var bs58__default = /* @__PURE__ */ _interopDefaultCompat(bs582);
+    var bs58__default = /* @__PURE__ */ _interopDefaultCompat(bs58);
     var BufferLayout__namespace = /* @__PURE__ */ _interopNamespaceCompat(BufferLayout);
     var require$$0__default = /* @__PURE__ */ _interopDefaultCompat(require$$0);
     var require$$0__default$1 = /* @__PURE__ */ _interopDefaultCompat(require$$0$1);
@@ -22285,7 +22285,7 @@ var require_index_cjs = __commonJS({
       return value._bn !== void 0;
     }
     var uniquePublicKeyCounter = 1;
-    var PublicKey2 = class _PublicKey2 extends Struct {
+    var PublicKey = class _PublicKey2 extends Struct {
       /**
        * Create a new PublicKey object
        * @param value ed25519 public key as buffer or base-58 encoded string
@@ -22447,9 +22447,9 @@ var require_index_cjs = __commonJS({
         return isOnCurve(pubkey.toBytes());
       }
     };
-    _PublicKey = PublicKey2;
-    PublicKey2.default = new _PublicKey("11111111111111111111111111111111");
-    SOLANA_SCHEMA.set(PublicKey2, {
+    _PublicKey = PublicKey;
+    PublicKey.default = new _PublicKey("11111111111111111111111111111111");
+    SOLANA_SCHEMA.set(PublicKey, {
       kind: "struct",
       fields: [["_bn", "u256"]]
     });
@@ -22481,7 +22481,7 @@ var require_index_cjs = __commonJS({
        * The public key for this account
        */
       get publicKey() {
-        return new PublicKey2(this._publicKey);
+        return new PublicKey(this._publicKey);
       }
       /**
        * The **unencrypted** secret key for this account. The first 32 bytes
@@ -22492,7 +22492,7 @@ var require_index_cjs = __commonJS({
         return buffer.Buffer.concat([this._secretKey, this._publicKey], 64);
       }
     };
-    var BPF_LOADER_DEPRECATED_PROGRAM_ID = new PublicKey2("BPFLoader1111111111111111111111111111111111");
+    var BPF_LOADER_DEPRECATED_PROGRAM_ID = new PublicKey("BPFLoader1111111111111111111111111111111111");
     var PACKET_DATA_SIZE = 1280 - 40 - 8;
     var VERSION_PREFIX_MASK = 127;
     var SIGNATURE_LENGTH_IN_BYTES = 64;
@@ -22723,7 +22723,7 @@ var require_index_cjs = __commonJS({
           const [payerAddress] = writableSigners[0];
           assert(payerAddress === this.payer.toBase58(), "Expected first writable signer key to be the fee payer");
         }
-        const staticAccountKeys = [...writableSigners.map(([address]) => new PublicKey2(address)), ...readonlySigners.map(([address]) => new PublicKey2(address)), ...writableNonSigners.map(([address]) => new PublicKey2(address)), ...readonlyNonSigners.map(([address]) => new PublicKey2(address))];
+        const staticAccountKeys = [...writableSigners.map(([address]) => new PublicKey(address)), ...readonlySigners.map(([address]) => new PublicKey(address)), ...writableNonSigners.map(([address]) => new PublicKey(address)), ...readonlyNonSigners.map(([address]) => new PublicKey(address))];
         return [header, staticAccountKeys];
       }
       extractTableLookup(lookupTable) {
@@ -22747,7 +22747,7 @@ var require_index_cjs = __commonJS({
         const drainedKeys = new Array();
         for (const [address, keyMeta] of this.keyMetaMap.entries()) {
           if (keyMetaFilter(keyMeta)) {
-            const key = new PublicKey2(address);
+            const key = new PublicKey(address);
             const lookupTableIndex = lookupTableEntries.findIndex((entry) => entry.equals(key));
             if (lookupTableIndex >= 0) {
               assert(lookupTableIndex < 256, "Max lookup table index exceeded");
@@ -22782,7 +22782,7 @@ var require_index_cjs = __commonJS({
         this.instructions = void 0;
         this.indexToProgramIds = /* @__PURE__ */ new Map();
         this.header = args.header;
-        this.accountKeys = args.accountKeys.map((account) => new PublicKey2(account));
+        this.accountKeys = args.accountKeys.map((account) => new PublicKey(account));
         this.recentBlockhash = args.recentBlockhash;
         this.instructions = args.instructions;
         this.instructions.forEach((ix) => this.indexToProgramIds.set(ix.programIdIndex, this.accountKeys[ix.programIdIndex]));
@@ -22908,7 +22908,7 @@ var require_index_cjs = __commonJS({
         let accountKeys = [];
         for (let i = 0; i < accountCount; i++) {
           const account = guardedSplice(byteArray, 0, PUBLIC_KEY_LENGTH);
-          accountKeys.push(new PublicKey2(buffer.Buffer.from(account)));
+          accountKeys.push(new PublicKey(buffer.Buffer.from(account)));
         }
         const recentBlockhash = guardedSplice(byteArray, 0, PUBLIC_KEY_LENGTH);
         const instructionCount = decodeLength(byteArray);
@@ -23132,7 +23132,7 @@ var require_index_cjs = __commonJS({
         const staticAccountKeys = [];
         const staticAccountKeysLength = decodeLength(byteArray);
         for (let i = 0; i < staticAccountKeysLength; i++) {
-          staticAccountKeys.push(new PublicKey2(guardedSplice(byteArray, 0, PUBLIC_KEY_LENGTH)));
+          staticAccountKeys.push(new PublicKey(guardedSplice(byteArray, 0, PUBLIC_KEY_LENGTH)));
         }
         const recentBlockhash = bs58__default.default.encode(guardedSplice(byteArray, 0, PUBLIC_KEY_LENGTH));
         const instructionCount = decodeLength(byteArray);
@@ -23152,7 +23152,7 @@ var require_index_cjs = __commonJS({
         const addressTableLookupsCount = decodeLength(byteArray);
         const addressTableLookups = [];
         for (let i = 0; i < addressTableLookupsCount; i++) {
-          const accountKey = new PublicKey2(guardedSplice(byteArray, 0, PUBLIC_KEY_LENGTH));
+          const accountKey = new PublicKey(guardedSplice(byteArray, 0, PUBLIC_KEY_LENGTH));
           const writableIndexesLength = decodeLength(byteArray);
           const writableIndexes = guardedSplice(byteArray, 0, writableIndexesLength);
           const readonlyIndexesLength = decodeLength(byteArray);
@@ -23392,7 +23392,7 @@ var require_index_cjs = __commonJS({
         });
         programIds.forEach((programId) => {
           accountMetas.push({
-            pubkey: new PublicKey2(programId),
+            pubkey: new PublicKey(programId),
             isSigner: false,
             isWritable: false
           });
@@ -23985,15 +23985,15 @@ Missing signature for public key${sigErrors.missing.length === 1 ? "" : "(s)"} [
     var DEFAULT_TICKS_PER_SLOT = 64;
     var NUM_SLOTS_PER_SECOND = NUM_TICKS_PER_SECOND / DEFAULT_TICKS_PER_SLOT;
     var MS_PER_SLOT = 1e3 / NUM_SLOTS_PER_SECOND;
-    var SYSVAR_CLOCK_PUBKEY = new PublicKey2("SysvarC1ock11111111111111111111111111111111");
-    var SYSVAR_EPOCH_SCHEDULE_PUBKEY = new PublicKey2("SysvarEpochSchedu1e111111111111111111111111");
-    var SYSVAR_INSTRUCTIONS_PUBKEY = new PublicKey2("Sysvar1nstructions1111111111111111111111111");
-    var SYSVAR_RECENT_BLOCKHASHES_PUBKEY = new PublicKey2("SysvarRecentB1ockHashes11111111111111111111");
-    var SYSVAR_RENT_PUBKEY = new PublicKey2("SysvarRent111111111111111111111111111111111");
-    var SYSVAR_REWARDS_PUBKEY = new PublicKey2("SysvarRewards111111111111111111111111111111");
-    var SYSVAR_SLOT_HASHES_PUBKEY = new PublicKey2("SysvarS1otHashes111111111111111111111111111");
-    var SYSVAR_SLOT_HISTORY_PUBKEY = new PublicKey2("SysvarS1otHistory11111111111111111111111111");
-    var SYSVAR_STAKE_HISTORY_PUBKEY = new PublicKey2("SysvarStakeHistory1111111111111111111111111");
+    var SYSVAR_CLOCK_PUBKEY = new PublicKey("SysvarC1ock11111111111111111111111111111111");
+    var SYSVAR_EPOCH_SCHEDULE_PUBKEY = new PublicKey("SysvarEpochSchedu1e111111111111111111111111");
+    var SYSVAR_INSTRUCTIONS_PUBKEY = new PublicKey("Sysvar1nstructions1111111111111111111111111");
+    var SYSVAR_RECENT_BLOCKHASHES_PUBKEY = new PublicKey("SysvarRecentB1ockHashes11111111111111111111");
+    var SYSVAR_RENT_PUBKEY = new PublicKey("SysvarRent111111111111111111111111111111111");
+    var SYSVAR_REWARDS_PUBKEY = new PublicKey("SysvarRewards111111111111111111111111111111");
+    var SYSVAR_SLOT_HASHES_PUBKEY = new PublicKey("SysvarS1otHashes111111111111111111111111111");
+    var SYSVAR_SLOT_HISTORY_PUBKEY = new PublicKey("SysvarS1otHistory11111111111111111111111111");
+    var SYSVAR_STAKE_HISTORY_PUBKEY = new PublicKey("SysvarStakeHistory1111111111111111111111111");
     var SendTransactionError = class extends Error {
       constructor({
         action,
@@ -24184,8 +24184,8 @@ Message: ${transactionMessage}.
       static fromAccountData(buffer2) {
         const nonceAccount = NonceAccountLayout.decode(toBuffer(buffer2), 0);
         return new _NonceAccount({
-          authorizedPubkey: new PublicKey2(nonceAccount.authorizedPubkey),
-          nonce: new PublicKey2(nonceAccount.nonce).toString(),
+          authorizedPubkey: new PublicKey(nonceAccount.authorizedPubkey),
+          nonce: new PublicKey(nonceAccount.nonce).toString(),
           feeCalculator: nonceAccount.feeCalculator
         });
       }
@@ -24247,7 +24247,7 @@ Message: ${transactionMessage}.
           newAccountPubkey: instruction.keys[1].pubkey,
           lamports,
           space,
-          programId: new PublicKey2(programId)
+          programId: new PublicKey(programId)
         };
       }
       /**
@@ -24282,7 +24282,7 @@ Message: ${transactionMessage}.
           toPubkey: instruction.keys[2].pubkey,
           lamports,
           seed,
-          programId: new PublicKey2(programId)
+          programId: new PublicKey(programId)
         };
       }
       /**
@@ -24313,10 +24313,10 @@ Message: ${transactionMessage}.
         } = decodeData$1(SYSTEM_INSTRUCTION_LAYOUTS.AllocateWithSeed, instruction.data);
         return {
           accountPubkey: instruction.keys[0].pubkey,
-          basePubkey: new PublicKey2(base),
+          basePubkey: new PublicKey(base),
           seed,
           space,
-          programId: new PublicKey2(programId)
+          programId: new PublicKey(programId)
         };
       }
       /**
@@ -24330,7 +24330,7 @@ Message: ${transactionMessage}.
         } = decodeData$1(SYSTEM_INSTRUCTION_LAYOUTS.Assign, instruction.data);
         return {
           accountPubkey: instruction.keys[0].pubkey,
-          programId: new PublicKey2(programId)
+          programId: new PublicKey(programId)
         };
       }
       /**
@@ -24346,9 +24346,9 @@ Message: ${transactionMessage}.
         } = decodeData$1(SYSTEM_INSTRUCTION_LAYOUTS.AssignWithSeed, instruction.data);
         return {
           accountPubkey: instruction.keys[0].pubkey,
-          basePubkey: new PublicKey2(base),
+          basePubkey: new PublicKey(base),
           seed,
-          programId: new PublicKey2(programId)
+          programId: new PublicKey(programId)
         };
       }
       /**
@@ -24367,11 +24367,11 @@ Message: ${transactionMessage}.
         return {
           fromPubkey: instruction.keys[0].pubkey,
           newAccountPubkey: instruction.keys[1].pubkey,
-          basePubkey: new PublicKey2(base),
+          basePubkey: new PublicKey(base),
           seed,
           lamports,
           space,
-          programId: new PublicKey2(programId)
+          programId: new PublicKey(programId)
         };
       }
       /**
@@ -24385,7 +24385,7 @@ Message: ${transactionMessage}.
         } = decodeData$1(SYSTEM_INSTRUCTION_LAYOUTS.InitializeNonceAccount, instruction.data);
         return {
           noncePubkey: instruction.keys[0].pubkey,
-          authorizedPubkey: new PublicKey2(authorized2)
+          authorizedPubkey: new PublicKey(authorized2)
         };
       }
       /**
@@ -24428,7 +24428,7 @@ Message: ${transactionMessage}.
         return {
           noncePubkey: instruction.keys[0].pubkey,
           authorizedPubkey: instruction.keys[1].pubkey,
-          newAuthorizedPubkey: new PublicKey2(authorized2)
+          newAuthorizedPubkey: new PublicKey(authorized2)
         };
       }
       /**
@@ -24837,7 +24837,7 @@ Message: ${transactionMessage}.
         });
       }
     };
-    SystemProgram.programId = new PublicKey2("11111111111111111111111111111111");
+    SystemProgram.programId = new PublicKey("11111111111111111111111111111111");
     var CHUNK_SIZE = PACKET_DATA_SIZE - 300;
     var Loader = class _Loader {
       /**
@@ -25004,7 +25004,7 @@ Message: ${transactionMessage}.
       }
     };
     Loader.chunkSize = CHUNK_SIZE;
-    var BPF_LOADER_PROGRAM_ID = new PublicKey2("BPFLoader2111111111111111111111111111111111");
+    var BPF_LOADER_PROGRAM_ID = new PublicKey("BPFLoader2111111111111111111111111111111111");
     var BpfLoader = class {
       /**
        * Minimum number of signatures required to load a program not including
@@ -25800,8 +25800,8 @@ Message: ${transactionMessage}.
           deactivationSlot: meta.deactivationSlot,
           lastExtendedSlot: meta.lastExtendedSlot,
           lastExtendedSlotStartIndex: meta.lastExtendedStartIndex,
-          authority: meta.authority.length !== 0 ? new PublicKey2(meta.authority[0]) : void 0,
-          addresses: addresses.map((address) => new PublicKey2(address))
+          authority: meta.authority.length !== 0 ? new PublicKey(meta.authority[0]) : void 0,
+          addresses: addresses.map((address) => new PublicKey(address))
         };
       }
     };
@@ -25843,7 +25843,7 @@ Message: ${transactionMessage}.
       );
       return `${protocol}//${hostish}${websocketPort}${rest}`;
     }
-    var PublicKeyFromString = superstruct.coerce(superstruct.instance(PublicKey2), superstruct.string(), (value) => new PublicKey2(value));
+    var PublicKeyFromString = superstruct.coerce(superstruct.instance(PublicKey), superstruct.string(), (value) => new PublicKey(value));
     var RawAccountDataResult = superstruct.tuple([superstruct.string(), superstruct.literal("base64")]);
     var BufferFromRawAccountData = superstruct.coerce(superstruct.instance(buffer.Buffer), RawAccountDataResult, (value) => buffer.Buffer.from(value[0], "base64"));
     var BLOCKHASH_CACHE_TIMEOUT_MS = 30 * 1e3;
@@ -25928,7 +25928,7 @@ Message: ${transactionMessage}.
       if (version3 === 0) {
         return new MessageV0({
           header: response.header,
-          staticAccountKeys: response.accountKeys.map((accountKey) => new PublicKey2(accountKey)),
+          staticAccountKeys: response.accountKeys.map((accountKey) => new PublicKey(accountKey)),
           recentBlockhash: response.recentBlockhash,
           compiledInstructions: response.instructions.map((ix) => ({
             programIdIndex: ix.programIdIndex,
@@ -29368,7 +29368,7 @@ Message: ${transactionMessage}.
        * @returns {PublicKey} PublicKey
        */
       get publicKey() {
-        return new PublicKey2(this._keypair.publicKey);
+        return new PublicKey(this._keypair.publicKey);
       }
       /**
        * The raw secret key for this keypair
@@ -29446,7 +29446,7 @@ Message: ${transactionMessage}.
           lookupTable: instruction.keys[0].pubkey,
           authority: instruction.keys[1].pubkey,
           payer: instruction.keys.length > 2 ? instruction.keys[2].pubkey : void 0,
-          addresses: addresses.map((buffer2) => new PublicKey2(buffer2))
+          addresses: addresses.map((buffer2) => new PublicKey(buffer2))
         };
       }
       static decodeCloseLookupTable(instruction) {
@@ -29498,7 +29498,7 @@ Message: ${transactionMessage}.
       constructor() {
       }
       static createLookupTable(params) {
-        const [lookupTableAddress, bumpSeed] = PublicKey2.findProgramAddressSync([params.authority.toBuffer(), codecsNumbers.getU64Encoder().encode(params.recentSlot)], this.programId);
+        const [lookupTableAddress, bumpSeed] = PublicKey.findProgramAddressSync([params.authority.toBuffer(), codecsNumbers.getU64Encoder().encode(params.recentSlot)], this.programId);
         const type = LOOKUP_TABLE_INSTRUCTION_LAYOUTS.CreateLookupTable;
         const data = encodeData(type, {
           recentSlot: BigInt(params.recentSlot),
@@ -29617,7 +29617,7 @@ Message: ${transactionMessage}.
         });
       }
     };
-    AddressLookupTableProgram.programId = new PublicKey2("AddressLookupTab1e1111111111111111111111111");
+    AddressLookupTableProgram.programId = new PublicKey("AddressLookupTab1e1111111111111111111111111");
     var ComputeBudgetInstruction = class {
       /**
        * @internal
@@ -29771,7 +29771,7 @@ Message: ${transactionMessage}.
         });
       }
     };
-    ComputeBudgetProgram.programId = new PublicKey2("ComputeBudget111111111111111111111111111111");
+    ComputeBudgetProgram.programId = new PublicKey("ComputeBudget111111111111111111111111111111");
     var PRIVATE_KEY_BYTES$1 = 64;
     var PUBLIC_KEY_BYTES$1 = 32;
     var SIGNATURE_BYTES = 64;
@@ -29851,7 +29851,7 @@ Message: ${transactionMessage}.
         }
       }
     };
-    Ed25519Program.programId = new PublicKey2("Ed25519SigVerify111111111111111111111111111");
+    Ed25519Program.programId = new PublicKey("Ed25519SigVerify111111111111111111111111111");
     var ecdsaSign = (msgHash, privKey) => {
       const signature2 = secp256k1.secp256k1.sign(msgHash, privKey);
       return [signature2.toCompactRawBytes(), signature2.recovery];
@@ -29985,9 +29985,9 @@ Message: ${transactionMessage}.
         }
       }
     };
-    Secp256k1Program.programId = new PublicKey2("KeccakSecp256k11111111111111111111111111111");
+    Secp256k1Program.programId = new PublicKey("KeccakSecp256k11111111111111111111111111111");
     var _Lockup;
-    var STAKE_CONFIG_ID = new PublicKey2("StakeConfig11111111111111111111111111111111");
+    var STAKE_CONFIG_ID = new PublicKey("StakeConfig11111111111111111111111111111111");
     var Authorized = class {
       /**
        * Create a new Authorized object
@@ -30018,7 +30018,7 @@ Message: ${transactionMessage}.
        */
     };
     _Lockup = Lockup;
-    Lockup.default = new _Lockup(0, 0, PublicKey2.default);
+    Lockup.default = new _Lockup(0, 0, PublicKey.default);
     var StakeInstruction = class {
       /**
        * @internal
@@ -30056,8 +30056,8 @@ Message: ${transactionMessage}.
         } = decodeData$1(STAKE_INSTRUCTION_LAYOUTS.Initialize, instruction.data);
         return {
           stakePubkey: instruction.keys[0].pubkey,
-          authorized: new Authorized(new PublicKey2(authorized2.staker), new PublicKey2(authorized2.withdrawer)),
-          lockup: new Lockup(lockup2.unixTimestamp, lockup2.epoch, new PublicKey2(lockup2.custodian))
+          authorized: new Authorized(new PublicKey(authorized2.staker), new PublicKey(authorized2.withdrawer)),
+          lockup: new Lockup(lockup2.unixTimestamp, lockup2.epoch, new PublicKey(lockup2.custodian))
         };
       }
       /**
@@ -30086,7 +30086,7 @@ Message: ${transactionMessage}.
         const o = {
           stakePubkey: instruction.keys[0].pubkey,
           authorizedPubkey: instruction.keys[2].pubkey,
-          newAuthorizedPubkey: new PublicKey2(newAuthorized),
+          newAuthorizedPubkey: new PublicKey(newAuthorized),
           stakeAuthorizationType: {
             index: stakeAuthorizationType
           }
@@ -30112,8 +30112,8 @@ Message: ${transactionMessage}.
           stakePubkey: instruction.keys[0].pubkey,
           authorityBase: instruction.keys[1].pubkey,
           authoritySeed,
-          authorityOwner: new PublicKey2(authorityOwner),
-          newAuthorizedPubkey: new PublicKey2(newAuthorized),
+          authorityOwner: new PublicKey(authorityOwner),
+          newAuthorizedPubkey: new PublicKey(newAuthorized),
           stakeAuthorizationType: {
             index: stakeAuthorizationType
           }
@@ -30667,7 +30667,7 @@ Message: ${transactionMessage}.
         });
       }
     };
-    StakeProgram.programId = new PublicKey2("Stake11111111111111111111111111111111111111");
+    StakeProgram.programId = new PublicKey("Stake11111111111111111111111111111111111111");
     StakeProgram.space = 200;
     var VoteInit = class {
       /** [0, 100] */
@@ -30719,7 +30719,7 @@ Message: ${transactionMessage}.
         return {
           votePubkey: instruction.keys[0].pubkey,
           nodePubkey: instruction.keys[3].pubkey,
-          voteInit: new VoteInit(new PublicKey2(voteInit2.nodePubkey), new PublicKey2(voteInit2.authorizedVoter), new PublicKey2(voteInit2.authorizedWithdrawer), voteInit2.commission)
+          voteInit: new VoteInit(new PublicKey(voteInit2.nodePubkey), new PublicKey(voteInit2.authorizedVoter), new PublicKey(voteInit2.authorizedWithdrawer), voteInit2.commission)
         };
       }
       /**
@@ -30735,7 +30735,7 @@ Message: ${transactionMessage}.
         return {
           votePubkey: instruction.keys[0].pubkey,
           authorizedPubkey: instruction.keys[2].pubkey,
-          newAuthorizedPubkey: new PublicKey2(newAuthorized),
+          newAuthorizedPubkey: new PublicKey(newAuthorized),
           voteAuthorizationType: {
             index: voteAuthorizationType
           }
@@ -30757,9 +30757,9 @@ Message: ${transactionMessage}.
         } = decodeData$1(VOTE_INSTRUCTION_LAYOUTS.AuthorizeWithSeed, instruction.data);
         return {
           currentAuthorityDerivedKeyBasePubkey: instruction.keys[2].pubkey,
-          currentAuthorityDerivedKeyOwnerPubkey: new PublicKey2(currentAuthorityDerivedKeyOwnerPubkey),
+          currentAuthorityDerivedKeyOwnerPubkey: new PublicKey(currentAuthorityDerivedKeyOwnerPubkey),
           currentAuthorityDerivedKeySeed,
-          newAuthorizedPubkey: new PublicKey2(newAuthorized),
+          newAuthorizedPubkey: new PublicKey(newAuthorized),
           voteAuthorizationType: {
             index: voteAuthorizationType
           },
@@ -31050,9 +31050,9 @@ Message: ${transactionMessage}.
         });
       }
     };
-    VoteProgram.programId = new PublicKey2("Vote111111111111111111111111111111111111111");
+    VoteProgram.programId = new PublicKey("Vote111111111111111111111111111111111111111");
     VoteProgram.space = 3762;
-    var VALIDATOR_INFO_KEY = new PublicKey2("Va1idator1nfo111111111111111111111111111111");
+    var VALIDATOR_INFO_KEY = new PublicKey("Va1idator1nfo111111111111111111111111111111");
     var InfoString = superstruct.type({
       name: superstruct.string(),
       website: superstruct.optional(superstruct.string()),
@@ -31086,7 +31086,7 @@ Message: ${transactionMessage}.
         if (configKeyCount !== 2) return null;
         const configKeys = [];
         for (let i = 0; i < 2; i++) {
-          const publicKey2 = new PublicKey2(guardedSplice(byteArray, 0, PUBLIC_KEY_LENGTH));
+          const publicKey2 = new PublicKey(guardedSplice(byteArray, 0, PUBLIC_KEY_LENGTH));
           const isSigner = guardedShift(byteArray) === 1;
           configKeys.push({
             publicKey: publicKey2,
@@ -31104,7 +31104,7 @@ Message: ${transactionMessage}.
         return null;
       }
     };
-    var VOTE_PROGRAM_ID = new PublicKey2("Vote111111111111111111111111111111111111111");
+    var VOTE_PROGRAM_ID = new PublicKey("Vote111111111111111111111111111111111111111");
     var VoteAccountLayout = BufferLayout__namespace.struct([
       publicKey("nodePubkey"),
       publicKey("authorizedWithdrawer"),
@@ -31161,8 +31161,8 @@ Message: ${transactionMessage}.
           rootSlot = null;
         }
         return new _VoteAccount({
-          nodePubkey: new PublicKey2(va.nodePubkey),
-          authorizedWithdrawer: new PublicKey2(va.authorizedWithdrawer),
+          nodePubkey: new PublicKey(va.nodePubkey),
+          authorizedWithdrawer: new PublicKey(va.authorizedWithdrawer),
           commission: va.commission,
           votes: va.votes,
           rootSlot,
@@ -31179,7 +31179,7 @@ Message: ${transactionMessage}.
     }) {
       return {
         epoch,
-        authorizedVoter: new PublicKey2(authorizedVoter)
+        authorizedVoter: new PublicKey(authorizedVoter)
       };
     }
     function parsePriorVoters({
@@ -31188,7 +31188,7 @@ Message: ${transactionMessage}.
       targetEpoch
     }) {
       return {
-        authorizedPubkey: new PublicKey2(authorizedPubkey),
+        authorizedPubkey: new PublicKey(authorizedPubkey),
         epochOfLastAuthorizedSwitch,
         targetEpoch
       };
@@ -31290,7 +31290,7 @@ Message: ${transactionMessage}.
     exports2.NonceAccount = NonceAccount;
     exports2.PACKET_DATA_SIZE = PACKET_DATA_SIZE;
     exports2.PUBLIC_KEY_LENGTH = PUBLIC_KEY_LENGTH;
-    exports2.PublicKey = PublicKey2;
+    exports2.PublicKey = PublicKey;
     exports2.SIGNATURE_LENGTH_IN_BYTES = SIGNATURE_LENGTH_IN_BYTES;
     exports2.SOLANA_SCHEMA = SOLANA_SCHEMA;
     exports2.STAKE_CONFIG_ID = STAKE_CONFIG_ID;
@@ -39813,7 +39813,7 @@ var require_mint = __commonJS({
     exports2.getMinimumBalanceForRentExemptMint = getMinimumBalanceForRentExemptMint;
     exports2.getMinimumBalanceForRentExemptMintWithExtensions = getMinimumBalanceForRentExemptMintWithExtensions;
     exports2.getAssociatedTokenAddress = getAssociatedTokenAddress;
-    exports2.getAssociatedTokenAddressSync = getAssociatedTokenAddressSync2;
+    exports2.getAssociatedTokenAddressSync = getAssociatedTokenAddressSync;
     var buffer_layout_1 = require_Layout();
     var buffer_layout_utils_1 = require_cjs();
     var web3_js_1 = require_index_cjs();
@@ -39886,7 +39886,7 @@ var require_mint = __commonJS({
         return address;
       });
     }
-    function getAssociatedTokenAddressSync2(mint, owner, allowOwnerOffCurve = false, programId = constants_js_1.TOKEN_PROGRAM_ID, associatedTokenProgramId = constants_js_1.ASSOCIATED_TOKEN_PROGRAM_ID) {
+    function getAssociatedTokenAddressSync(mint, owner, allowOwnerOffCurve = false, programId = constants_js_1.TOKEN_PROGRAM_ID, associatedTokenProgramId = constants_js_1.ASSOCIATED_TOKEN_PROGRAM_ID) {
       if (!allowOwnerOffCurve && !web3_js_1.PublicKey.isOnCurve(owner.toBuffer()))
         throw new errors_js_1.TokenOwnerOffCurveError();
       const [address] = web3_js_1.PublicKey.findProgramAddressSync([owner.toBuffer(), programId.toBuffer(), mint.toBuffer()], associatedTokenProgramId);
@@ -44377,6 +44377,29 @@ var require_cjs4 = __commonJS({
   }
 });
 
+// node_modules/@solana/spl-memo/lib/cjs/index.js
+var require_cjs5 = __commonJS({
+  "node_modules/@solana/spl-memo/lib/cjs/index.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.createMemoInstruction = exports2.MEMO_PROGRAM_ID = void 0;
+    var buffer_1 = require("buffer");
+    var web3_js_1 = require_index_cjs();
+    exports2.MEMO_PROGRAM_ID = new web3_js_1.PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
+    function createMemoInstruction(memo, signerPubkeys) {
+      const keys = signerPubkeys == null ? [] : signerPubkeys.map(function(key) {
+        return { pubkey: key, isSigner: true, isWritable: false };
+      });
+      return new web3_js_1.TransactionInstruction({
+        keys,
+        programId: exports2.MEMO_PROGRAM_ID,
+        data: buffer_1.Buffer.from(memo, "utf8")
+      });
+    }
+    exports2.createMemoInstruction = createMemoInstruction;
+  }
+});
+
 // node_modules/base-x/src/index.js
 var require_src3 = __commonJS({
   "node_modules/base-x/src/index.js"(exports2, module2) {
@@ -44525,72 +44548,49 @@ var require_bs583 = __commonJS({
 // src/api/_utils.js
 var require_utils4 = __commonJS({
   "src/api/_utils.js"(exports2, module2) {
-    var { Connection, Keypair, PublicKey: PublicKey2 } = require_index_cjs();
-    var bs582 = require_bs583();
-    function getConnection2() {
+    var { Connection, Keypair, PublicKey } = require_index_cjs();
+    var bs58 = require_bs583();
+    function getConnection() {
       const rpc = process.env.HELIUS_RPC || "https://api.devnet.solana.com";
       return new Connection(rpc, "confirmed");
     }
     function getOrganiser() {
       const key = process.env.ORGANISER_PRIVATE_KEY;
       if (!key) throw new Error("ORGANISER_PRIVATE_KEY not set");
-      return Keypair.fromSecretKey(bs582.decode(key));
+      return Keypair.fromSecretKey(bs58.decode(key));
     }
-    function getMintPublicKey2() {
+    function getMintPublicKey() {
       const mint = process.env.TOKEN_MINT;
       if (!mint) throw new Error("TOKEN_MINT not set");
-      return new PublicKey2(mint);
+      return new PublicKey(mint);
     }
-    function jsonOk2(res, data) {
+    function jsonOk(res, data) {
       res.setHeader("Content-Type", "application/json");
       res.status(200).json(data);
     }
-    function jsonErr2(res, code, message) {
+    function jsonErr(res, code, message) {
       res.setHeader("Content-Type", "application/json");
       res.status(code).json({ error: message });
     }
-    module2.exports = { getConnection: getConnection2, getOrganiser, getMintPublicKey: getMintPublicKey2, jsonOk: jsonOk2, jsonErr: jsonErr2 };
-  }
-});
-
-// node_modules/@solana/spl-memo/lib/cjs/index.js
-var require_cjs5 = __commonJS({
-  "node_modules/@solana/spl-memo/lib/cjs/index.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.createMemoInstruction = exports2.MEMO_PROGRAM_ID = void 0;
-    var buffer_1 = require("buffer");
-    var web3_js_1 = require_index_cjs();
-    exports2.MEMO_PROGRAM_ID = new web3_js_1.PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
-    function createMemoInstruction(memo, signerPubkeys) {
-      const keys = signerPubkeys == null ? [] : signerPubkeys.map(function(key) {
-        return { pubkey: key, isSigner: true, isWritable: false };
-      });
-      return new web3_js_1.TransactionInstruction({
-        keys,
-        programId: exports2.MEMO_PROGRAM_ID,
-        data: buffer_1.Buffer.from(memo, "utf8")
-      });
-    }
-    exports2.createMemoInstruction = createMemoInstruction;
+    module2.exports = { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr };
   }
 });
 
 // src/api/_vendor.js
 var require_vendor = __commonJS({
   "src/api/_vendor.js"(exports2, module2) {
-    var { PublicKey: PublicKey2, Transaction } = require_index_cjs();
+    var { PublicKey, Transaction } = require_index_cjs();
     var {
-      TOKEN_2022_PROGRAM_ID: TOKEN_2022_PROGRAM_ID2,
+      TOKEN_2022_PROGRAM_ID,
       createTransferCheckedInstruction,
-      getAssociatedTokenAddressSync: getAssociatedTokenAddressSync2,
+      getAssociatedTokenAddressSync,
       createAssociatedTokenAccountInstruction,
       getAccount
     } = require_cjs4();
     var { createMemoInstruction } = require_cjs5();
-    var { getConnection: getConnection2, getOrganiser, getMintPublicKey: getMintPublicKey2, jsonOk: jsonOk2, jsonErr: jsonErr2 } = require_utils4();
+    var { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require_utils4();
     var TOKEN_DECIMALS = 0;
-    var VENDORS2 = {
+    var VENDORS = {
       "drinks": { label: "Drinks", memo: "DRINKS", envKey: "VENDOR_DRINKS", defaultCost: 5 },
       "food-booth": { label: "Food Booth", memo: "FOOD_BOOTH", envKey: "VENDOR_FOOD_BOOTH", defaultCost: 8 },
       "merch": { label: "Merch", memo: "MERCH", envKey: "VENDOR_MERCH", defaultCost: 15 },
@@ -44598,52 +44598,52 @@ var require_vendor = __commonJS({
       "game-zone": { label: "Game Zone", memo: "GAME_ZONE", envKey: "VENDOR_GAME_ZONE", defaultCost: 3 },
       "spice-market": { label: "Spice Market", memo: "SPICE_MARKET", envKey: "VENDOR_SPICE_MARKET", defaultCost: 10 }
     };
-    function createVendorHandler(vendorId) {
-      const vendor = VENDORS2[vendorId];
+    function createVendorHandler2(vendorId) {
+      const vendor = VENDORS[vendorId];
       if (!vendor) throw new Error(`Unknown vendor: ${vendorId}`);
-      return async function handler2(req, res) {
+      return async function handler(req, res) {
         if (req.method === "GET") {
-          return jsonOk2(res, {
+          return jsonOk(res, {
             label: `Upcycle Collective \u2014 ${vendor.label}`,
             icon: "https://upcycle-collective.vercel.app/tuc-logo.png"
           });
         }
-        if (req.method !== "POST") return jsonErr2(res, 405, "GET or POST only");
+        if (req.method !== "POST") return jsonErr(res, 405, "GET or POST only");
         const { account } = req.body ?? {};
-        if (!account) return jsonErr2(res, 400, "account (attendee wallet) required");
+        if (!account) return jsonErr(res, 400, "account (attendee wallet) required");
         const VENDOR_WALLET = process.env[vendor.envKey];
-        if (!VENDOR_WALLET) return jsonErr2(res, 500, `${vendor.envKey} env var not set`);
+        if (!VENDOR_WALLET) return jsonErr(res, 500, `${vendor.envKey} env var not set`);
         const rawAmount = req.query?.amount;
         const cost = rawAmount ? parseInt(rawAmount, 10) : vendor.defaultCost;
-        if (!cost || cost < 1) return jsonErr2(res, 400, "invalid amount");
+        if (!cost || cost < 1) return jsonErr(res, 400, "invalid amount");
         let attendeePubkey, vendorPubkey;
         try {
-          attendeePubkey = new PublicKey2(account);
+          attendeePubkey = new PublicKey(account);
         } catch {
-          return jsonErr2(res, 400, "invalid account address");
+          return jsonErr(res, 400, "invalid account address");
         }
         try {
-          vendorPubkey = new PublicKey2(VENDOR_WALLET);
+          vendorPubkey = new PublicKey(VENDOR_WALLET);
         } catch {
-          return jsonErr2(res, 500, `invalid ${vendor.envKey} address`);
+          return jsonErr(res, 500, `invalid ${vendor.envKey} address`);
         }
         try {
-          const connection = getConnection2();
+          const connection = getConnection();
           const organiser = getOrganiser();
-          const mint = getMintPublicKey2();
-          const attendeeATA = getAssociatedTokenAddressSync2(mint, attendeePubkey, false, TOKEN_2022_PROGRAM_ID2);
-          const vendorATA = getAssociatedTokenAddressSync2(mint, vendorPubkey, false, TOKEN_2022_PROGRAM_ID2);
+          const mint = getMintPublicKey();
+          const attendeeATA = getAssociatedTokenAddressSync(mint, attendeePubkey, false, TOKEN_2022_PROGRAM_ID);
+          const vendorATA = getAssociatedTokenAddressSync(mint, vendorPubkey, false, TOKEN_2022_PROGRAM_ID);
           const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
           const tx = new Transaction({ feePayer: organiser.publicKey, blockhash, lastValidBlockHeight });
           try {
-            await getAccount(connection, vendorATA, "confirmed", TOKEN_2022_PROGRAM_ID2);
+            await getAccount(connection, vendorATA, "confirmed", TOKEN_2022_PROGRAM_ID);
           } catch {
             tx.add(createAssociatedTokenAccountInstruction(
               organiser.publicKey,
               vendorATA,
               vendorPubkey,
               mint,
-              TOKEN_2022_PROGRAM_ID2
+              TOKEN_2022_PROGRAM_ID
             ));
           }
           tx.add(createTransferCheckedInstruction(
@@ -44654,106 +44654,28 @@ var require_vendor = __commonJS({
             cost,
             TOKEN_DECIMALS,
             [],
-            TOKEN_2022_PROGRAM_ID2
+            TOKEN_2022_PROGRAM_ID
           ));
           tx.add(createMemoInstruction(`TUC:${vendor.memo}:${cost}`, [organiser.publicKey]));
           tx.partialSign(organiser);
           const serialised = tx.serialize({ requireAllSignatures: false });
-          return jsonOk2(res, {
+          return jsonOk(res, {
             transaction: Buffer.from(serialised).toString("base64"),
             message: `Pay ${cost} TUC \u2014 ${vendor.label}`
           });
         } catch (err) {
           console.error(`[pay/${vendorId}]`, err);
-          return jsonErr2(res, 500, err.message);
+          return jsonErr(res, 500, err.message);
         }
       };
     }
-    module2.exports = { createVendorHandler, VENDORS: VENDORS2 };
+    module2.exports = { createVendorHandler: createVendorHandler2, VENDORS };
   }
 });
 
-// src/api/vendor-history.js
-var { PublicKey } = require_index_cjs();
-var { TOKEN_2022_PROGRAM_ID, getAssociatedTokenAddressSync } = require_cjs4();
-var { getConnection, getMintPublicKey, jsonOk, jsonErr } = require_utils4();
-var { VENDORS } = require_vendor();
-var bs58 = require_bs583();
-var MEMO_PROGRAM = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr";
-module.exports = async function handler(req, res) {
-  if (req.method !== "GET") return jsonErr(res, 405, "GET only");
-  const id = req.query?.id;
-  const vendor = VENDORS[id];
-  if (!vendor) return jsonErr(res, 400, `unknown vendor. valid: ${Object.keys(VENDORS).join(", ")}`);
-  const VENDOR_WALLET = process.env[vendor.envKey];
-  if (!VENDOR_WALLET) return jsonErr(res, 500, `${vendor.envKey} env var not set`);
-  let vendorPubkey;
-  try {
-    vendorPubkey = new PublicKey(VENDOR_WALLET);
-  } catch {
-    return jsonErr(res, 500, "invalid vendor wallet");
-  }
-  try {
-    const connection = getConnection();
-    const mint = getMintPublicKey();
-    const vendorATA = getAssociatedTokenAddressSync(mint, vendorPubkey, false, TOKEN_2022_PROGRAM_ID);
-    const vendorATAStr = vendorATA.toBase58();
-    const sigs = await connection.getSignaturesForAddress(vendorATA, { limit: 20 }, "confirmed");
-    if (!sigs.length) {
-      return jsonOk(res, { walletAddress: VENDOR_WALLET, transactions: [] });
-    }
-    const txs = await connection.getParsedTransactions(
-      sigs.map((s) => s.signature),
-      { maxSupportedTransactionVersion: 0, commitment: "confirmed" }
-    );
-    const results = [];
-    for (let i = 0; i < txs.length; i++) {
-      const tx = txs[i];
-      if (!tx || tx.meta?.err) continue;
-      const accountKeys = tx.transaction.message.accountKeys.map(
-        (k) => typeof k === "string" ? k : k.pubkey.toBase58()
-      );
-      const ataIndex = accountKeys.indexOf(vendorATAStr);
-      if (ataIndex === -1) continue;
-      const pre = tx.meta.preTokenBalances?.find((b) => b.accountIndex === ataIndex);
-      const post = tx.meta.postTokenBalances?.find((b) => b.accountIndex === ataIndex);
-      const preAmt = pre?.uiTokenAmount?.uiAmount ?? 0;
-      const postAmt = post?.uiTokenAmount?.uiAmount ?? 0;
-      const amount = postAmt - preAmt;
-      if (amount <= 0) continue;
-      const allIx = [
-        ...tx.transaction.message.instructions ?? [],
-        ...(tx.meta.innerInstructions ?? []).flatMap((ii) => ii.instructions ?? [])
-      ];
-      let memo = "";
-      for (const ix of allIx) {
-        const pid = typeof ix.programId === "string" ? ix.programId : ix.programId?.toBase58?.();
-        if (pid !== MEMO_PROGRAM) continue;
-        if (ix.parsed) {
-          memo = ix.parsed;
-          break;
-        }
-        if (ix.data) {
-          try {
-            memo = Buffer.from(bs58.decode(ix.data)).toString("utf8");
-          } catch {
-          }
-          break;
-        }
-      }
-      results.push({
-        signature: sigs[i].signature,
-        amount,
-        memo,
-        blockTime: tx.blockTime
-      });
-    }
-    return jsonOk(res, { walletAddress: VENDOR_WALLET, transactions: results });
-  } catch (err) {
-    console.error("[vendor-history]", err);
-    return jsonErr(res, 500, err.message);
-  }
-};
+// src/api/pay/drinks.js
+var { createVendorHandler } = require_vendor();
+module.exports = createVendorHandler("beer-stall");
 /*! Bundled license information:
 
 @noble/hashes/utils.js:

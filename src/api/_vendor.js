@@ -12,7 +12,7 @@ const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = requi
 const TOKEN_DECIMALS = 0;
 
 const VENDORS = {
-  'beer-stall':    { label: 'Beer Stall',    memo: 'BEER_STALL',    envKey: 'VENDOR_BEER_STALL',    defaultCost: 5  },
+  'drinks':        { label: 'Drinks',        memo: 'DRINKS',        envKey: 'VENDOR_DRINKS',        defaultCost: 5  },
   'food-booth':    { label: 'Food Booth',    memo: 'FOOD_BOOTH',    envKey: 'VENDOR_FOOD_BOOTH',    defaultCost: 8  },
   'merch':         { label: 'Merch',         memo: 'MERCH',         envKey: 'VENDOR_MERCH',         defaultCost: 15 },
   'vip':           { label: 'VIP Upgrade',   memo: 'VIP_UPGRADE',   envKey: 'VENDOR_VIP',           defaultCost: 30 },

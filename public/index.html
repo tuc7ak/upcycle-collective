@@ -13,9 +13,10 @@
       --green-light: #22c55e;
       --green-pale:  #f0fdf4;
       --green-mid:   #dcfce7;
+      --green-bright:#4ade80;
       --black:       #0a0a0a;
       --grey:        #6b7280;
-      --border:      #e5e7eb;
+      --border:      #d1fae5;
       --white:       #ffffff;
     }
 
@@ -29,98 +30,179 @@
       overflow-x: hidden;
     }
 
+    /* ── SCROLL REVEAL ── */
+    [data-reveal] {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s cubic-bezier(.16,1,.3,1), transform 0.7s cubic-bezier(.16,1,.3,1);
+    }
+    [data-reveal].visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    [data-reveal-delay="1"] { transition-delay: 0.08s; }
+    [data-reveal-delay="2"] { transition-delay: 0.16s; }
+    [data-reveal-delay="3"] { transition-delay: 0.24s; }
+    [data-reveal-delay="4"] { transition-delay: 0.32s; }
+
     /* ── NAV ── */
     nav {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      padding: 12px 48px;
+      padding: 14px 48px;
       display: flex; align-items: center; justify-content: space-between;
-      background: rgba(237,250,242,0.92);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid #c6f0d8;
+      transition: background .3s, border-color .3s, box-shadow .3s;
+      background: rgba(237,250,242,0.7);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid transparent;
+    }
+    nav.scrolled {
+      background: rgba(237,250,242,0.95);
+      border-bottom-color: #c6f0d8;
+      box-shadow: 0 1px 24px rgba(22,163,74,0.07);
     }
     .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-    .nav-logo img { height: 36px; width: 36px; border-radius: 8px; object-fit: cover; }
+    .nav-logo img { height: 34px; width: 34px; border-radius: 8px; object-fit: cover; }
     .nav-logo span { font-size: 14px; font-weight: 800; color: var(--black); letter-spacing: -0.3px; }
     .nav-links { display: flex; gap: 32px; }
-    .nav-links a { font-size: 13px; font-weight: 500; color: var(--grey); text-decoration: none; transition: color .2s; }
+    .nav-links a {
+      font-size: 13px; font-weight: 500; color: var(--grey);
+      text-decoration: none; transition: color .2s; position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
+      height: 1.5px; background: var(--green); border-radius: 2px;
+      transform: scaleX(0); transition: transform .25s cubic-bezier(.16,1,.3,1);
+    }
     .nav-links a:hover { color: var(--black); }
+    .nav-links a:hover::after { transform: scaleX(1); }
     .nav-cta {
       font-size: 13px; font-weight: 700; padding: 9px 22px;
       background: var(--black); color: #fff; border-radius: 999px;
-      text-decoration: none; transition: background .2s;
+      text-decoration: none;
+      transition: background .2s, transform .15s, box-shadow .2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
     }
-    .nav-cta:hover { background: #222; }
+    .nav-cta:hover { background: #222; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.18); }
+    .nav-cta:active { transform: translateY(0); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh; display: flex; flex-direction: column;
+      justify-content: center; padding: 160px 48px 100px;
+      max-width: 1080px; margin: 0 auto; position: relative;
+    }
+    .hero-mesh {
+      position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
+    }
+    .hero-mesh::before {
+      content: '';
+      position: absolute; top: -30%; right: -10%; width: 70vw; height: 70vw;
+      background: radial-gradient(ellipse at center, rgba(34,197,94,0.13) 0%, transparent 65%);
+      animation: drift1 18s ease-in-out infinite alternate;
+    }
+    .hero-mesh::after {
+      content: '';
+      position: absolute; bottom: -20%; left: -10%; width: 50vw; height: 50vw;
+      background: radial-gradient(ellipse at center, rgba(74,222,128,0.09) 0%, transparent 65%);
+      animation: drift2 22s ease-in-out infinite alternate;
+    }
+    @keyframes drift1 { 0%{transform:translate(0,0) scale(1)} 100%{transform:translate(-4%,6%) scale(1.08)} }
+    @keyframes drift2 { 0%{transform:translate(0,0) scale(1)} 100%{transform:translate(5%,-5%) scale(1.1)} }
+
+    .hero-pill {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(255,255,255,0.7); border: 1px solid #b6eacb;
+      border-radius: 999px; padding: 5px 14px;
+      font-size: 12px; font-weight: 600; color: var(--green);
+      margin-bottom: 28px; width: fit-content;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 1px 8px rgba(22,163,74,0.1);
+    }
+    .hero-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-light); animation: blink 2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(34,197,94,0.5)} 50%{opacity:.5;box-shadow:0 0 0 4px rgba(34,197,94,0)} }
+
+    h1 {
+      font-size: clamp(44px, 5.5vw, 76px); font-weight: 900;
+      line-height: 1.04; letter-spacing: -2.5px; color: var(--black);
+    }
+    h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--green) 0%, var(--green-bright) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    h2 { font-size: clamp(30px, 4vw, 50px); font-weight: 800; line-height: 1.1; letter-spacing: -1.5px; color: var(--black); }
+    .sub { font-size: clamp(15px, 1.5vw, 17px); color: var(--grey); max-width: 500px; margin-top: 20px; line-height: 1.8; }
+
+    .hero-btns { display: flex; gap: 12px; margin-top: 40px; flex-wrap: wrap; }
+    .btn-dark {
+      padding: 15px 30px; background: var(--black); color: #fff;
+      font-size: 14px; font-weight: 700; border-radius: 14px;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+      transition: background .2s, transform .15s, box-shadow .2s;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.14);
+    }
+    .btn-dark .arr { transition: transform .2s cubic-bezier(.16,1,.3,1); display: inline-block; }
+    .btn-dark:hover { background: #1a1a1a; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.18); }
+    .btn-dark:hover .arr { transform: translateX(4px); }
+    .btn-dark:active { transform: translateY(0); }
+    .btn-outline {
+      padding: 15px 30px; background: rgba(255,255,255,0.6); color: var(--black);
+      font-size: 14px; font-weight: 700; border-radius: 14px;
+      text-decoration: none; border: 1.5px solid #c6f0d8;
+      transition: background .2s, border-color .2s, transform .15s;
+      backdrop-filter: blur(8px);
+    }
+    .btn-outline:hover { background: rgba(255,255,255,0.9); border-color: var(--green); transform: translateY(-1px); }
+    .btn-outline:active { transform: translateY(0); }
+
+    .hero-stats {
+      display: flex; gap: 48px; margin-top: 64px;
+      padding-top: 48px; border-top: 1px solid #c6f0d8;
+      flex-wrap: wrap;
+    }
+    .stat-num {
+      font-size: 28px; font-weight: 900; color: var(--black); line-height: 1;
+      transition: color .3s;
+    }
+    .stat-label { font-size: 12px; color: var(--grey); margin-top: 4px; }
 
     /* ── LAYOUT ── */
     .section { padding: 100px 48px; max-width: 1080px; margin: 0 auto; }
     .label {
       font-size: 11px; font-weight: 700; letter-spacing: 3px;
-      text-transform: uppercase; color: var(--green); margin-bottom: 14px; display: block;
+      text-transform: uppercase; color: var(--green); margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
     }
-    h1 { font-size: clamp(42px, 6vw, 76px); font-weight: 900; line-height: 1.04; letter-spacing: -2.5px; color: var(--black); }
-    h2 { font-size: clamp(30px, 4vw, 50px); font-weight: 800; line-height: 1.1; letter-spacing: -1.5px; color: var(--black); }
-    .sub { font-size: clamp(15px, 1.6vw, 18px); color: var(--grey); max-width: 520px; margin-top: 18px; line-height: 1.75; }
-    hr { border: none; border-top: 1px solid var(--border); max-width: 1080px; margin: 0 auto; }
+    .label::before { content: ''; width: 20px; height: 2px; background: var(--green); border-radius: 2px; display: inline-block; }
+    hr { border: none; border-top: 1px solid #c6f0d8; max-width: 1080px; margin: 0 auto; }
 
-    /* ── HERO ── */
-    .hero {
-      min-height: 100vh; display: flex; flex-direction: column;
-      justify-content: center; padding-top: 140px; padding-bottom: 80px;
-    }
-    .hero-pill {
-      display: inline-flex; align-items: center; gap: 7px;
-      background: var(--green-pale); border: 1px solid var(--green-mid);
-      border-radius: 999px; padding: 5px 14px;
-      font-size: 12px; font-weight: 600; color: var(--green);
-      margin-bottom: 28px; width: fit-content;
-    }
-    .hero-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-light); animation: blink 2s infinite; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
-    .hero h1 em { font-style: normal; color: var(--green); }
-    .hero-btns { display: flex; gap: 12px; margin-top: 36px; flex-wrap: wrap; }
-    .btn-dark {
-      padding: 15px 30px; background: var(--black); color: #fff;
-      font-size: 14px; font-weight: 700; border-radius: 12px;
-      text-decoration: none; transition: background .15s, transform .1s;
-    }
-    .btn-dark:hover { background: #222; transform: translateY(-1px); }
-    .btn-outline {
-      padding: 15px 30px; background: transparent; color: var(--black);
-      font-size: 14px; font-weight: 700; border-radius: 12px;
-      text-decoration: none; border: 1.5px solid var(--border);
-      transition: border-color .15s, transform .1s;
-    }
-    .btn-outline:hover { border-color: #aaa; transform: translateY(-1px); }
-
-    .hero-stats {
-      display: flex; gap: 48px; margin-top: 64px;
-      padding-top: 48px; border-top: 1px solid var(--border);
-      flex-wrap: wrap;
-    }
-    .stat-num { font-size: 28px; font-weight: 900; color: var(--black); line-height: 1; }
-    .stat-label { font-size: 12px; color: var(--grey); margin-top: 3px; }
-
-    /* ── WHAT IS TUC ── */
+    /* ── CARDS ── */
     .cards {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 14px; margin-top: 44px;
     }
     .card {
-      background: #fff; border: 1px solid #c6f0d8;
-      border-radius: 18px; padding: 26px 22px;
-      transition: transform .15s;
+      background: #fff; border: 1px solid #d1fae5;
+      border-radius: 20px; padding: 28px 22px;
+      transition: transform .25s cubic-bezier(.16,1,.3,1), box-shadow .25s, border-color .2s;
+      box-shadow: 0 1px 4px rgba(22,163,74,0.04);
     }
-    .card:hover { transform: translateY(-2px); }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(22,163,74,0.1);
+      border-color: #86efac;
+    }
     .card .icon { font-size: 28px; margin-bottom: 14px; display: block; }
     .card h3 { font-size: 15px; font-weight: 700; color: var(--black); margin-bottom: 7px; }
     .card p  { font-size: 13px; color: var(--grey); line-height: 1.65; }
 
-    /* ── HOW IT WORKS ── */
+    /* ── STEPS ── */
     .steps { margin-top: 50px; }
     .step {
       display: grid; grid-template-columns: 48px 1fr;
       gap: 20px; padding: 28px 0;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid #d1fae5;
+      transition: background .2s;
     }
     .step:last-child { border-bottom: none; }
     .step-num {
@@ -128,7 +210,9 @@
       background: var(--black); color: #fff;
       font-weight: 800; font-size: 14px;
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      transition: transform .25s cubic-bezier(.16,1,.3,1), background .2s;
     }
+    .step:hover .step-num { transform: scale(1.12); background: var(--green); }
     .step h3 { font-size: 17px; font-weight: 700; color: var(--black); margin-bottom: 5px; }
     .step p  { font-size: 13px; color: var(--grey); line-height: 1.7; max-width: 560px; }
     .step-tag {
@@ -137,33 +221,60 @@
       border-radius: 999px; background: var(--green-mid); color: var(--green);
     }
 
-    /* ── WALLET ── */
+    /* ── WALLET SECTION ── */
     .wallet-split {
       display: grid; grid-template-columns: 1fr 1fr;
       gap: 72px; align-items: center; margin-top: 52px;
     }
+    .wallet-points { display: flex; flex-direction: column; gap: 22px; }
+    .wp { display: flex; gap: 14px; align-items: flex-start; }
+    .wp-icon {
+      width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
+      background: #fff; border: 1px solid #c6f0d8;
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+      box-shadow: 0 2px 8px rgba(22,163,74,0.08);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .wp:hover .wp-icon { transform: scale(1.08); box-shadow: 0 4px 16px rgba(22,163,74,0.14); }
+    .wp h4 { font-size: 14px; font-weight: 700; color: var(--black); margin-bottom: 3px; }
+    .wp p  { font-size: 13px; color: var(--grey); line-height: 1.6; }
+
     /* ── PHONE MOCKUP ── */
     @keyframes float {
       0%,100% { transform: translateY(0px); }
       50%      { transform: translateY(-16px); }
     }
+    @keyframes glow-pulse {
+      0%,100% { opacity: 0.5; transform: translateX(-50%) scaleX(1); }
+      50%      { opacity: 0.9; transform: translateX(-50%) scaleX(1.1); }
+    }
 
     .phone-outer {
       display: flex; justify-content: center; align-items: center;
-      padding: 20px 0 40px;
+      padding: 32px 0 48px; position: relative;
+    }
+    .phone-outer::after {
+      content: '';
+      position: absolute; bottom: 16px; left: 50%;
+      transform: translateX(-50%);
+      width: 160px; height: 24px;
+      background: rgba(22,163,74,0.25);
+      filter: blur(18px); border-radius: 50%;
+      animation: glow-pulse 5s ease-in-out infinite;
     }
 
     .phone-frame {
       width: 272px; flex-shrink: 0; position: relative;
       border-radius: 50px;
-      background: linear-gradient(145deg, #3a3a3c, #1c1c1e);
+      background: linear-gradient(160deg, #48484a 0%, #1c1c1e 60%, #2a2a2c 100%);
       padding: 12px;
       box-shadow:
-        0 0 0 1px rgba(255,255,255,0.13),
-        inset 0 0 0 1px rgba(255,255,255,0.06),
-        0 40px 80px rgba(0,0,0,0.26),
+        0 0 0 1px rgba(255,255,255,0.14),
+        0 0 0 1.5px rgba(0,0,0,0.6),
+        inset 0 1px 0 rgba(255,255,255,0.12),
+        0 40px 80px rgba(0,0,0,0.28),
         0 16px 32px rgba(0,0,0,0.16),
-        0 0 60px rgba(34,197,94,0.07);
+        0 0 0 6px rgba(0,0,0,0.08);
       animation: float 5s ease-in-out infinite;
     }
 
@@ -171,9 +282,8 @@
       position: absolute; top: 18px; left: 50%; transform: translateX(-50%);
       width: 80px; height: 22px; background: #000;
       border-radius: 20px; z-index: 10;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.07);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
     }
-
     .phone-btn-l {
       position: absolute; left: -3px; top: 96px;
       width: 3px; border-radius: 2px 0 0 2px;
@@ -186,7 +296,6 @@
       width: 3px; height: 52px; border-radius: 0 2px 2px 0;
       background: linear-gradient(145deg,#3a3a3c,#2a2a2c);
     }
-
     .phone-screen {
       background: #0a1a0f; border-radius: 40px; overflow: hidden;
       width: 100%; height: 528px;
@@ -197,23 +306,19 @@
     .ps-status {
       display: flex; justify-content: space-between;
       padding: 16px 22px 6px;
-      font-size: 10px; font-weight: 700; color: rgba(255,255,255,.5);
-      letter-spacing: .02em;
+      font-size: 10px; font-weight: 700; color: rgba(255,255,255,.45);
     }
-
     .ps-header {
       display: flex; align-items: center; gap: 9px;
-      padding: 10px 16px 12px;
-      border-bottom: 1px solid rgba(255,255,255,.07);
+      padding: 10px 16px 12px; border-bottom: 1px solid rgba(255,255,255,.07);
     }
     .ps-logo { width: 26px; height: 26px; border-radius: 8px; object-fit: cover; }
     .ps-title { font-size: 12px; font-weight: 700; color: #fff; flex: 1; }
     .ps-dash {
       font-size: 10px; font-weight: 700; padding: 4px 10px;
       background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
-      border-radius: 8px; color: rgba(255,255,255,.55); white-space: nowrap;
+      border-radius: 8px; color: rgba(255,255,255,.5);
     }
-
     .ps-balance-card {
       margin: 14px 12px 12px;
       background: linear-gradient(135deg, #1a3a1f 0%, #0f2a14 100%);
@@ -221,17 +326,10 @@
       padding: 20px 16px; text-align: center;
       box-shadow: 0 8px 24px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.06);
     }
-    .ps-bal-label {
-      font-size: 9px; letter-spacing: .1em; text-transform: uppercase;
-      color: rgba(255,255,255,.45); margin-bottom: 6px;
-    }
+    .ps-bal-label { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.4); margin-bottom: 6px; }
     .ps-bal-num { font-size: 52px; font-weight: 900; color: #7fff7f; line-height: 1; letter-spacing: -1px; }
-    .ps-bal-sym { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 3px; }
-    .ps-addr {
-      font-size: 9px; color: rgba(255,255,255,.2); margin-top: 10px;
-      font-family: 'SF Mono', monospace; letter-spacing: .02em;
-    }
-
+    .ps-bal-sym { font-size: 11px; color: rgba(255,255,255,.35); margin-top: 3px; }
+    .ps-addr { font-size: 9px; color: rgba(255,255,255,.18); margin-top: 10px; font-family: monospace; }
     .ps-actions {
       display: grid; grid-template-columns: 1fr 1fr;
       gap: 8px; margin: 0 12px 14px;
@@ -243,19 +341,16 @@
       box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
     }
     .ps-action .ai { font-size: 20px; display: block; margin-bottom: 5px; }
-
     .ps-section-label {
       font-size: 9px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .1em; color: rgba(255,255,255,.3);
+      letter-spacing: .1em; color: rgba(255,255,255,.28);
       padding: 0 14px; margin-bottom: 8px;
     }
-
     .ps-txs { padding: 0 12px 18px; display: flex; flex-direction: column; gap: 6px; }
     .ps-tx {
       display: flex; align-items: center; gap: 10px;
       background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.07);
       border-radius: 13px; padding: 9px 12px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
     }
     .ps-tx-icon {
       width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
@@ -271,39 +366,29 @@
     .ps-tx-amt.pos { color: #7fff7f; }
     .ps-tx-amt.neg { color: #ff8a65; }
 
-    .wallet-points { display: flex; flex-direction: column; gap: 22px; }
-    .wp { display: flex; gap: 14px; align-items: flex-start; }
-    .wp-icon {
-      width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
-      background: var(--green-pale); border: 1px solid var(--green-mid);
-      display: flex; align-items: center; justify-content: center; font-size: 17px;
-    }
-    .wp h4 { font-size: 14px; font-weight: 700; color: var(--black); margin-bottom: 3px; }
-    .wp p  { font-size: 13px; color: var(--grey); line-height: 1.6; }
-
     /* ── SOLANA ── */
-    .sol-section {
-      background: #d4f5e2;
-      border-top: 1px solid #b6eacb;
-      border-bottom: 1px solid #b6eacb;
-    }
+    .sol-section { background: #d4f5e2; border-top: 1px solid #b6eacb; border-bottom: 1px solid #b6eacb; }
     .sol-nums {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 14px; margin-top: 44px;
     }
     .sol-card {
       background: #fff; border: 1px solid #b6eacb;
-      border-radius: 14px; padding: 22px 18px; text-align: center;
+      border-radius: 16px; padding: 24px 20px; text-align: center;
+      transition: transform .25s cubic-bezier(.16,1,.3,1), box-shadow .25s;
+      box-shadow: 0 1px 4px rgba(22,163,74,0.06);
     }
+    .sol-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(22,163,74,0.1); }
     .sol-num { font-size: 26px; font-weight: 900; color: var(--green); }
     .sol-label { font-size: 12px; color: var(--grey); margin-top: 4px; }
     .sol-body { margin-top: 44px; max-width: 640px; }
-    .sol-body p { font-size: 14px; color: var(--grey); line-height: 1.8; margin-bottom: 14px; }
+    .sol-body p { font-size: 14px; color: var(--grey); line-height: 1.85; margin-bottom: 16px; }
     .sol-badge {
       display: inline-flex; align-items: center; gap: 7px;
-      background: var(--green-mid); border: 1px solid #bbf7d0;
-      border-radius: 999px; padding: 5px 14px;
+      background: #fff; border: 1px solid #b6eacb;
+      border-radius: 999px; padding: 6px 16px;
       font-size: 11px; font-weight: 700; color: var(--green);
+      box-shadow: 0 1px 4px rgba(22,163,74,0.08);
     }
 
     /* ── ACCESS ── */
@@ -312,36 +397,43 @@
       gap: 16px; margin-top: 44px;
     }
     .access-card {
-      border-radius: 20px; padding: 36px 32px;
+      border-radius: 22px; padding: 38px 32px;
       text-decoration: none; display: block;
-      transition: transform .15s;
+      transition: transform .25s cubic-bezier(.16,1,.3,1), box-shadow .25s;
+      position: relative; overflow: hidden;
     }
-    .access-card:hover { transform: translateY(-3px); }
+    .access-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.08), transparent);
+      opacity: 0; transition: opacity .25s;
+    }
+    .access-card:hover { transform: translateY(-5px); }
+    .access-card:hover::before { opacity: 1; }
     .access-card.public {
-      background: #fff; color: var(--black);
-      border: 1.5px solid #c6f0d8;
+      background: #fff; border: 1.5px solid #c6f0d8;
+      box-shadow: 0 4px 16px rgba(22,163,74,0.08);
     }
+    .access-card.public:hover { box-shadow: 0 16px 40px rgba(22,163,74,0.14); border-color: #86efac; }
     .access-card.staff {
-      background: #fff;
-      border: 1.5px solid #c6f0d8; color: var(--black);
+      background: #fff; border: 1.5px solid #c6f0d8;
+      box-shadow: 0 4px 16px rgba(22,163,74,0.08);
     }
+    .access-card.staff:hover { box-shadow: 0 16px 40px rgba(22,163,74,0.14); border-color: #86efac; }
     .ac-tag {
       display: inline-block; font-size: 10px; font-weight: 700;
       letter-spacing: 2px; text-transform: uppercase;
       border-radius: 999px; padding: 4px 12px; margin-bottom: 20px;
+      background: var(--green-mid); color: var(--green);
     }
-    .access-card.public .ac-tag { background: var(--green-mid); color: var(--green); }
-    .access-card.staff  .ac-tag { background: var(--green-mid); color: var(--green); }
     .access-card .ac-icon { font-size: 36px; margin-bottom: 14px; display: block; }
-    .access-card h3 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
-    .access-card.public h3 { color: var(--black); }
-    .access-card.staff  h3 { color: var(--black); }
-    .access-card p { font-size: 13px; line-height: 1.7; margin-bottom: 24px; }
-    .access-card.public p { color: var(--grey); }
-    .access-card.staff  p { color: var(--grey); }
-    .ac-link { font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
-    .access-card.public .ac-link { color: var(--green-light); }
-    .access-card.staff  .ac-link { color: var(--green); }
+    .access-card h3 { font-size: 22px; font-weight: 800; color: var(--black); margin-bottom: 8px; }
+    .access-card p  { font-size: 13px; color: var(--grey); line-height: 1.7; margin-bottom: 24px; }
+    .ac-link {
+      font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;
+      color: var(--green);
+    }
+    .ac-link .ac-arr { transition: transform .2s cubic-bezier(.16,1,.3,1); display: inline-block; }
+    .access-card:hover .ac-arr { transform: translateX(4px); }
 
     /* ── FOOTER ── */
     .footer-inner {
@@ -349,8 +441,9 @@
       display: flex; align-items: center; justify-content: space-between;
       flex-wrap: wrap; gap: 14px;
     }
-    .f-logo { font-size: 14px; font-weight: 800; color: var(--black); }
-    .f-logo span { color: var(--green); }
+    .f-logo { display: flex; align-items: center; gap: 10px; }
+    .f-logo img { height: 30px; width: 30px; border-radius: 7px; object-fit: cover; }
+    .f-logo span { font-size: 14px; font-weight: 800; color: var(--black); }
     .f-links { display: flex; gap: 20px; }
     .f-links a { font-size: 12px; color: var(--grey); text-decoration: none; transition: color .2s; }
     .f-links a:hover { color: var(--black); }
@@ -360,17 +453,21 @@
       nav { padding: 14px 20px; }
       .nav-links { display: none; }
       .section { padding: 72px 20px; }
+      .hero { padding: 140px 20px 80px; }
       .wallet-split { grid-template-columns: 1fr; gap: 36px; }
       .access-grid { grid-template-columns: 1fr; }
       .hero-stats { gap: 28px; }
       .footer-inner { padding: 28px 20px; }
+      .sol-section .section { padding: 80px 20px; }
     }
   </style>
 </head>
 <body>
 
+<div class="hero-mesh"></div>
+
 <!-- NAV -->
-<nav>
+<nav id="nav">
   <a class="nav-logo" href="#">
     <img src="logo.png" alt="TUC Logo" />
     <span>The Upcycle Collective</span>
@@ -385,16 +482,16 @@
 </nav>
 
 <!-- HERO -->
-<div class="section hero">
-  <div class="hero-pill"><div class="dot"></div> Live on Solana Mainnet</div>
-  <h1>Connecting people,<br>circulating value,<br><em>inspiring change.</em></h1>
-  <p class="sub">TUC is a community token for The Upcycle Collective — earn tokens by donating, spend them at stations, all powered by the Solana blockchain.</p>
-  <div class="hero-btns">
-    <a href="app.html" class="btn-dark">Open My Wallet →</a>
+<div class="hero">
+  <div class="hero-pill" data-reveal><div class="dot"></div> Live on Solana Mainnet</div>
+  <h1 data-reveal data-reveal-delay="1">Connecting people,<br>circulating value,<br><em>inspiring change.</em></h1>
+  <p class="sub" data-reveal data-reveal-delay="2">TUC is a community token for The Upcycle Collective — earn tokens by donating, spend them at stations, all powered by the Solana blockchain.</p>
+  <div class="hero-btns" data-reveal data-reveal-delay="3">
+    <a href="app.html" class="btn-dark">Open My Wallet <span class="arr">→</span></a>
     <a href="#how" class="btn-outline">How it works</a>
   </div>
-  <div class="hero-stats">
-    <div><div class="stat-num">TUC</div><div class="stat-label">Token name</div></div>
+  <div class="hero-stats" data-reveal data-reveal-delay="4">
+    <div><div class="stat-num" data-count="TUC">TUC</div><div class="stat-label">Token name</div></div>
     <div><div class="stat-num">$0.00</div><div class="stat-label">Fee for attendees</div></div>
     <div><div class="stat-num">&lt; 1s</div><div class="stat-label">Transaction speed</div></div>
     <div><div class="stat-num">Forever</div><div class="stat-label">Records on-chain</div></div>
@@ -405,30 +502,14 @@
 
 <!-- WHAT IS TUC -->
 <div class="section" id="what">
-  <span class="label">What is TUC</span>
-  <h2>Your generosity,<br>turned into currency</h2>
-  <p class="sub">TUC (The Upcycle Collective Token) is a real token on the Solana blockchain. Earn it at the door, top it up by donating, spend it at stations.</p>
+  <span class="label" data-reveal>What is TUC</span>
+  <h2 data-reveal data-reveal-delay="1">Your generosity,<br>turned into currency</h2>
+  <p class="sub" data-reveal data-reveal-delay="2">TUC (The Upcycle Collective Token) is a real token on the Solana blockchain. Earn it at the door, top it up by donating, spend it at stations.</p>
   <div class="cards">
-    <div class="card">
-      <span class="icon">🪙</span>
-      <h3>A real digital token</h3>
-      <p>Every TUC you earn or spend is recorded permanently on Solana — transparent and verifiable by anyone, anytime.</p>
-    </div>
-    <div class="card">
-      <span class="icon">🛍️</span>
-      <h3>Earned by doing good</h3>
-      <p>Get 10 TUC at check-in. Earn more by donating recycle bags. Every bag = +10 tokens, instantly minted to your wallet.</p>
-    </div>
-    <div class="card">
-      <span class="icon">♻️</span>
-      <h3>Spent at stations</h3>
-      <p>Use TUC at upcycle workshops, swap corners, spice markets, lucky draws, and more. No cash required.</p>
-    </div>
-    <div class="card">
-      <span class="icon">❤️</span>
-      <h3>Backed by real action</h3>
-      <p>All donated items go to the Salvation Army. Your generosity has a real-world impact beyond the token.</p>
-    </div>
+    <div class="card" data-reveal data-reveal-delay="1"><span class="icon">🪙</span><h3>A real digital token</h3><p>Every TUC you earn or spend is recorded permanently on Solana — transparent and verifiable by anyone, anytime.</p></div>
+    <div class="card" data-reveal data-reveal-delay="2"><span class="icon">🛍️</span><h3>Earned by doing good</h3><p>Get 10 TUC at check-in. Earn more by donating recycle bags. Every bag = +10 tokens, instantly minted to your wallet.</p></div>
+    <div class="card" data-reveal data-reveal-delay="3"><span class="icon">♻️</span><h3>Spent at stations</h3><p>Use TUC at upcycle workshops, swap corners, spice markets, lucky draws, and more. No cash required.</p></div>
+    <div class="card" data-reveal data-reveal-delay="4"><span class="icon">❤️</span><h3>Backed by real action</h3><p>All donated items go to the Salvation Army. Your generosity has a real-world impact beyond the token.</p></div>
   </div>
 </div>
 
@@ -436,49 +517,14 @@
 
 <!-- HOW IT WORKS -->
 <div class="section" id="how">
-  <span class="label">How it works</span>
-  <h2>Simple for everyone.<br>Powerful underneath.</h2>
+  <span class="label" data-reveal>How it works</span>
+  <h2 data-reveal data-reveal-delay="1">Simple for everyone.<br>Powerful underneath.</h2>
   <div class="steps">
-    <div class="step">
-      <div class="step-num">1</div>
-      <div>
-        <h3>Log in with your email</h3>
-        <p>Open the TUC wallet on your phone and enter your email. A secure Solana wallet is created for you automatically — no app download, no crypto experience needed.</p>
-        <span class="step-tag">Takes about 30 seconds</span>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">2</div>
-      <div>
-        <h3>Check in at the door</h3>
-        <p>Show your wallet QR code to staff at the entrance. They scan it and 10 TUC tokens are instantly minted to your wallet on the Solana blockchain.</p>
-        <span class="step-tag">+10 TUC on arrival</span>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">3</div>
-      <div>
-        <h3>Donate bags, earn more tokens</h3>
-        <p>Bring pre-loved clothing or items in a standard recycle bag. Staff scan your QR at the donation point and +10 TUC is added instantly. Every transaction is labelled on-chain.</p>
-        <span class="step-tag">+10 TUC per recycle bag</span>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">4</div>
-      <div>
-        <h3>Spend at stations</h3>
-        <p>Show your wallet QR at any station. Staff process the transaction and your balance updates in real time. All powered by Solana — no middleman, no delays.</p>
-        <span class="step-tag">QR code at every station</span>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">5</div>
-      <div>
-        <h3>Your history lives on-chain forever</h3>
-        <p>Every TUC transaction is permanently recorded on Solana with a readable memo. View your full history on Solscan anytime — even years after the event.</p>
-        <span class="step-tag">Fully transparent · Verifiable forever</span>
-      </div>
-    </div>
+    <div class="step" data-reveal><div class="step-num">1</div><div><h3>Log in with your email</h3><p>Open the TUC wallet on your phone and enter your email. A secure Solana wallet is created for you automatically — no app download, no crypto experience needed.</p><span class="step-tag">Takes about 30 seconds</span></div></div>
+    <div class="step" data-reveal><div class="step-num">2</div><div><h3>Check in at the door</h3><p>Show your wallet QR code to staff at the entrance. They scan it and 10 TUC tokens are instantly minted to your wallet on the Solana blockchain.</p><span class="step-tag">+10 TUC on arrival</span></div></div>
+    <div class="step" data-reveal><div class="step-num">3</div><div><h3>Donate bags, earn more tokens</h3><p>Bring pre-loved clothing or items in a standard recycle bag. Staff scan your QR at the donation point and +10 TUC is added instantly. Every transaction is labelled on-chain.</p><span class="step-tag">+10 TUC per recycle bag</span></div></div>
+    <div class="step" data-reveal><div class="step-num">4</div><div><h3>Spend at stations</h3><p>Show your wallet QR at any station. Staff process the transaction and your balance updates in real time. All powered by Solana — no middleman, no delays.</p><span class="step-tag">QR code at every station</span></div></div>
+    <div class="step" data-reveal><div class="step-num">5</div><div><h3>Your history lives on-chain forever</h3><p>Every TUC transaction is permanently recorded on Solana with a readable memo. View your full history on Solscan anytime — even years after the event.</p><span class="step-tag">Fully transparent · Verifiable forever</span></div></div>
   </div>
 </div>
 
@@ -486,78 +532,48 @@
 
 <!-- WALLET -->
 <div class="section" id="wallet">
-  <span class="label">Your wallet</span>
-  <h2>What exactly<br>is a wallet?</h2>
+  <span class="label" data-reveal>Your wallet</span>
+  <h2 data-reveal data-reveal-delay="1">What exactly<br>is a wallet?</h2>
   <div class="wallet-split">
-    <div>
-      <p class="sub" style="margin-top:0;margin-bottom:28px">Think of it like a digital bank account — but one that only you control, with no bank in between.</p>
+    <div data-reveal data-reveal-delay="1">
+      <p class="sub" style="margin-top:0;margin-bottom:32px">Think of it like a digital bank account — but one that only you control, with no bank in between.</p>
       <div class="wallet-points">
-        <div class="wp">
-          <div class="wp-icon">🔑</div>
-          <div><h4>Your personal address on Solana</h4><p>Your wallet has a unique address — like an account number. Anyone can send TUC to it, but only you can spend from it.</p></div>
-        </div>
-        <div class="wp">
-          <div class="wp-icon">📱</div>
-          <div><h4>No app to download</h4><p>Works directly in your phone's browser. Log in with email, wallet is ready. Secured by Privy — a globally trusted wallet infrastructure.</p></div>
-        </div>
-        <div class="wp">
-          <div class="wp-icon">👁️</div>
-          <div><h4>Everything is visible</h4><p>Every token you earn or spend is on-chain. View your full history — what you earned, what you spent, when — in the app or on Solscan.</p></div>
-        </div>
-        <div class="wp">
-          <div class="wp-icon">⚡</div>
-          <div><h4>You pay zero fees</h4><p>All Solana transaction fees are paid by the event organiser. You just earn and spend — no SOL needed in your wallet, ever.</p></div>
-        </div>
+        <div class="wp"><div class="wp-icon">🔑</div><div><h4>Your personal address on Solana</h4><p>Your wallet has a unique address — like an account number. Anyone can send TUC to it, but only you can spend from it.</p></div></div>
+        <div class="wp"><div class="wp-icon">📱</div><div><h4>No app to download</h4><p>Works directly in your phone's browser. Log in with email, wallet is ready. Secured by Privy — a globally trusted wallet infrastructure.</p></div></div>
+        <div class="wp"><div class="wp-icon">👁️</div><div><h4>Everything is visible</h4><p>Every token you earn or spend is on-chain. View your full history — what you earned, what you spent, when — in the app or on Solscan.</p></div></div>
+        <div class="wp"><div class="wp-icon">⚡</div><div><h4>You pay zero fees</h4><p>All Solana transaction fees are paid by the event organiser. You just earn and spend — no SOL needed in your wallet, ever.</p></div></div>
       </div>
     </div>
-    <div class="phone-outer">
-      <div class="phone-frame">
-        <div class="phone-island"></div>
-        <div class="phone-btn-l"></div>
-        <div class="phone-btn-r"></div>
-        <div class="phone-screen">
-          <div class="ps-status"><span>9:41</span><span>●●● 100%</span></div>
-          <div class="ps-header">
-            <img class="ps-logo" src="logo.png" alt="TUC" />
-            <div class="ps-title">The Upcycle Collective</div>
-            <div class="ps-dash">Dashboard →</div>
-          </div>
-          <div class="ps-balance-card">
-            <div class="ps-bal-label">💳 My Wallet</div>
-            <div class="ps-bal-num">35</div>
-            <div class="ps-bal-sym">TUC Tokens</div>
-            <div class="ps-addr">7xKp…mN3q · Solana Mainnet</div>
-          </div>
-          <div class="ps-actions">
-            <div class="ps-action"><span class="ai">↑</span>Send</div>
-            <div class="ps-action"><span class="ai">↓</span>Receive</div>
-          </div>
-          <div class="ps-section-label">Recent Activity</div>
-          <div class="ps-txs">
-            <div class="ps-tx">
-              <div class="ps-tx-icon mint">🪙</div>
-              <div class="ps-tx-info"><div class="ps-tx-name">Check-in reward</div><div class="ps-tx-time">TUC:CHECKIN · 10:02 AM</div></div>
-              <div class="ps-tx-amt pos">+10</div>
+    <div data-reveal data-reveal-delay="2">
+      <div class="phone-outer">
+        <div class="phone-frame">
+          <div class="phone-island"></div>
+          <div class="phone-btn-l"></div>
+          <div class="phone-btn-r"></div>
+          <div class="phone-screen">
+            <div class="ps-status"><span>9:41</span><span>●●● 100%</span></div>
+            <div class="ps-header">
+              <img class="ps-logo" src="logo.png" alt="TUC" />
+              <div class="ps-title">The Upcycle Collective</div>
+              <div class="ps-dash">Dashboard →</div>
             </div>
-            <div class="ps-tx">
-              <div class="ps-tx-icon reward">♻️</div>
-              <div class="ps-tx-info"><div class="ps-tx-name">Recycle bag donated</div><div class="ps-tx-time">TUC:RECYCLE_UNIT · 10:15 AM</div></div>
-              <div class="ps-tx-amt pos">+10</div>
+            <div class="ps-balance-card">
+              <div class="ps-bal-label">💳 My Wallet</div>
+              <div class="ps-bal-num">35</div>
+              <div class="ps-bal-sym">TUC Tokens</div>
+              <div class="ps-addr">7xKp…mN3q · Solana Mainnet</div>
             </div>
-            <div class="ps-tx">
-              <div class="ps-tx-icon reward">♻️</div>
-              <div class="ps-tx-info"><div class="ps-tx-name">Recycle bag donated</div><div class="ps-tx-time">TUC:RECYCLE_UNIT · 11:03 AM</div></div>
-              <div class="ps-tx-amt pos">+10</div>
+            <div class="ps-actions">
+              <div class="ps-action"><span class="ai">↑</span>Send</div>
+              <div class="ps-action"><span class="ai">↓</span>Receive</div>
             </div>
-            <div class="ps-tx">
-              <div class="ps-tx-icon spend">✂️</div>
-              <div class="ps-tx-info"><div class="ps-tx-name">Upcycle workshop</div><div class="ps-tx-time">Station 1 · 2:10 PM</div></div>
-              <div class="ps-tx-amt neg">−15</div>
-            </div>
-            <div class="ps-tx">
-              <div class="ps-tx-icon spend">🎰</div>
-              <div class="ps-tx-info"><div class="ps-tx-name">Lucky draw entry</div><div class="ps-tx-time">Final draw · 9:20 PM</div></div>
-              <div class="ps-tx-amt neg">−5</div>
+            <div class="ps-section-label">Recent Activity</div>
+            <div class="ps-txs">
+              <div class="ps-tx"><div class="ps-tx-icon mint">🪙</div><div class="ps-tx-info"><div class="ps-tx-name">Check-in reward</div><div class="ps-tx-time">TUC:CHECKIN · 10:02 AM</div></div><div class="ps-tx-amt pos">+10</div></div>
+              <div class="ps-tx"><div class="ps-tx-icon reward">♻️</div><div class="ps-tx-info"><div class="ps-tx-name">Recycle bag donated</div><div class="ps-tx-time">TUC:RECYCLE_UNIT · 10:15 AM</div></div><div class="ps-tx-amt pos">+10</div></div>
+              <div class="ps-tx"><div class="ps-tx-icon reward">♻️</div><div class="ps-tx-info"><div class="ps-tx-name">Recycle bag donated</div><div class="ps-tx-time">TUC:RECYCLE_UNIT · 11:03 AM</div></div><div class="ps-tx-amt pos">+10</div></div>
+              <div class="ps-tx"><div class="ps-tx-icon spend">✂️</div><div class="ps-tx-info"><div class="ps-tx-name">Upcycle workshop</div><div class="ps-tx-time">Station 1 · 2:10 PM</div></div><div class="ps-tx-amt neg">−15</div></div>
+              <div class="ps-tx"><div class="ps-tx-icon spend">🎰</div><div class="ps-tx-info"><div class="ps-tx-name">Lucky draw entry</div><div class="ps-tx-time">Final draw · 9:20 PM</div></div><div class="ps-tx-amt neg">−5</div></div>
             </div>
           </div>
         </div>
@@ -569,15 +585,15 @@
 <!-- SOLANA -->
 <div class="sol-section" id="solana">
   <div class="section">
-    <span class="label">Built on Solana</span>
-    <h2>Why blockchain?<br>Why Solana?</h2>
+    <span class="label" data-reveal>Built on Solana</span>
+    <h2 data-reveal data-reveal-delay="1">Why blockchain?<br>Why Solana?</h2>
     <div class="sol-nums">
-      <div class="sol-card"><div class="sol-num">~$0.00025</div><div class="sol-label">Cost per transaction</div></div>
-      <div class="sol-card"><div class="sol-num">&lt; 1s</div><div class="sol-label">Transaction finality</div></div>
-      <div class="sol-card"><div class="sol-num">∞</div><div class="sol-label">Records kept forever</div></div>
-      <div class="sol-card"><div class="sol-num">$0</div><div class="sol-label">Fees for attendees</div></div>
+      <div class="sol-card" data-reveal data-reveal-delay="1"><div class="sol-num">~$0.00025</div><div class="sol-label">Cost per transaction</div></div>
+      <div class="sol-card" data-reveal data-reveal-delay="2"><div class="sol-num">&lt; 1s</div><div class="sol-label">Transaction finality</div></div>
+      <div class="sol-card" data-reveal data-reveal-delay="3"><div class="sol-num">∞</div><div class="sol-label">Records kept forever</div></div>
+      <div class="sol-card" data-reveal data-reveal-delay="4"><div class="sol-num">$0</div><div class="sol-label">Fees for attendees</div></div>
     </div>
-    <div class="sol-body">
+    <div class="sol-body" data-reveal>
       <p>Blockchain means every TUC transaction is recorded on a public, permanent ledger — not a spreadsheet that can be edited or lost. Solana is chosen because it is fast and practically free to use.</p>
       <p>When staff scan your QR and award tokens, that transaction confirms on Solana in under a second, costs fractions of a cent, and will be readable on Solscan forever. This is not a promise — it is simply how blockchain works.</p>
       <p>For the organiser: a fully auditable record of every token awarded and spent. For attendees: a transparent system where no one can change the numbers after the fact.</p>
@@ -588,23 +604,23 @@
 
 <!-- ACCESS -->
 <div class="section" id="access">
-  <span class="label">Get started</span>
-  <h2>Two ways<br>to access TUC</h2>
-  <p class="sub">One for attendees, one for staff. Both work on any phone — no app install required.</p>
+  <span class="label" data-reveal>Get started</span>
+  <h2 data-reveal data-reveal-delay="1">Two ways<br>to access TUC</h2>
+  <p class="sub" data-reveal data-reveal-delay="2">One for attendees, one for staff. Both work on any phone — no app install required.</p>
   <div class="access-grid">
-    <a href="app.html" class="access-card public">
+    <a href="app.html" class="access-card public" data-reveal data-reveal-delay="1">
       <span class="ac-tag">Public · For attendees</span>
       <span class="ac-icon">💳</span>
       <h3>TUC Wallet</h3>
       <p>Log in with email, check your balance, view transaction history, and show your QR code at stations. Designed for everyone — no crypto knowledge needed.</p>
-      <span class="ac-link">Open Wallet App →</span>
+      <span class="ac-link">Open Wallet App <span class="ac-arr">→</span></span>
     </a>
-    <a href="staff.html" class="access-card staff">
+    <a href="staff.html" class="access-card staff" data-reveal data-reveal-delay="2">
       <span class="ac-tag">Restricted · Staff only</span>
       <span class="ac-icon">🛡️</span>
       <h3>Staff Terminal</h3>
       <p>Scan attendee QR codes to issue check-in tokens and manual rewards. Used by event staff to manage all token minting during the event.</p>
-      <span class="ac-link">Open Staff Terminal →</span>
+      <span class="ac-link">Open Staff Terminal <span class="ac-arr">→</span></span>
     </a>
   </div>
 </div>
@@ -613,7 +629,10 @@
 
 <!-- FOOTER -->
 <div class="footer-inner">
-  <div class="f-logo" style="display:flex;align-items:center;gap:10px"><img src="logo.png" alt="TUC" style="height:32px;width:32px;border-radius:8px;object-fit:cover"> <span>The Upcycle Collective</span></div>
+  <div class="f-logo">
+    <img src="logo.png" alt="TUC" />
+    <span>The Upcycle Collective</span>
+  </div>
   <div class="f-copy">Built on Solana · Kuching, Sarawak · July 21, 2026</div>
   <div class="f-links">
     <a href="app.html">Wallet</a>
@@ -621,6 +640,25 @@
     <a href="https://solscan.io/token/2hgWyBDWgw4xesu8NpwTAhHgy2gnAo5iBhsBNSasngRj" target="_blank" rel="noopener">Solscan</a>
   </div>
 </div>
+
+<script>
+  // ── Scroll reveal ──
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('[data-reveal]').forEach(el => observer.observe(el));
+
+  // ── Nav scroll style ──
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 40);
+  }, { passive: true });
+</script>
 
 </body>
 </html>
