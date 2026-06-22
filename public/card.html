@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TUC Name Card — Print Ready</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+
+/* ── Reset ── */
+* { margin:0; padding:0; box-sizing:border-box; }
+
+/* ── Screen wrapper ── */
+body {
+  font-family:'Inter',sans-serif;
+  background:#111827;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:28px 20px;
+  gap:22px;
+}
+
+/* ── Print controls (hidden on print) ── */
+.controls {
+  display:flex; align-items:center; justify-content:space-between;
+  gap:20px; padding:18px 28px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:16px; width:100%; max-width:800px;
+}
+.ctrl-info h1 { font-size:18px; font-weight:800; color:#fff; }
+.ctrl-info p  { font-size:13px; color:rgba(255,255,255,0.4); margin-top:3px; }
+.btn-print {
+  padding:12px 36px; font-size:16px; font-weight:800;
+  background:#a3e635; color:#0c1a0e; border:none;
+  border-radius:999px; cursor:pointer;
+  box-shadow:0 4px 0 #6aaa1a, 0 0 20px rgba(163,230,53,0.35);
+  transition:transform .1s, box-shadow .1s; white-space:nowrap;
+}
+.btn-print:hover { transform:translateY(-2px); box-shadow:0 6px 0 #6aaa1a, 0 0 28px rgba(163,230,53,0.5); }
+.btn-print:active { transform:translateY(2px); box-shadow:0 2px 0 #6aaa1a; }
+
+/* ── A4 paper ── */
+.a4-sheet {
+  width:210mm;
+  background:#ffffff;
+  padding:12mm 17mm 14mm;
+  display:grid;
+  grid-template-columns:repeat(2, 85.6mm);
+  grid-template-rows:repeat(3, 54mm);
+  gap:5mm;
+  align-content:start;
+  box-shadow:0 8px 60px rgba(0,0,0,0.6);
+}
+
+/* ── Individual card ── */
+.tuc-card {
+  width:85.6mm;
+  height:54mm;
+  border-radius:2.8mm;
+  overflow:hidden;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  /* dark base + dot grid + radial glow */
+  background-color:#0c1a0e;
+  background-image:
+    radial-gradient(ellipse at 28% 48%, rgba(163,230,53,0.09) 0%, transparent 55%),
+    radial-gradient(circle, rgba(163,230,53,0.055) 1px, transparent 0);
+  background-size:100% 100%, 3.2mm 3.2mm;
+}
+
+/* lime gradient strip at top */
+.card-strip {
+  height:1.3mm;
+  background:linear-gradient(90deg, #6aaa1a 0%, #c4f135 40%, #a3e635 60%, #d6ff50 100%);
+  flex-shrink:0;
+}
+
+/* inner layout */
+.card-body {
+  flex:1;
+  display:flex;
+  padding:2.8mm 3mm 2.5mm 3.5mm;
+  gap:2.5mm;
+}
+
+/* ── LEFT column ── */
+.card-left {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  min-width:0;
+}
+
+/* Brand */
+.brand {
+  display:flex;
+  flex-direction:column;
+  gap:0.6mm;
+}
+.brand-row {
+  display:flex;
+  align-items:center;
+  gap:1.6mm;
+}
+.brand-icon { font-size:5.2mm; line-height:1; }
+.brand-name {
+  font-size:3.6mm;
+  font-weight:900;
+  color:#a3e635;
+  letter-spacing:-0.01em;
+  line-height:1.15;
+}
+.brand-event {
+  font-size:2mm;
+  color:rgba(255,255,255,0.32);
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  padding-left:0.5mm;
+}
+
+/* divider */
+.divider {
+  height:0.3mm;
+  background:linear-gradient(90deg, rgba(163,230,53,0.4), transparent);
+}
+
+/* CTA */
+.cta { display:flex; flex-direction:column; gap:0.7mm; }
+.cta-head {
+  font-size:3.2mm;
+  font-weight:800;
+  color:#ffffff;
+  line-height:1.25;
+}
+.cta-sub {
+  font-size:2.3mm;
+  color:rgba(255,255,255,0.48);
+  line-height:1.3;
+}
+
+/* Steps */
+.steps { display:flex; flex-direction:column; gap:0.9mm; }
+.step  { display:flex; align-items:center; gap:1.5mm; font-size:2.1mm; color:rgba(255,255,255,0.52); }
+.dot   { width:1.2mm; height:1.2mm; border-radius:50%; background:#a3e635; flex-shrink:0; }
+
+/* Footer */
+.card-foot {
+  display:flex;
+  align-items:center;
+  gap:1.8mm;
+}
+.foot-logo {
+  height:4mm;
+  object-fit:contain;
+  opacity:0.55;
+}
+.foot-sep {
+  width:0.3mm; height:3.5mm;
+  background:rgba(255,255,255,0.18);
+  flex-shrink:0;
+}
+.foot-sol {
+  font-size:1.9mm;
+  color:rgba(255,255,255,0.28);
+  display:flex; align-items:center; gap:0.8mm;
+  white-space:nowrap;
+}
+
+/* ── RIGHT column — QR ── */
+.card-right {
+  flex-shrink:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:1.6mm;
+}
+
+.qr-frame {
+  background:#ffffff;
+  border-radius:2mm;
+  padding:1.4mm;
+  width:24mm;
+  height:24mm;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:
+    0 0 0 0.4mm rgba(163,230,53,0.35),
+    0 1mm 4mm rgba(0,0,0,0.4);
+}
+.qr-frame canvas,
+.qr-frame img {
+  width:21.2mm !important;
+  height:21.2mm !important;
+  display:block;
+}
+
+.qr-label {
+  font-size:2mm;
+  font-weight:800;
+  color:#a3e635;
+  letter-spacing:0.12em;
+  text-align:center;
+  text-transform:uppercase;
+  opacity:0.9;
+}
+
+/* ── Print styles ── */
+@media print {
+  * {
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+    color-adjust:exact;
+  }
+  body {
+    background:white;
+    padding:0;
+    display:block;
+  }
+  .controls { display:none; }
+  .a4-sheet {
+    box-shadow:none;
+    margin:0; padding:12mm 17mm 14mm;
+    page-break-after:always;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- Print controls -->
+<div class="controls">
+  <div class="ctrl-info">
+    <h1>♻️ TUC Name Card — Print Ready</h1>
+    <p>6 cards per A4 · Print at 100% scale · Dark festival design</p>
+  </div>
+  <button class="btn-print" onclick="window.print()">🖨️ &nbsp;Print Cards</button>
+</div>
+
+<!-- A4 sheet -->
+<div class="a4-sheet" id="sheet"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const QR_URL = 'https://upcycle-collective.vercel.app';
+const N = 6;
+
+function cardHTML(i) {
+  return `
+  <div class="tuc-card">
+    <div class="card-strip"></div>
+    <div class="card-body">
+
+      <div class="card-left">
+        <!-- Brand -->
+        <div class="brand">
+          <div class="brand-row">
+            <span class="brand-icon">♻️</span>
+            <span class="brand-name">THE UPCYCLE<br>COLLECTIVE</span>
+          </div>
+          <div class="brand-event">Kuching &nbsp;·&nbsp; 21 July 2026</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- CTA -->
+        <div class="cta">
+          <div class="cta-head">Scan to open<br>your wallet →</div>
+          <div class="cta-sub">Earn TUC tokens at the event</div>
+        </div>
+
+        <!-- Steps -->
+        <div class="steps">
+          <div class="step"><span class="dot"></span>Donate items &nbsp;→&nbsp; earn tokens</div>
+          <div class="step"><span class="dot"></span>Spend tokens at vendor booths</div>
+        </div>
+
+        <!-- Footer -->
+        <div class="card-foot">
+          <img class="foot-logo" src="STMY-White.png" alt="Superteam Malaysia">
+          <div class="foot-sep"></div>
+          <div class="foot-sol">⬡ Solana Mainnet</div>
+        </div>
+      </div>
+
+      <!-- QR -->
+      <div class="card-right">
+        <div class="qr-frame" id="qr-${i}"></div>
+        <div class="qr-label">↑ Scan me</div>
+      </div>
+
+    </div>
+  </div>`;
+}
+
+// Inject cards
+const sheet = document.getElementById('sheet');
+for (let i=0; i<N; i++) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = cardHTML(i);
+  sheet.appendChild(tmp.firstElementChild);
+}
+
+// Generate QR codes
+for (let i=0; i<N; i++) {
+  new QRCode(document.getElementById(`qr-${i}`), {
+    text: QR_URL,
+    width: 320, height: 320,
+    colorDark:'#0c1a0e',
+    colorLight:'#ffffff',
+    correctLevel: QRCode.CorrectLevel.M,
+  });
+}
+</script>
+</body>
+</html>
