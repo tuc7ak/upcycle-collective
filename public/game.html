@@ -171,7 +171,7 @@ const DIRS4 = [[0,-1],[0,1],[-1,0],[1,0]];
 
 const BOMB_FUSE    = 3000;
 const EXP_DURATION = 600;
-const MOVE_MS      = 170;
+const MOVE_MS      = 130;
 const ENEMY_COUNT  = 10;
 const INV_TIME     = 3000;
 
@@ -393,12 +393,18 @@ function jStart(cx, cy) {
   jMove(cx, cy);
 }
 
-jBase.addEventListener('mousedown',  e => { jStart(e.clientX,e.clientY); e.preventDefault(); }, {passive:false});
-jBase.addEventListener('touchstart', e => { jStart(e.touches[0].clientX,e.touches[0].clientY); e.preventDefault(); }, {passive:false});
-window.addEventListener('mousemove', e => { if(jActive) jMove(e.clientX,e.clientY); });
-window.addEventListener('touchmove', e => { if(jActive){ jMove(e.touches[0].clientX,e.touches[0].clientY); e.preventDefault(); } }, {passive:false});
-window.addEventListener('mouseup',   () => jClear());
-window.addEventListener('touchend',  e => { if(jActive){ jClear(); e.preventDefault(); } }, {passive:false});
+// Pointer Events: lower latency than mouse/touch, works on all devices
+// setPointerCapture ensures moves are tracked even outside the element
+jBase.addEventListener('pointerdown', e => {
+  jBase.setPointerCapture(e.pointerId);
+  jStart(e.clientX, e.clientY);
+  e.preventDefault();
+}, {passive:false});
+jBase.addEventListener('pointermove', e => {
+  if (jActive) jMove(e.clientX, e.clientY);
+}, {passive:false});
+jBase.addEventListener('pointerup',     () => jClear());
+jBase.addEventListener('pointercancel', () => jClear());
 
 // ── Bomb button ────────────────────────────────────────────
 function bindBtn(id, code) {
@@ -421,21 +427,26 @@ function updatePlayer(dt) {
     player.invT-=dt; player.blinkT+=dt;
     if (player.invT<=0) { player.inv=false; player.invT=0; }
   }
+  let dc=0,dr=0;
+  if      (keys['ArrowUp']   ||keys['KeyW']) dr=-1;
+  else if (keys['ArrowDown'] ||keys['KeyS']) dr= 1;
+  else if (keys['ArrowLeft'] ||keys['KeyA']) dc=-1;
+  else if (keys['ArrowRight']||keys['KeyD']) dc= 1;
+
+  // Fire immediately on a new direction press instead of waiting for the timer
+  if ((dc||dr) && (dc!==player.lastDc||dr!==player.lastDr)) moveTimer=MOVE_MS;
+  player.lastDc=dc; player.lastDr=dr;
+
   moveTimer+=dt;
   if (moveTimer>=MOVE_MS) {
     moveTimer=0;
-    let dc=0,dr=0;
-    if      (keys['ArrowUp']   ||keys['KeyW']) dr=-1;
-    else if (keys['ArrowDown'] ||keys['KeyS']) dr= 1;
-    else if (keys['ArrowLeft'] ||keys['KeyA']) dc=-1;
-    else if (keys['ArrowRight']||keys['KeyD']) dc= 1;
     if (dc||dr) {
       const nc=player.c+dc,nr=player.r+dr;
       if (!solid(nc,nr)&&!hasBomb(nc,nr)) { player.c=nc; player.r=nr; }
     }
   }
-  player.px+=(player.c*T+T/2-player.px)*0.3;
-  player.py+=(HUD+player.r*T+T/2-player.py)*0.3;
+  player.px+=(player.c*T+T/2-player.px)*0.42;
+  player.py+=(HUD+player.r*T+T/2-player.py)*0.42;
   const bk=keys['Space']||keys['KeyZ'];
   if (bk&&!lastBomb) placeBomb();
   lastBomb=bk;
