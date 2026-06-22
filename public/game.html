@@ -61,6 +61,40 @@ canvas { display:block; border-radius:4px; }
 }
 #btn-restart:active { transform:translateY(3px); }
 
+/* ── Main menu ── */
+#main-menu {
+  display:flex; position:fixed; inset:0; z-index:100;
+  flex-direction:column; align-items:center; justify-content:center; gap:28px;
+  background:linear-gradient(160deg,#0d1a4a 0%,#1a0a3a 100%);
+}
+.mm-stars { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+.mm-logo  { font-size:72px; filter:drop-shadow(0 0 24px rgba(163,230,53,0.8)); }
+.mm-title {
+  font-size:56px; font-weight:900; color:#fff; letter-spacing:0.06em;
+  text-shadow:0 0 30px rgba(100,200,255,0.6);
+}
+.mm-sub { font-size:20px; color:rgba(255,255,255,0.45); letter-spacing:0.15em; margin-top:-18px; }
+.mm-btn {
+  width:420px; padding:20px 40px; font-size:22px; font-weight:900;
+  font-family:'Courier New',monospace; letter-spacing:0.06em;
+  border:none; border-radius:16px; cursor:pointer;
+  transition:transform .12s, box-shadow .12s;
+  display:flex; align-items:center; justify-content:center; gap:14px;
+}
+.mm-btn:hover { transform:translateY(-3px) scale(1.02); }
+.mm-btn:active { transform:translateY(2px) scale(0.98); }
+#mm-bomb {
+  background:linear-gradient(135deg,#44aaff,#1155dd);
+  color:#fff;
+  box-shadow:0 6px 0 #0033aa, 0 0 32px rgba(80,150,255,0.5);
+}
+#mm-kahoot {
+  background:linear-gradient(135deg,#cc44ff,#8811dd);
+  color:#fff;
+  box-shadow:0 6px 0 #550088, 0 0 32px rgba(180,80,255,0.5);
+}
+.mm-version { font-size:12px; color:rgba(255,255,255,0.2); letter-spacing:0.1em; }
+
 /* ── Analog stick (bottom-left) ── */
 #stick-label {
   position:fixed; bottom:198px; left:28px; z-index:40;
@@ -123,6 +157,17 @@ canvas { display:block; border-radius:4px; }
 <body>
 
 <canvas id="c"></canvas>
+
+<!-- Main menu -->
+<div id="main-menu">
+  <div class="mm-stars" id="mm-stars"></div>
+  <div class="mm-logo">♻️</div>
+  <div class="mm-title">TUC QUEST</div>
+  <div class="mm-sub">FESTIVAL EDITION</div>
+  <button class="mm-btn" id="mm-bomb">💣&nbsp; Bomberman Version</button>
+  <button class="mm-btn" id="mm-kahoot">🎯&nbsp; Kahoot Version</button>
+  <div class="mm-version">THE UPCYCLE COLLECTIVE · KUCHING 2026</div>
+</div>
 
 <!-- Death overlay -->
 <div id="overlay">
@@ -834,6 +879,35 @@ function loop(ts) {
 
   requestAnimationFrame(loop);
 }
+
+// ── Main menu ──────────────────────────────────────────────
+(function initMenu() {
+  // Starfield
+  const stars = document.getElementById('mm-stars');
+  for (let i=0;i<120;i++) {
+    const s=document.createElement('div');
+    const sz=1+Math.random()*2.5;
+    Object.assign(s.style,{
+      position:'absolute',
+      width:sz+'px', height:sz+'px', borderRadius:'50%',
+      background:'rgba(255,255,255,'+(0.3+Math.random()*0.7)+')',
+      left:Math.random()*100+'%', top:Math.random()*100+'%',
+      animation:`twinkle ${2+Math.random()*3}s ${Math.random()*3}s infinite alternate`,
+    });
+    stars.appendChild(s);
+  }
+  const st=document.createElement('style');
+  st.textContent='@keyframes twinkle{from{opacity:0.2}to{opacity:1}}';
+  document.head.appendChild(st);
+
+  document.getElementById('mm-bomb').addEventListener('click',()=>{
+    document.getElementById('main-menu').style.display='none';
+    startGame();
+  });
+  document.getElementById('mm-kahoot').addEventListener('click',()=>{
+    window.location.href='kahoot.html';
+  });
+})();
 
 // ── Start ──────────────────────────────────────────────────
 function startGame() {
