@@ -61,51 +61,36 @@ canvas { display:block; border-radius:4px; }
 }
 #btn-restart:active { transform:translateY(3px); }
 
-/* ── D-pad (bottom-left) ── */
-#dpad {
-  position:fixed; bottom:28px; left:28px; z-index:40;
-  display:grid;
-  grid-template-columns:60px 60px 60px;
-  grid-template-rows:60px 60px 60px;
-  gap:5px;
-  user-select:none; -webkit-user-select:none;
-}
-.dp-btn {
-  width:60px; height:60px;
-  background:rgba(40,80,200,0.72);
-  border:3px solid rgba(120,170,255,0.85);
-  border-radius:14px;
-  display:flex; align-items:center; justify-content:center;
-  font-size:26px; color:#ddeeff; cursor:pointer; touch-action:none;
-  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
-  box-shadow:0 5px 0 rgba(0,20,100,0.6), inset 0 1px 0 rgba(255,255,255,0.25);
-  border-bottom-width:5px;
-  transition:transform .08s, box-shadow .08s, background .08s;
-}
-.dp-btn:active, .dp-btn.pressed {
-  background:rgba(80,130,255,0.88);
-  transform:translateY(3px);
-  box-shadow:0 2px 0 rgba(0,20,100,0.6), inset 0 1px 0 rgba(255,255,255,0.25);
-  border-bottom-width:3px;
-}
-.dp-empty {
-  width:60px; height:60px;
-  background:rgba(30,60,160,0.28);
-  border:2px solid rgba(100,140,255,0.2);
-  border-radius:10px;
-}
-#dp-center {
-  width:60px; height:60px;
-  background:rgba(30,60,160,0.35);
-  border:2px solid rgba(100,140,255,0.3);
-  border-radius:10px;
-  display:flex; align-items:center; justify-content:center;
-  font-size:20px; color:rgba(150,190,255,0.5);
-}
-#dpad-label {
-  position:fixed; bottom:206px; left:28px; z-index:40;
+/* ── Analog stick (bottom-left) ── */
+#stick-label {
+  position:fixed; bottom:198px; left:28px; z-index:40;
   color:rgba(180,200,255,0.65); font-size:12px; font-weight:700;
-  letter-spacing:0.12em; text-align:center; width:194px;
+  letter-spacing:0.12em; text-align:center; width:150px;
+}
+#joystick-base {
+  position:fixed; bottom:28px; left:28px; z-index:40;
+  width:150px; height:150px; border-radius:50%;
+  background:rgba(30,70,190,0.38);
+  border:3px solid rgba(130,175,255,0.65);
+  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  box-shadow:0 0 24px rgba(60,110,255,0.3), inset 0 0 30px rgba(0,0,50,0.25);
+  cursor:pointer; touch-action:none; user-select:none; -webkit-user-select:none;
+  /* crosshair guides */
+  overflow:hidden;
+}
+#joystick-base::before, #joystick-base::after {
+  content:''; position:absolute;
+  background:rgba(150,190,255,0.18);
+}
+#joystick-base::before { width:100%; height:2px; top:50%; left:0; transform:translateY(-50%); }
+#joystick-base::after  { width:2px; height:100%; top:0; left:50%; transform:translateX(-50%); }
+#joystick-knob {
+  position:absolute; width:58px; height:58px; border-radius:50%;
+  background:radial-gradient(circle at 34% 32%, rgba(160,200,255,0.95), rgba(50,90,220,0.92));
+  border:3px solid rgba(190,220,255,0.9);
+  box-shadow:0 0 18px rgba(100,160,255,0.7), 0 4px 8px rgba(0,0,0,0.45);
+  top:50%; left:50%; transform:translate(-50%,-50%);
+  pointer-events:none;
 }
 
 /* ── Bomb button (bottom-right) ── */
@@ -157,18 +142,10 @@ canvas { display:block; border-radius:4px; }
   <button id="btn-restart">▶  PLAY AGAIN</button>
 </div>
 
-<!-- D-pad (bottom-left MOBA style) -->
-<div id="dpad-label">MOVE</div>
-<div id="dpad">
-  <div class="dp-empty"></div>
-  <button class="dp-btn" id="dp-up"    tabindex="-1">▲</button>
-  <div class="dp-empty"></div>
-  <button class="dp-btn" id="dp-left"  tabindex="-1">◀</button>
-  <div id="dp-center">⬡</div>
-  <button class="dp-btn" id="dp-right" tabindex="-1">▶</button>
-  <div class="dp-empty"></div>
-  <button class="dp-btn" id="dp-down"  tabindex="-1">▼</button>
-  <div class="dp-empty"></div>
+<!-- Analog stick (bottom-left) -->
+<div id="stick-label">MOVE</div>
+<div id="joystick-base">
+  <div id="joystick-knob"></div>
 </div>
 
 <!-- Bomb button (bottom-right) -->
@@ -374,7 +351,56 @@ const keys={};
 window.addEventListener('keydown',e=>{ keys[e.code]=true; if(e.code==='Space') e.preventDefault(); });
 window.addEventListener('keyup',  e=>{ keys[e.code]=false; });
 
-// ── Touch / on-screen controls ─────────────────────────────
+// ── Analog joystick ────────────────────────────────────────
+const jBase  = document.getElementById('joystick-base');
+const jKnob  = document.getElementById('joystick-knob');
+const J_RADIUS  = 75;   // half of base width
+const J_DEAD    = 0.22; // dead-zone fraction
+let jActive = false, jOriginX = 0, jOriginY = 0;
+
+function jClear() {
+  jActive = false;
+  keys['ArrowUp']=keys['ArrowDown']=keys['ArrowLeft']=keys['ArrowRight']=false;
+  jKnob.style.left = '50%';
+  jKnob.style.top  = '50%';
+}
+
+function jMove(cx, cy) {
+  if (!jActive) return;
+  const dx = cx - jOriginX, dy = cy - jOriginY;
+  const dist = Math.sqrt(dx*dx+dy*dy);
+  const angle = Math.atan2(dy, dx);
+  const clamp = Math.min(dist, J_RADIUS);
+  // move knob
+  jKnob.style.left = `calc(50% + ${Math.cos(angle)*clamp}px)`;
+  jKnob.style.top  = `calc(50% + ${Math.sin(angle)*clamp}px)`;
+  // set direction
+  keys['ArrowUp']=keys['ArrowDown']=keys['ArrowLeft']=keys['ArrowRight']=false;
+  if (dist > J_RADIUS * J_DEAD) {
+    const deg = angle * 180 / Math.PI;
+    if      (deg > -135 && deg <= -45)  keys['ArrowUp']    = true;
+    else if (deg > -45  && deg <= 45)   keys['ArrowRight'] = true;
+    else if (deg > 45   && deg <= 135)  keys['ArrowDown']  = true;
+    else                                keys['ArrowLeft']  = true;
+  }
+}
+
+function jStart(cx, cy) {
+  const rect = jBase.getBoundingClientRect();
+  jOriginX = rect.left + rect.width/2;
+  jOriginY = rect.top  + rect.height/2;
+  jActive = true;
+  jMove(cx, cy);
+}
+
+jBase.addEventListener('mousedown',  e => { jStart(e.clientX,e.clientY); e.preventDefault(); }, {passive:false});
+jBase.addEventListener('touchstart', e => { jStart(e.touches[0].clientX,e.touches[0].clientY); e.preventDefault(); }, {passive:false});
+window.addEventListener('mousemove', e => { if(jActive) jMove(e.clientX,e.clientY); });
+window.addEventListener('touchmove', e => { if(jActive){ jMove(e.touches[0].clientX,e.touches[0].clientY); e.preventDefault(); } }, {passive:false});
+window.addEventListener('mouseup',   () => jClear());
+window.addEventListener('touchend',  e => { if(jActive){ jClear(); e.preventDefault(); } }, {passive:false});
+
+// ── Bomb button ────────────────────────────────────────────
 function bindBtn(id, code) {
   const el = document.getElementById(id);
   const on  = e => { keys[code]=true;  e.preventDefault(); };
@@ -386,10 +412,6 @@ function bindBtn(id, code) {
   el.addEventListener('touchend',   off, {passive:false});
   el.addEventListener('touchcancel',off, {passive:false});
 }
-bindBtn('dp-up',    'ArrowUp');
-bindBtn('dp-down',  'ArrowDown');
-bindBtn('dp-left',  'ArrowLeft');
-bindBtn('dp-right', 'ArrowRight');
 bindBtn('btn-bomb', 'Space');
 
 // ── Update ─────────────────────────────────────────────────
