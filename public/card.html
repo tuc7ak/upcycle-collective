@@ -2,319 +2,412 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>TUC Name Card — Print Ready</title>
+<title>TUC Card — Style Options</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-
-/* ── Reset ── */
+/* ─── Reset ─────────────────────────────────────── */
 * { margin:0; padding:0; box-sizing:border-box; }
 
-/* ── Screen wrapper ── */
+/* ─── Page ───────────────────────────────────────── */
 body {
   font-family:'Inter',sans-serif;
-  background:#111827;
+  background:#0d1117;
   min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding:28px 20px;
-  gap:22px;
+  display:flex; flex-direction:column; align-items:center;
+  padding:32px 24px 60px;
+  gap:28px;
 }
 
-/* ── Print controls (hidden on print) ── */
-.controls {
-  display:flex; align-items:center; justify-content:space-between;
-  gap:20px; padding:18px 28px;
-  background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.1);
-  border-radius:16px; width:100%; max-width:800px;
+/* ─── Header ─────────────────────────────────────── */
+.top-bar {
+  width:100%; max-width:1100px;
+  display:flex; align-items:center; justify-content:space-between; gap:20px;
+  padding:18px 28px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;
 }
-.ctrl-info h1 { font-size:18px; font-weight:800; color:#fff; }
-.ctrl-info p  { font-size:13px; color:rgba(255,255,255,0.4); margin-top:3px; }
-.btn-print {
-  padding:12px 36px; font-size:16px; font-weight:800;
+.top-info h1 { font-size:20px; font-weight:900; color:#fff; }
+.top-info p  { font-size:13px; color:rgba(255,255,255,0.38); margin-top:3px; }
+.top-right { display:flex; align-items:center; gap:14px; }
+#selection-label {
+  font-size:13px; color:rgba(255,255,255,0.4);
+  padding:8px 16px; background:rgba(255,255,255,0.05);
+  border-radius:8px; white-space:nowrap;
+}
+#btn-print {
+  padding:12px 32px; font-size:15px; font-weight:800;
   background:#a3e635; color:#0c1a0e; border:none;
   border-radius:999px; cursor:pointer;
-  box-shadow:0 4px 0 #6aaa1a, 0 0 20px rgba(163,230,53,0.35);
-  transition:transform .1s, box-shadow .1s; white-space:nowrap;
+  box-shadow:0 4px 0 #6aaa1a;
+  transition:transform .1s, box-shadow .1s; opacity:0.35; pointer-events:none;
 }
-.btn-print:hover { transform:translateY(-2px); box-shadow:0 6px 0 #6aaa1a, 0 0 28px rgba(163,230,53,0.5); }
-.btn-print:active { transform:translateY(2px); box-shadow:0 2px 0 #6aaa1a; }
+#btn-print.active { opacity:1; pointer-events:all; }
+#btn-print.active:hover { transform:translateY(-2px); box-shadow:0 6px 0 #6aaa1a; }
+#btn-print.active:active { transform:translateY(2px); box-shadow:0 2px 0 #6aaa1a; }
 
-/* ── A4 paper ── */
-.a4-sheet {
-  width:210mm;
-  background:#ffffff;
-  padding:12mm 17mm 14mm;
+/* ─── Showcase grid ──────────────────────────────── */
+.showcase {
   display:grid;
-  grid-template-columns:repeat(2, 85.6mm);
-  grid-template-rows:repeat(3, 54mm);
-  gap:5mm;
-  align-content:start;
-  box-shadow:0 8px 60px rgba(0,0,0,0.6);
+  grid-template-columns:repeat(3,auto);
+  gap:36px 40px;
+  align-items:start;
 }
 
-/* ── Individual card ── */
-.tuc-card {
-  width:85.6mm;
-  height:54mm;
-  border-radius:2.8mm;
-  overflow:hidden;
-  position:relative;
-  display:flex;
-  flex-direction:column;
-  /* dark base + dot grid + radial glow */
+.style-option {
+  display:flex; flex-direction:column; align-items:center; gap:14px;
+  cursor:pointer;
+}
+
+.style-option .card-wrap {
+  border-radius:4mm;
+  transition:transform .15s, box-shadow .15s;
+  box-shadow:0 2px 20px rgba(0,0,0,0.5);
+}
+.style-option:hover .card-wrap {
+  transform:translateY(-4px) scale(1.01);
+  box-shadow:0 12px 40px rgba(0,0,0,0.6);
+}
+.style-option.selected .card-wrap {
+  box-shadow:0 0 0 3px #a3e635, 0 12px 40px rgba(163,230,53,0.25);
+  transform:translateY(-2px);
+}
+
+.style-meta {
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+}
+.style-num {
+  font-size:11px; font-weight:700; letter-spacing:0.18em;
+  color:rgba(255,255,255,0.28); text-transform:uppercase;
+}
+.style-name {
+  font-size:15px; font-weight:800; color:#fff;
+}
+.style-desc {
+  font-size:12px; color:rgba(255,255,255,0.38); text-align:center;
+}
+.style-option.selected .style-name { color:#a3e635; }
+
+/* ─── BASE CARD STRUCTURE ─────────────────────────── */
+.card {
+  width:85.6mm; height:54mm;
+  border-radius:2.8mm; overflow:hidden;
+  position:relative; display:flex; flex-direction:column;
+  flex-shrink:0;
+}
+.cs-strip { height:1.3mm; flex-shrink:0; }
+.cs-body {
+  flex:1; display:flex;
+  padding:2.8mm 3mm 2.5mm 3.5mm; gap:2.5mm;
+}
+.cs-left {
+  flex:1; display:flex; flex-direction:column;
+  justify-content:space-between; min-width:0;
+}
+.cs-brand { display:flex; flex-direction:column; gap:0.6mm; }
+.cs-brand-row { display:flex; align-items:center; gap:1.6mm; }
+.cs-icon { font-size:5mm; line-height:1; }
+.cs-name { font-size:3.5mm; font-weight:900; line-height:1.15; }
+.cs-event { font-size:1.9mm; letter-spacing:0.14em; text-transform:uppercase; padding-left:0.3mm; }
+.cs-divider { height:0.3mm; }
+.cs-cta { display:flex; flex-direction:column; gap:0.7mm; }
+.cs-head { font-size:3.1mm; font-weight:800; line-height:1.25; }
+.cs-sub  { font-size:2.2mm; line-height:1.3; }
+.cs-steps { display:flex; flex-direction:column; gap:0.9mm; }
+.cs-step  { display:flex; align-items:center; gap:1.5mm; font-size:2.1mm; }
+.cs-dot   { width:1.2mm; height:1.2mm; border-radius:50%; flex-shrink:0; }
+.cs-foot  { display:flex; align-items:center; gap:1.8mm; }
+.cs-stmy  { height:3.8mm; object-fit:contain; }
+.cs-sep   { width:0.3mm; height:3.5mm; flex-shrink:0; }
+.cs-sol   { font-size:1.9mm; display:flex; align-items:center; gap:0.8mm; white-space:nowrap; }
+.cs-right {
+  flex-shrink:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:1.5mm;
+}
+.cs-qrwrap {
+  border-radius:2mm; padding:1.4mm;
+  width:24mm; height:24mm;
+  display:flex; align-items:center; justify-content:center;
+}
+.cs-qrwrap img { width:21.2mm; height:21.2mm; display:block; }
+.cs-qrlabel { font-size:2mm; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; }
+
+/* ── S1: Dark Forest ───────────────────────────────── */
+.s1 {
   background-color:#0c1a0e;
   background-image:
-    radial-gradient(ellipse at 28% 48%, rgba(163,230,53,0.09) 0%, transparent 55%),
-    radial-gradient(circle, rgba(163,230,53,0.055) 1px, transparent 0);
-  background-size:100% 100%, 3.2mm 3.2mm;
+    radial-gradient(ellipse at 28% 48%,rgba(163,230,53,.09) 0%,transparent 55%),
+    radial-gradient(circle,rgba(163,230,53,.055) 1px,transparent 0);
+  background-size:100%,3.2mm 3.2mm;
 }
+.s1 .cs-strip  { background:linear-gradient(90deg,#6aaa1a,#c4f135,#a3e635,#d6ff50); }
+.s1 .cs-name   { color:#a3e635; }
+.s1 .cs-event  { color:rgba(255,255,255,.32); }
+.s1 .cs-divider{ background:linear-gradient(90deg,rgba(163,230,53,.4),transparent); }
+.s1 .cs-head   { color:#fff; }
+.s1 .cs-sub    { color:rgba(255,255,255,.48); }
+.s1 .cs-step   { color:rgba(255,255,255,.52); }
+.s1 .cs-dot    { background:#a3e635; }
+.s1 .cs-stmy   { opacity:.55; }
+.s1 .cs-sep    { background:rgba(255,255,255,.18); }
+.s1 .cs-sol    { color:rgba(255,255,255,.28); }
+.s1 .cs-qrwrap { background:#fff; box-shadow:0 0 4mm rgba(163,230,53,.3); }
+.s1 .cs-qrlabel{ color:#a3e635; }
 
-/* lime gradient strip at top */
-.card-strip {
-  height:1.3mm;
-  background:linear-gradient(90deg, #6aaa1a 0%, #c4f135 40%, #a3e635 60%, #d6ff50 100%);
-  flex-shrink:0;
-}
+/* ── S2: Snow White ────────────────────────────────── */
+.s2 { background:#fff; border:.4mm solid #ddeedd; }
+.s2 .cs-strip  { background:linear-gradient(90deg,#88cc20,#a3e635,#c8f050,#a3e635); }
+.s2 .cs-name   { color:#0f2d18; }
+.s2 .cs-event  { color:#7a9a7a; }
+.s2 .cs-divider{ background:linear-gradient(90deg,#a3e635,transparent); height:.4mm; }
+.s2 .cs-head   { color:#0f2d18; }
+.s2 .cs-sub    { color:#4a6e4a; }
+.s2 .cs-step   { color:#5a7e5a; }
+.s2 .cs-dot    { background:#a3e635; }
+.s2 .cs-stmy   { filter:brightness(0) saturate(100%) invert(28%) sepia(40%) saturate(800%) hue-rotate(88deg); opacity:.8; }
+.s2 .cs-sep    { background:#c8e0c8; }
+.s2 .cs-sol    { color:#7a9a7a; }
+.s2 .cs-qrwrap { background:#f4fce8; border:.4mm solid #a3e635; }
+.s2 .cs-qrlabel{ color:#4a8c30; }
 
-/* inner layout */
-.card-body {
-  flex:1;
-  display:flex;
-  padding:2.8mm 3mm 2.5mm 3.5mm;
-  gap:2.5mm;
+/* ── S3: Dual Panel ────────────────────────────────── */
+.s3 {
+  background:linear-gradient(90deg,#0f2d18 0%,#0f2d18 43%,#f4f9f0 43%,#f4f9f0 100%);
+  position:relative;
 }
+.s3::after {
+  content:''; position:absolute; left:43%; top:0; bottom:0;
+  width:.8mm; background:linear-gradient(180deg,#a3e635,#88cc22);
+}
+.s3 .cs-strip  { background:linear-gradient(90deg,#a3e635 43%,#c8e8a0 43%); }
+.s3 .cs-name   { color:#a3e635; }
+.s3 .cs-event  { color:rgba(255,255,255,.38); }
+.s3 .cs-divider{ background:rgba(163,230,53,.3); }
+.s3 .cs-head   { color:#fff; }
+.s3 .cs-sub    { color:rgba(255,255,255,.5); }
+.s3 .cs-step   { color:rgba(255,255,255,.5); }
+.s3 .cs-dot    { background:#a3e635; }
+.s3 .cs-stmy   { opacity:.55; }
+.s3 .cs-sep    { background:rgba(255,255,255,.2); }
+.s3 .cs-sol    { color:rgba(255,255,255,.3); }
+.s3 .cs-qrwrap { background:#fff; border:.4mm solid #a3e635; }
+.s3 .cs-qrlabel{ color:#2d6e20; }
 
-/* ── LEFT column ── */
-.card-left {
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-  min-width:0;
-}
+/* ── S4: Neon Night ────────────────────────────────── */
+.s4 { background:#020c04; }
+.s4 .cs-strip  { background:linear-gradient(90deg,#00ff44,#88ff00,#00ff88,#00ff44); }
+.s4 .cs-name   { color:#00ff66; }
+.s4 .cs-event  { color:rgba(0,255,100,.35); }
+.s4 .cs-divider{ background:linear-gradient(90deg,rgba(0,255,100,.5),transparent); }
+.s4 .cs-head   { color:#ffffff; }
+.s4 .cs-sub    { color:rgba(0,255,100,.55); }
+.s4 .cs-step   { color:rgba(0,255,100,.5); }
+.s4 .cs-dot    { background:#00ff66; }
+.s4 .cs-stmy   { opacity:.4; filter:hue-rotate(130deg) saturate(2); }
+.s4 .cs-sep    { background:rgba(0,255,100,.2); }
+.s4 .cs-sol    { color:rgba(0,255,100,.32); }
+.s4 .cs-qrwrap { background:#081208; border:.5mm solid #00ff66; }
+.s4 .cs-qrlabel{ color:#00ff66; }
 
-/* Brand */
-.brand {
-  display:flex;
-  flex-direction:column;
-  gap:0.6mm;
-}
-.brand-row {
-  display:flex;
-  align-items:center;
-  gap:1.6mm;
-}
-.brand-icon { font-size:5.2mm; line-height:1; }
-.brand-name {
-  font-size:3.6mm;
-  font-weight:900;
-  color:#a3e635;
-  letter-spacing:-0.01em;
-  line-height:1.15;
-}
-.brand-event {
-  font-size:2mm;
-  color:rgba(255,255,255,0.32);
-  letter-spacing:0.14em;
-  text-transform:uppercase;
-  padding-left:0.5mm;
-}
+/* ── S5: Parchment ─────────────────────────────────── */
+.s5 { background:#ede0c8; }
+.s5 .cs-strip  { background:linear-gradient(90deg,#1e3d0e,#3a6020,#1e3d0e); }
+.s5 .cs-name   { color:#1e3d0e; }
+.s5 .cs-event  { color:#7a6040; }
+.s5 .cs-divider{ background:linear-gradient(90deg,#8aaa60,transparent); }
+.s5 .cs-head   { color:#1a2c08; }
+.s5 .cs-sub    { color:#5a6040; }
+.s5 .cs-step   { color:#6a6850; }
+.s5 .cs-dot    { background:#4a7a30; }
+.s5 .cs-stmy   { filter:brightness(0) saturate(100%) invert(20%) sepia(50%) saturate(600%) hue-rotate(88deg); opacity:.7; }
+.s5 .cs-sep    { background:#b0a890; }
+.s5 .cs-sol    { color:#888070; }
+.s5 .cs-qrwrap { background:#fff8ee; border:.5mm solid #8b6914; }
+.s5 .cs-qrlabel{ color:#4a7a30; }
 
-/* divider */
-.divider {
-  height:0.3mm;
-  background:linear-gradient(90deg, rgba(163,230,53,0.4), transparent);
+/* ── S6: Gold Edition ──────────────────────────────── */
+.s6 {
+  background:#090600;
+  background-image:radial-gradient(ellipse at 30% 40%,rgba(212,168,48,.12) 0%,transparent 60%);
 }
+.s6 .cs-strip  { background:linear-gradient(90deg,#6a4600,#d4a830,#f5cc55,#d4a830,#6a4600); }
+.s6 .cs-name   { color:#d4a830; }
+.s6 .cs-event  { color:rgba(212,168,48,.38); }
+.s6 .cs-divider{ background:linear-gradient(90deg,rgba(212,168,48,.45),transparent); }
+.s6 .cs-head   { color:#fff; }
+.s6 .cs-sub    { color:rgba(212,168,48,.6); }
+.s6 .cs-step   { color:rgba(212,168,48,.5); }
+.s6 .cs-dot    { background:#d4a830; }
+.s6 .cs-stmy   { opacity:.5; filter:sepia(1) saturate(3) hue-rotate(20deg); }
+.s6 .cs-sep    { background:rgba(212,168,48,.22); }
+.s6 .cs-sol    { color:rgba(212,168,48,.3); }
+.s6 .cs-qrwrap { background:#fff; box-shadow:0 0 0 .5mm rgba(212,168,48,.6),0 0 5mm rgba(212,168,48,.2); }
+.s6 .cs-qrlabel{ color:#d4a830; }
 
-/* CTA */
-.cta { display:flex; flex-direction:column; gap:0.7mm; }
-.cta-head {
-  font-size:3.2mm;
-  font-weight:800;
-  color:#ffffff;
-  line-height:1.25;
-}
-.cta-sub {
-  font-size:2.3mm;
-  color:rgba(255,255,255,0.48);
-  line-height:1.3;
-}
+/* ─── PRINT SHEETS (hidden on screen) ───────────────── */
+.print-sheets { display:none; }
 
-/* Steps */
-.steps { display:flex; flex-direction:column; gap:0.9mm; }
-.step  { display:flex; align-items:center; gap:1.5mm; font-size:2.1mm; color:rgba(255,255,255,0.52); }
-.dot   { width:1.2mm; height:1.2mm; border-radius:50%; background:#a3e635; flex-shrink:0; }
-
-/* Footer */
-.card-foot {
-  display:flex;
-  align-items:center;
-  gap:1.8mm;
-}
-.foot-logo {
-  height:4mm;
-  object-fit:contain;
-  opacity:0.55;
-}
-.foot-sep {
-  width:0.3mm; height:3.5mm;
-  background:rgba(255,255,255,0.18);
-  flex-shrink:0;
-}
-.foot-sol {
-  font-size:1.9mm;
-  color:rgba(255,255,255,0.28);
-  display:flex; align-items:center; gap:0.8mm;
-  white-space:nowrap;
-}
-
-/* ── RIGHT column — QR ── */
-.card-right {
-  flex-shrink:0;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:1.6mm;
-}
-
-.qr-frame {
-  background:#ffffff;
-  border-radius:2mm;
-  padding:1.4mm;
-  width:24mm;
-  height:24mm;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  box-shadow:
-    0 0 0 0.4mm rgba(163,230,53,0.35),
-    0 1mm 4mm rgba(0,0,0,0.4);
-}
-.qr-frame canvas,
-.qr-frame img {
-  width:21.2mm !important;
-  height:21.2mm !important;
-  display:block;
-}
-
-.qr-label {
-  font-size:2mm;
-  font-weight:800;
-  color:#a3e635;
-  letter-spacing:0.12em;
-  text-align:center;
-  text-transform:uppercase;
-  opacity:0.9;
-}
-
-/* ── Print styles ── */
 @media print {
-  * {
-    -webkit-print-color-adjust:exact;
-    print-color-adjust:exact;
-    color-adjust:exact;
+  * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body { background:#fff; padding:0; display:block; }
+  .top-bar, .showcase { display:none !important; }
+  .print-sheets { display:block; }
+
+  .print-sheet {
+    display:none;
+    width:210mm; padding:12mm 17mm 14mm;
+    grid-template-columns:repeat(2, 85.6mm);
+    grid-template-rows:repeat(3, 54mm);
+    gap:5mm; align-content:start;
   }
-  body {
-    background:white;
-    padding:0;
-    display:block;
-  }
-  .controls { display:none; }
-  .a4-sheet {
-    box-shadow:none;
-    margin:0; padding:12mm 17mm 14mm;
-    page-break-after:always;
-  }
+  .print-sheet.selected { display:grid !important; }
 }
 </style>
 </head>
 <body>
 
-<!-- Print controls -->
-<div class="controls">
-  <div class="ctrl-info">
-    <h1>♻️ TUC Name Card — Print Ready</h1>
-    <p>6 cards per A4 · Print at 100% scale · Dark festival design</p>
+<!-- Header -->
+<div class="top-bar">
+  <div class="top-info">
+    <h1>♻️  TUC Card — Style Options</h1>
+    <p>Click a style to select · Then print 6 copies on A4</p>
   </div>
-  <button class="btn-print" onclick="window.print()">🖨️ &nbsp;Print Cards</button>
+  <div class="top-right">
+    <div id="selection-label">No style selected</div>
+    <button id="btn-print" onclick="printSelected()">🖨️ &nbsp;Print 6 Copies</button>
+  </div>
 </div>
 
-<!-- A4 sheet -->
-<div class="a4-sheet" id="sheet"></div>
+<!-- Showcase -->
+<div class="showcase" id="showcase"></div>
+
+<!-- Print sheets (one per style, 6 cards each) -->
+<div class="print-sheets" id="print-sheets"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
+'use strict';
+
 const QR_URL = 'https://upcycle-collective.vercel.app';
-const N = 6;
 
-function cardHTML(i) {
+const STYLES = [
+  { num:'01', name:'Dark Forest',  desc:'Dark green · Festival feel',    cls:'s1' },
+  { num:'02', name:'Snow White',   desc:'Pure white · Minimal & clean',  cls:'s2' },
+  { num:'03', name:'Dual Panel',   desc:'Split dark/light · Bold edge',  cls:'s3' },
+  { num:'04', name:'Neon Night',   desc:'Near-black · Electric glow',    cls:'s4' },
+  { num:'05', name:'Parchment',    desc:'Warm cream · Organic/earthy',   cls:'s5' },
+  { num:'06', name:'Gold Edition', desc:'Dark warm · Luxury premium',    cls:'s6' },
+];
+
+let selectedStyle = null;
+
+// ── Card HTML template ─────────────────────────────────
+function cardHTML(cls, qrSrc) {
   return `
-  <div class="tuc-card">
-    <div class="card-strip"></div>
-    <div class="card-body">
-
-      <div class="card-left">
-        <!-- Brand -->
-        <div class="brand">
-          <div class="brand-row">
-            <span class="brand-icon">♻️</span>
-            <span class="brand-name">THE UPCYCLE<br>COLLECTIVE</span>
+  <div class="card ${cls}">
+    <div class="cs-strip"></div>
+    <div class="cs-body">
+      <div class="cs-left">
+        <div class="cs-brand">
+          <div class="cs-brand-row">
+            <span class="cs-icon">♻️</span>
+            <span class="cs-name">THE UPCYCLE<br>COLLECTIVE</span>
           </div>
-          <div class="brand-event">Kuching &nbsp;·&nbsp; 21 July 2026</div>
+          <div class="cs-event">Kuching &nbsp;·&nbsp; 21 July 2026</div>
         </div>
-
-        <div class="divider"></div>
-
-        <!-- CTA -->
-        <div class="cta">
-          <div class="cta-head">Scan to open<br>your wallet →</div>
-          <div class="cta-sub">Earn TUC tokens at the event</div>
+        <div class="cs-divider"></div>
+        <div class="cs-cta">
+          <div class="cs-head">Scan to open<br>your wallet →</div>
+          <div class="cs-sub">Earn TUC tokens at the event</div>
         </div>
-
-        <!-- Steps -->
-        <div class="steps">
-          <div class="step"><span class="dot"></span>Donate items &nbsp;→&nbsp; earn tokens</div>
-          <div class="step"><span class="dot"></span>Spend tokens at vendor booths</div>
+        <div class="cs-steps">
+          <div class="cs-step"><span class="cs-dot"></span>Donate items &nbsp;→&nbsp; earn tokens</div>
+          <div class="cs-step"><span class="cs-dot"></span>Spend tokens at vendor booths</div>
         </div>
-
-        <!-- Footer -->
-        <div class="card-foot">
-          <img class="foot-logo" src="STMY-White.png" alt="Superteam Malaysia">
-          <div class="foot-sep"></div>
-          <div class="foot-sol">⬡ Solana Mainnet</div>
+        <div class="cs-foot">
+          <img class="cs-stmy" src="STMY-White.png" alt="Superteam MY">
+          <div class="cs-sep"></div>
+          <div class="cs-sol">⬡ Solana</div>
         </div>
       </div>
-
-      <!-- QR -->
-      <div class="card-right">
-        <div class="qr-frame" id="qr-${i}"></div>
-        <div class="qr-label">↑ Scan me</div>
+      <div class="cs-right">
+        <div class="cs-qrwrap">
+          <img src="${qrSrc}" alt="QR Code">
+        </div>
+        <div class="cs-qrlabel">↑ Scan me</div>
       </div>
-
     </div>
   </div>`;
 }
 
-// Inject cards
-const sheet = document.getElementById('sheet');
-for (let i=0; i<N; i++) {
-  const tmp = document.createElement('div');
-  tmp.innerHTML = cardHTML(i);
-  sheet.appendChild(tmp.firstElementChild);
+// ── Generate QR once, then build all cards ─────────────
+function buildCards(qrSrc) {
+  const showcase = document.getElementById('showcase');
+  const printSheets = document.getElementById('print-sheets');
+
+  STYLES.forEach((s, i) => {
+    const idx = i + 1;
+
+    // Showcase card
+    const opt = document.createElement('div');
+    opt.className = 'style-option';
+    opt.dataset.style = idx;
+    opt.onclick = () => selectStyle(idx, s.name);
+    opt.innerHTML = `
+      <div class="card-wrap">${cardHTML(s.cls, qrSrc)}</div>
+      <div class="style-meta">
+        <div class="style-num">${s.num}</div>
+        <div class="style-name">${s.name}</div>
+        <div class="style-desc">${s.desc}</div>
+      </div>`;
+    showcase.appendChild(opt);
+
+    // Print sheet (6 copies)
+    const sheet = document.createElement('div');
+    sheet.className = 'print-sheet';
+    sheet.id = `ps-${idx}`;
+    for (let j=0;j<6;j++) sheet.innerHTML += cardHTML(s.cls, qrSrc);
+    printSheets.appendChild(sheet);
+  });
 }
 
-// Generate QR codes
-for (let i=0; i<N; i++) {
-  new QRCode(document.getElementById(`qr-${i}`), {
-    text: QR_URL,
-    width: 320, height: 320,
-    colorDark:'#0c1a0e',
-    colorLight:'#ffffff',
-    correctLevel: QRCode.CorrectLevel.M,
-  });
+// ── Generate QR code ───────────────────────────────────
+const tmp = document.createElement('div');
+Object.assign(tmp.style, {position:'fixed',left:'-9999px',top:'-9999px'});
+document.body.appendChild(tmp);
+
+new QRCode(tmp, {
+  text: QR_URL, width:320, height:320,
+  colorDark:'#0c1a0e', colorLight:'#ffffff',
+  correctLevel: QRCode.CorrectLevel.M,
+});
+
+// Wait a tick for QRCode.js to render
+setTimeout(() => {
+  const canvas = tmp.querySelector('canvas');
+  const qrSrc = canvas ? canvas.toDataURL() : '';
+  document.body.removeChild(tmp);
+  buildCards(qrSrc);
+}, 150);
+
+// ── Selection ──────────────────────────────────────────
+function selectStyle(idx, name) {
+  selectedStyle = idx;
+  document.querySelectorAll('.style-option').forEach(el => el.classList.remove('selected'));
+  document.querySelector(`.style-option[data-style="${idx}"]`).classList.add('selected');
+  document.getElementById('selection-label').textContent = `Selected: Style ${String(idx).padStart(2,'0')} — ${name}`;
+  const btn = document.getElementById('btn-print');
+  btn.classList.add('active');
+  btn.textContent = `🖨️  Print Style ${String(idx).padStart(2,'0')}`;
+}
+
+// ── Print ──────────────────────────────────────────────
+function printSelected() {
+  if (!selectedStyle) return;
+  // Mark selected sheet
+  document.querySelectorAll('.print-sheet').forEach(s => s.classList.remove('selected'));
+  document.getElementById(`ps-${selectedStyle}`).classList.add('selected');
+  window.print();
 }
 </script>
 </body>
