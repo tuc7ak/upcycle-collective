@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>TUC Card — Style Options</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<title>TUC Card — 6 Layouts</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-/* ─── Reset ─────────────────────────────────────── */
+/* ── Reset ── */
 * { margin:0; padding:0; box-sizing:border-box; }
 
-/* ─── Page ───────────────────────────────────────── */
+/* ── Page ── */
 body {
   font-family:'Inter',sans-serif;
   background:#0d1117;
@@ -18,21 +18,21 @@ body {
   gap:28px;
 }
 
-/* ─── Header ─────────────────────────────────────── */
+/* ── Header ── */
 .top-bar {
-  width:100%; max-width:1100px;
+  width:100%; max-width:1500px;
   display:flex; align-items:center; justify-content:space-between; gap:20px;
   padding:18px 28px;
-  background:rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,0.08);
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
   border-radius:16px;
 }
 .top-info h1 { font-size:20px; font-weight:900; color:#fff; }
-.top-info p  { font-size:13px; color:rgba(255,255,255,0.38); margin-top:3px; }
-.top-right { display:flex; align-items:center; gap:14px; }
+.top-info p  { font-size:13px; color:rgba(255,255,255,.38); margin-top:3px; }
+.top-right   { display:flex; align-items:center; gap:14px; }
 #selection-label {
-  font-size:13px; color:rgba(255,255,255,0.4);
-  padding:8px 16px; background:rgba(255,255,255,0.05);
+  font-size:13px; color:rgba(255,255,255,.4);
+  padding:8px 16px; background:rgba(255,255,255,.05);
   border-radius:8px; white-space:nowrap;
 }
 #btn-print {
@@ -40,211 +40,364 @@ body {
   background:#a3e635; color:#0c1a0e; border:none;
   border-radius:999px; cursor:pointer;
   box-shadow:0 4px 0 #6aaa1a;
-  transition:transform .1s, box-shadow .1s; opacity:0.35; pointer-events:none;
+  transition:transform .1s,box-shadow .1s;
+  opacity:.35; pointer-events:none;
 }
 #btn-print.active { opacity:1; pointer-events:all; }
-#btn-print.active:hover { transform:translateY(-2px); box-shadow:0 6px 0 #6aaa1a; }
-#btn-print.active:active { transform:translateY(2px); box-shadow:0 2px 0 #6aaa1a; }
+#btn-print.active:hover  { transform:translateY(-2px); box-shadow:0 6px 0 #6aaa1a; }
+#btn-print.active:active { transform:translateY(2px);  box-shadow:0 2px 0 #6aaa1a; }
 
-/* ─── Showcase grid ──────────────────────────────── */
+/* ── Showcase grid ── */
 .showcase {
   display:grid;
   grid-template-columns:repeat(3,auto);
-  gap:36px 40px;
-  align-items:start;
+  gap:44px 60px;
 }
-
 .style-option {
   display:flex; flex-direction:column; align-items:center; gap:14px;
   cursor:pointer;
 }
-
-.style-option .card-wrap {
-  border-radius:4mm;
-  transition:transform .15s, box-shadow .15s;
-  box-shadow:0 2px 20px rgba(0,0,0,0.5);
+.card-pair {
+  display:flex; gap:12px; align-items:flex-start;
+  transition:transform .15s;
 }
-.style-option:hover .card-wrap {
-  transform:translateY(-4px) scale(1.01);
-  box-shadow:0 12px 40px rgba(0,0,0,0.6);
+.style-option:hover .card-pair { transform:translateY(-5px); }
+.style-option.selected .card-pair {
+  filter:drop-shadow(0 0 8px rgba(163,230,53,.5));
+  transform:translateY(-3px);
 }
-.style-option.selected .card-wrap {
-  box-shadow:0 0 0 3px #a3e635, 0 12px 40px rgba(163,230,53,0.25);
-  transform:translateY(-2px);
-}
-
-.style-meta {
-  display:flex; flex-direction:column; align-items:center; gap:4px;
-}
-.style-num {
-  font-size:11px; font-weight:700; letter-spacing:0.18em;
-  color:rgba(255,255,255,0.28); text-transform:uppercase;
-}
-.style-name {
-  font-size:15px; font-weight:800; color:#fff;
-}
-.style-desc {
-  font-size:12px; color:rgba(255,255,255,0.38); text-align:center;
-}
+.pair-side { display:flex; flex-direction:column; align-items:center; gap:5px; }
+.pair-lbl  { font-size:10px; font-weight:700; letter-spacing:.18em; color:rgba(255,255,255,.22); text-transform:uppercase; }
+.style-meta { display:flex; flex-direction:column; align-items:center; gap:3px; }
+.style-num  { font-size:11px; font-weight:700; letter-spacing:.18em; color:rgba(255,255,255,.28); text-transform:uppercase; }
+.style-name { font-size:15px; font-weight:800; color:#fff; }
+.style-desc { font-size:12px; color:rgba(255,255,255,.38); }
 .style-option.selected .style-name { color:#a3e635; }
 
-/* ─── BASE CARD STRUCTURE ─────────────────────────── */
+/* ── Base card ── */
 .card {
   width:85.6mm; height:54mm;
   border-radius:2.8mm; overflow:hidden;
-  position:relative; display:flex; flex-direction:column;
-  flex-shrink:0;
+  position:relative; flex-shrink:0;
+  font-family:'Inter','Helvetica Neue',Arial,sans-serif;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
 }
-.cs-strip { height:1.3mm; flex-shrink:0; }
-.cs-body {
-  flex:1; display:flex;
-  padding:2.8mm 3mm 2.5mm 3.5mm; gap:2.5mm;
+
+/* ══════════════════════════════════════════════════════════
+   S1: DARK FOREST — Horizontal Split (Left brand | Right QR)
+   ══════════════════════════════════════════════════════════ */
+.f1 {
+  background-color:#0c1a0e;
+  background-image:radial-gradient(circle,rgba(163,230,53,.18) 1px,transparent 1px);
+  background-size:4mm 4mm;
+  display:flex; flex-direction:column;
 }
-.cs-left {
-  flex:1; display:flex; flex-direction:column;
-  justify-content:space-between; min-width:0;
+.f1-top-strip { width:100%; height:1.4mm; background:#a3e635; flex-shrink:0; }
+.f1-body { display:flex; flex:1; min-height:0; }
+.f1-left {
+  width:48%; display:flex; flex-direction:column;
+  justify-content:space-between;
+  padding:2.5mm 2.5mm 2.5mm 3mm;
 }
-.cs-brand { display:flex; flex-direction:column; gap:0.6mm; }
-.cs-brand-row { display:flex; align-items:center; gap:1.6mm; }
-.cs-icon { font-size:5mm; line-height:1; }
-.cs-name { font-size:3.5mm; font-weight:900; line-height:1.15; }
-.cs-event { font-size:1.9mm; letter-spacing:0.14em; text-transform:uppercase; padding-left:0.3mm; }
-.cs-divider { height:0.3mm; }
-.cs-cta { display:flex; flex-direction:column; gap:0.7mm; }
-.cs-head { font-size:3.1mm; font-weight:800; line-height:1.25; }
-.cs-sub  { font-size:2.2mm; line-height:1.3; }
-.cs-steps { display:flex; flex-direction:column; gap:0.9mm; }
-.cs-step  { display:flex; align-items:center; gap:1.5mm; font-size:2.1mm; }
-.cs-dot   { width:1.2mm; height:1.2mm; border-radius:50%; flex-shrink:0; }
-.cs-foot  { display:flex; align-items:center; gap:1.8mm; }
-.cs-stmy  { height:3.8mm; object-fit:contain; }
-.cs-sep   { width:0.3mm; height:3.5mm; flex-shrink:0; }
-.cs-sol   { font-size:1.9mm; display:flex; align-items:center; gap:0.8mm; white-space:nowrap; }
-.cs-right {
-  flex-shrink:0; display:flex; flex-direction:column;
-  align-items:center; justify-content:center; gap:1.5mm;
+.f1-divider {
+  width:.35mm; flex-shrink:0; align-self:stretch; margin:3mm 0;
+  background:linear-gradient(to bottom,transparent,#a3e635 20%,#a3e635 80%,transparent);
 }
-.cs-qrwrap {
-  border-radius:2mm; padding:1.4mm;
-  width:24mm; height:24mm;
+.f1-right { width:52%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.5mm; }
+
+.f1-brand { display:flex; flex-direction:column; gap:.6mm; }
+.f1-brand-icon { font-size:5mm; line-height:1; }
+.f1-brand-name { font-size:2.6mm; font-weight:900; color:#a3e635; letter-spacing:.04em; line-height:1.2; }
+.f1-event-date { font-size:1.9mm; color:rgba(255,255,255,.45); letter-spacing:.06em; text-transform:uppercase; margin-top:.4mm; }
+.f1-cta { display:flex; flex-direction:column; gap:.8mm; }
+.f1-cta-head { font-size:2.2mm; font-weight:700; color:#fff; line-height:1.3; }
+.f1-cta-sub  { font-size:1.8mm; color:rgba(255,255,255,.45); line-height:1.3; }
+.f1-steps { display:flex; flex-direction:column; gap:.8mm; }
+.f1-step  { font-size:1.75mm; color:rgba(255,255,255,.45); display:flex; align-items:center; gap:1.2mm; line-height:1.3; }
+.f1-step::before { content:''; display:inline-block; width:1.4mm; height:1.4mm; border-radius:50%; background:#a3e635; flex-shrink:0; }
+.f1-footer { display:flex; align-items:center; gap:1.5mm; }
+.f1-footer-logo { height:3.5mm; width:auto; display:block; }
+.f1-footer-sep  { width:.25mm; height:3mm; background:rgba(255,255,255,.25); }
+.f1-footer-sol  { font-size:1.8mm; color:rgba(255,255,255,.45); letter-spacing:.04em; }
+.f1-qr-box { background:#fff; padding:1.5mm; box-shadow:0 0 4mm 1mm rgba(163,230,53,.45); display:flex; align-items:center; justify-content:center; }
+.f1-qr-box img { width:22mm; height:22mm; display:block; }
+.f1-scan-label { font-size:2mm; font-weight:700; color:#a3e635; letter-spacing:.1em; text-transform:uppercase; }
+
+/* S1 back */
+.b1 {
+  background-color:#0c1a0e;
+  background-image:radial-gradient(circle,rgba(163,230,53,.15) 1px,transparent 1px);
+  background-size:4mm 4mm;
   display:flex; align-items:center; justify-content:center;
 }
-.cs-qrwrap img { width:21.2mm; height:21.2mm; display:block; }
-.cs-qrlabel { font-size:2mm; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; }
+.b1-strip-top    { position:absolute; top:0; left:0; width:100%; height:1.4mm; background:#a3e635; }
+.b1-strip-bottom { position:absolute; bottom:0; left:0; width:100%; height:1.4mm; background:#a3e635; }
+.b1-content { display:flex; flex-direction:column; align-items:center; gap:1.6mm; text-align:center; padding:0 5mm; }
+.b1-icon    { font-size:10mm; line-height:1; }
+.b1-name    { font-size:4mm; font-weight:900; color:#a3e635; letter-spacing:.05em; line-height:1.1; }
+.b1-tagline { font-size:2mm; color:rgba(255,255,255,.45); letter-spacing:.04em; }
+.b1-line    { width:20mm; height:.3mm; background:linear-gradient(to right,transparent,#a3e635,transparent); }
+.b1-date    { font-size:2mm; color:rgba(255,255,255,.45); letter-spacing:.1em; text-transform:uppercase; }
+.b1-footer      { display:flex; align-items:center; gap:1.5mm; margin-top:.5mm; }
+.b1-footer-logo { height:3.5mm; width:auto; display:block; }
+.b1-footer-sep  { width:.25mm; height:3mm; background:rgba(255,255,255,.25); }
+.b1-footer-sol  { font-size:1.8mm; color:rgba(255,255,255,.45); letter-spacing:.04em; }
 
-/* ── S1: Dark Forest ───────────────────────────────── */
-.s1 {
-  background-color:#0c1a0e;
-  background-image:
-    radial-gradient(ellipse at 28% 48%,rgba(163,230,53,.09) 0%,transparent 55%),
-    radial-gradient(circle,rgba(163,230,53,.055) 1px,transparent 0);
-  background-size:100%,3.2mm 3.2mm;
+/* ══════════════════════════════════════════════════════════
+   S2: SNOW WHITE — Large QR Left Panel | Text Right
+   ══════════════════════════════════════════════════════════ */
+.f2 {
+  background:#fff;
+  border:.3mm solid #a3e635;
+  display:flex; flex-direction:column;
 }
-.s1 .cs-strip  { background:linear-gradient(90deg,#6aaa1a,#c4f135,#a3e635,#d6ff50); }
-.s1 .cs-name   { color:#a3e635; }
-.s1 .cs-event  { color:rgba(255,255,255,.32); }
-.s1 .cs-divider{ background:linear-gradient(90deg,rgba(163,230,53,.4),transparent); }
-.s1 .cs-head   { color:#fff; }
-.s1 .cs-sub    { color:rgba(255,255,255,.48); }
-.s1 .cs-step   { color:rgba(255,255,255,.52); }
-.s1 .cs-dot    { background:#a3e635; }
-.s1 .cs-stmy   { opacity:.55; }
-.s1 .cs-sep    { background:rgba(255,255,255,.18); }
-.s1 .cs-sol    { color:rgba(255,255,255,.28); }
-.s1 .cs-qrwrap { background:#fff; box-shadow:0 0 4mm rgba(163,230,53,.3); }
-.s1 .cs-qrlabel{ color:#a3e635; }
-
-/* ── S2: Snow White ────────────────────────────────── */
-.s2 { background:#fff; border:.4mm solid #ddeedd; }
-.s2 .cs-strip  { background:linear-gradient(90deg,#88cc20,#a3e635,#c8f050,#a3e635); }
-.s2 .cs-name   { color:#0f2d18; }
-.s2 .cs-event  { color:#7a9a7a; }
-.s2 .cs-divider{ background:linear-gradient(90deg,#a3e635,transparent); height:.4mm; }
-.s2 .cs-head   { color:#0f2d18; }
-.s2 .cs-sub    { color:#4a6e4a; }
-.s2 .cs-step   { color:#5a7e5a; }
-.s2 .cs-dot    { background:#a3e635; }
-.s2 .cs-stmy   { filter:brightness(0) saturate(100%) invert(28%) sepia(40%) saturate(800%) hue-rotate(88deg); opacity:.8; }
-.s2 .cs-sep    { background:#c8e0c8; }
-.s2 .cs-sol    { color:#7a9a7a; }
-.s2 .cs-qrwrap { background:#f4fce8; border:.4mm solid #a3e635; }
-.s2 .cs-qrlabel{ color:#4a8c30; }
-
-/* ── S3: Dual Panel ────────────────────────────────── */
-.s3 {
-  background:linear-gradient(90deg,#0f2d18 0%,#0f2d18 43%,#f4f9f0 43%,#f4f9f0 100%);
-  position:relative;
+.f2-top-strip { width:100%; height:1.4mm; background:#a3e635; flex-shrink:0; }
+.f2-body { display:flex; flex:1; min-height:0; }
+.f2-left {
+  width:38%; background:#f4fce8; flex-shrink:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:1.5mm; padding:2mm;
 }
-.s3::after {
-  content:''; position:absolute; left:43%; top:0; bottom:0;
-  width:.8mm; background:linear-gradient(180deg,#a3e635,#88cc22);
+.f2-divider {
+  width:.35mm; flex-shrink:0; align-self:stretch; margin:3mm 0;
+  background:linear-gradient(to bottom,transparent,#a3e635 20%,#a3e635 80%,transparent);
 }
-.s3 .cs-strip  { background:linear-gradient(90deg,#a3e635 43%,#c8e8a0 43%); }
-.s3 .cs-name   { color:#a3e635; }
-.s3 .cs-event  { color:rgba(255,255,255,.38); }
-.s3 .cs-divider{ background:rgba(163,230,53,.3); }
-.s3 .cs-head   { color:#fff; }
-.s3 .cs-sub    { color:rgba(255,255,255,.5); }
-.s3 .cs-step   { color:rgba(255,255,255,.5); }
-.s3 .cs-dot    { background:#a3e635; }
-.s3 .cs-stmy   { opacity:.55; }
-.s3 .cs-sep    { background:rgba(255,255,255,.2); }
-.s3 .cs-sol    { color:rgba(255,255,255,.3); }
-.s3 .cs-qrwrap { background:#fff; border:.4mm solid #a3e635; }
-.s3 .cs-qrlabel{ color:#2d6e20; }
+.f2-right { flex:1; display:flex; flex-direction:column; justify-content:space-between; padding:2.5mm 3mm 2.5mm 2.5mm; }
+.f2-qr-box { border:.5mm solid #a3e635; padding:1.5mm; background:#fff; display:flex; align-items:center; justify-content:center; }
+.f2-qr-box img { width:22mm; height:22mm; display:block; }
+.f2-scan-label { font-size:2mm; font-weight:700; color:#0f2d18; letter-spacing:.1em; text-transform:uppercase; text-align:center; }
+.f2-brand { display:flex; flex-direction:column; gap:.5mm; }
+.f2-brand-icon { font-size:4.5mm; line-height:1; }
+.f2-brand-name { font-size:2.6mm; font-weight:900; color:#0f2d18; letter-spacing:.04em; line-height:1.2; }
+.f2-cta { display:flex; flex-direction:column; gap:.8mm; }
+.f2-cta-head { font-size:2.2mm; font-weight:700; color:#0f2d18; line-height:1.3; }
+.f2-cta-sub  { font-size:1.8mm; color:rgba(15,45,24,.55); line-height:1.3; }
+.f2-steps { display:flex; flex-direction:column; gap:.8mm; }
+.f2-step  { font-size:1.75mm; color:rgba(15,45,24,.55); display:flex; align-items:center; gap:1.2mm; line-height:1.3; }
+.f2-step::before { content:''; display:inline-block; width:1.4mm; height:1.4mm; border-radius:50%; background:#a3e635; flex-shrink:0; }
+.f2-event-date { font-size:1.9mm; color:rgba(15,45,24,.45); letter-spacing:.06em; text-transform:uppercase; }
+.f2-footer { display:flex; align-items:center; gap:1.5mm; }
+.f2-footer-logo { height:3.5mm; width:auto; display:block; filter:brightness(0) saturate(100%) invert(9%) sepia(38%) saturate(1200%) hue-rotate(95deg) brightness(90%) contrast(110%); }
+.f2-footer-sep  { width:.25mm; height:3mm; background:rgba(15,45,24,.25); }
+.f2-footer-sol  { font-size:1.8mm; color:rgba(15,45,24,.45); letter-spacing:.04em; }
 
-/* ── S4: Neon Night ────────────────────────────────── */
-.s4 { background:#020c04; }
-.s4 .cs-strip  { background:linear-gradient(90deg,#00ff44,#88ff00,#00ff88,#00ff44); }
-.s4 .cs-name   { color:#00ff66; }
-.s4 .cs-event  { color:rgba(0,255,100,.35); }
-.s4 .cs-divider{ background:linear-gradient(90deg,rgba(0,255,100,.5),transparent); }
-.s4 .cs-head   { color:#ffffff; }
-.s4 .cs-sub    { color:rgba(0,255,100,.55); }
-.s4 .cs-step   { color:rgba(0,255,100,.5); }
-.s4 .cs-dot    { background:#00ff66; }
-.s4 .cs-stmy   { opacity:.4; filter:hue-rotate(130deg) saturate(2); }
-.s4 .cs-sep    { background:rgba(0,255,100,.2); }
-.s4 .cs-sol    { color:rgba(0,255,100,.32); }
-.s4 .cs-qrwrap { background:#081208; border:.5mm solid #00ff66; }
-.s4 .cs-qrlabel{ color:#00ff66; }
+/* S2 back */
+.b2 { background:#fff; border:.3mm solid #a3e635; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.b2-strip-top { position:absolute; top:0; left:0; width:100%; height:1.4mm; background:#a3e635; }
+.b2-content { display:flex; flex-direction:column; align-items:center; gap:1.8mm; text-align:center; padding:0 6mm; padding-top:1.4mm; }
+.b2-circle { width:14mm; height:14mm; border-radius:50%; border:1mm solid #a3e635; background:#f4fce8; display:flex; align-items:center; justify-content:center; }
+.b2-circle-icon { font-size:7mm; line-height:1; }
+.b2-name    { font-size:3.8mm; font-weight:900; color:#0f2d18; letter-spacing:.04em; line-height:1.2; }
+.b2-line    { width:18mm; height:.3mm; background:#a3e635; }
+.b2-date    { font-size:2mm; color:#7a9a7a; letter-spacing:.1em; text-transform:uppercase; }
+.b2-tagline { font-size:1.9mm; color:rgba(15,45,24,.45); letter-spacing:.03em; }
+.b2-footer      { display:flex; align-items:center; gap:1.5mm; margin-top:.3mm; }
+.b2-footer-logo { height:3.5mm; width:auto; display:block; filter:brightness(0) saturate(100%) invert(9%) sepia(38%) saturate(1200%) hue-rotate(95deg) brightness(90%) contrast(110%); }
+.b2-footer-sep  { width:.25mm; height:3mm; background:rgba(15,45,24,.25); }
+.b2-footer-sol  { font-size:1.8mm; color:rgba(15,45,24,.45); letter-spacing:.04em; }
 
-/* ── S5: Parchment ─────────────────────────────────── */
-.s5 { background:#ede0c8; }
-.s5 .cs-strip  { background:linear-gradient(90deg,#1e3d0e,#3a6020,#1e3d0e); }
-.s5 .cs-name   { color:#1e3d0e; }
-.s5 .cs-event  { color:#7a6040; }
-.s5 .cs-divider{ background:linear-gradient(90deg,#8aaa60,transparent); }
-.s5 .cs-head   { color:#1a2c08; }
-.s5 .cs-sub    { color:#5a6040; }
-.s5 .cs-step   { color:#6a6850; }
-.s5 .cs-dot    { background:#4a7a30; }
-.s5 .cs-stmy   { filter:brightness(0) saturate(100%) invert(20%) sepia(50%) saturate(600%) hue-rotate(88deg); opacity:.7; }
-.s5 .cs-sep    { background:#b0a890; }
-.s5 .cs-sol    { color:#888070; }
-.s5 .cs-qrwrap { background:#fff8ee; border:.5mm solid #8b6914; }
-.s5 .cs-qrlabel{ color:#4a7a30; }
-
-/* ── S6: Gold Edition ──────────────────────────────── */
-.s6 {
-  background:#090600;
-  background-image:radial-gradient(ellipse at 30% 40%,rgba(212,168,48,.12) 0%,transparent 60%);
+/* ══════════════════════════════════════════════════════════
+   S3: NEON NIGHT — Vertical Stack (brand top | QR center | steps bottom)
+   ══════════════════════════════════════════════════════════ */
+.f3 { background-color:#020c04; display:flex; flex-direction:column; }
+.f3::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,102,.03) 2px,rgba(0,255,102,.03) 4px);
 }
-.s6 .cs-strip  { background:linear-gradient(90deg,#6a4600,#d4a830,#f5cc55,#d4a830,#6a4600); }
-.s6 .cs-name   { color:#d4a830; }
-.s6 .cs-event  { color:rgba(212,168,48,.38); }
-.s6 .cs-divider{ background:linear-gradient(90deg,rgba(212,168,48,.45),transparent); }
-.s6 .cs-head   { color:#fff; }
-.s6 .cs-sub    { color:rgba(212,168,48,.6); }
-.s6 .cs-step   { color:rgba(212,168,48,.5); }
-.s6 .cs-dot    { background:#d4a830; }
-.s6 .cs-stmy   { opacity:.5; filter:sepia(1) saturate(3) hue-rotate(20deg); }
-.s6 .cs-sep    { background:rgba(212,168,48,.22); }
-.s6 .cs-sol    { color:rgba(212,168,48,.3); }
-.s6 .cs-qrwrap { background:#fff; box-shadow:0 0 0 .5mm rgba(212,168,48,.6),0 0 5mm rgba(212,168,48,.2); }
-.s6 .cs-qrlabel{ color:#d4a830; }
+.f3-top-strip { width:100%; height:1.4mm; background:linear-gradient(90deg,#00ff66,#00cc52,#00ff66); flex-shrink:0; }
+.f3-header { display:flex; align-items:center; justify-content:space-between; padding:1.6mm 2.5mm .8mm 2.5mm; flex-shrink:0; }
+.f3-brand { display:flex; align-items:center; gap:1mm; font-size:2.6mm; font-weight:700; color:#00ff66; letter-spacing:.04em; line-height:1; }
+.f3-brand-icon { font-size:3mm; line-height:1; }
+.f3-event-date { font-size:1.8mm; color:rgba(0,255,102,.5); font-weight:500; letter-spacing:.06em; line-height:1; }
+.f3-divider { width:calc(100% - 5mm); margin:0 2.5mm; height:.3mm; background:rgba(0,255,102,.25); flex-shrink:0; }
+.f3-qr-area { display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; padding:1.5mm 0 .5mm; gap:1.5mm; }
+.f3-qr-box  { width:22mm; height:22mm; background:#020c04; border:.5mm solid #00ff66; box-shadow:0 0 5mm rgba(0,255,102,.4); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.f3-qr-box img { width:19mm; height:19mm; display:block; }
+.f3-cta { font-size:2mm; font-weight:700; color:#00ff66; letter-spacing:.14em; text-align:center; line-height:1; }
+.f3-footer-row { display:flex; align-items:center; justify-content:space-between; padding:.8mm 2.5mm 2mm 2.5mm; flex-shrink:0; }
+.f3-steps { display:flex; flex-direction:column; gap:.7mm; }
+.f3-step  { font-size:1.7mm; color:rgba(0,255,102,.5); display:flex; align-items:center; gap:1mm; line-height:1; }
+.f3-step::before { content:''; display:inline-block; width:1.2mm; height:1.2mm; border-radius:50%; background:#00ff66; flex-shrink:0; }
+.f3-footer-brand { display:flex; align-items:center; gap:1.5mm; }
+.f3-footer-logo  { height:4mm; width:auto; opacity:.55; }
+.f3-solana { font-size:1.8mm; color:rgba(0,255,102,.45); font-weight:600; letter-spacing:.05em; }
 
-/* ─── PRINT SHEETS (hidden on screen) ───────────────── */
+/* S3 back */
+.b3 { background-color:#020c04; display:flex; align-items:center; justify-content:center; }
+.b3::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,102,.03) 2px,rgba(0,255,102,.03) 4px);
+}
+.b3-glow    { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:30mm; height:30mm; background:radial-gradient(circle,rgba(0,255,102,.18) 0%,transparent 70%); pointer-events:none; }
+.b3-content { position:relative; display:flex; flex-direction:column; align-items:center; gap:1.6mm; }
+.b3-icon    { font-size:8mm; line-height:1; filter:drop-shadow(0 0 3mm rgba(0,255,102,.8)) drop-shadow(0 0 6mm rgba(0,255,102,.4)); }
+.b3-brand   { font-size:3.2mm; font-weight:800; color:#00ff66; letter-spacing:.1em; text-align:center; text-shadow:0 0 4mm rgba(0,255,102,.7),0 0 8mm rgba(0,255,102,.3); line-height:1; }
+.b3-sub     { font-size:1.9mm; color:rgba(0,255,102,.5); letter-spacing:.12em; text-align:center; text-transform:uppercase; line-height:1; }
+.b3-divider { width:28mm; height:.3mm; background:linear-gradient(90deg,transparent,rgba(0,255,102,.4),transparent); }
+.b3-date    { font-size:1.9mm; color:rgba(0,255,102,.5); letter-spacing:.14em; text-transform:uppercase; text-align:center; line-height:1; }
+.b3-footer      { display:flex; align-items:center; gap:1.5mm; margin-top:.5mm; }
+.b3-footer-logo { height:3.5mm; width:auto; filter:hue-rotate(90deg) saturate(1.2) brightness(.75); }
+.b3-solana { font-size:1.8mm; color:rgba(0,255,102,.4); font-weight:600; letter-spacing:.06em; }
+
+/* ══════════════════════════════════════════════════════════
+   S4: GOLD EDITION — Framed Premium (double ornamental frame)
+   ══════════════════════════════════════════════════════════ */
+.f4 {
+  background-color:#090600;
+  background-image:radial-gradient(ellipse at 50% 45%,rgba(212,168,48,.14) 0%,transparent 65%);
+  display:flex; flex-direction:column;
+}
+.f4-outer-frame { position:absolute; inset:2.5mm; border:.5mm solid rgba(212,168,48,.45); border-radius:1.5mm; pointer-events:none; z-index:5; }
+.f4-inner-frame { position:absolute; inset:4mm;   border:.3mm solid rgba(212,168,48,.2);  border-radius:1mm;   pointer-events:none; z-index:5; }
+.f4-top-strip { width:100%; height:1.4mm; background:linear-gradient(90deg,#6a4600,#d4a830,#f5cc55,#d4a830,#6a4600); flex-shrink:0; position:relative; z-index:6; }
+.f4-content { position:relative; z-index:6; display:flex; flex-direction:column; flex:1; padding:2mm 4mm 2.5mm 4mm; }
+.f4-header  { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5mm; }
+.f4-brand   { display:flex; align-items:center; gap:1mm; font-size:2.5mm; font-weight:700; color:#d4a830; letter-spacing:.04em; line-height:1; }
+.f4-brand-icon { font-size:3mm; line-height:1; }
+.f4-event-date { font-size:1.8mm; color:rgba(212,168,48,.55); font-weight:500; letter-spacing:.05em; line-height:1; }
+.f4-center-row { display:flex; align-items:center; gap:3mm; flex:1; }
+.f4-info-col   { flex:0 0 55%; display:flex; flex-direction:column; gap:1.2mm; }
+.f4-cta-primary { font-size:2.6mm; font-weight:700; color:#fff; line-height:1.15; letter-spacing:.01em; }
+.f4-cta-sub     { font-size:1.9mm; color:rgba(212,168,48,.6); line-height:1.2; }
+.f4-steps { display:flex; flex-direction:column; gap:.7mm; margin-top:.5mm; }
+.f4-step  { font-size:1.7mm; color:rgba(212,168,48,.55); display:flex; align-items:center; gap:1mm; line-height:1; }
+.f4-step::before { content:''; display:inline-block; width:1mm; height:1mm; border-radius:50%; background:#d4a830; opacity:.8; flex-shrink:0; }
+.f4-footer-brand { display:flex; align-items:center; gap:1.2mm; margin-top:1.5mm; }
+.f4-footer-logo  { height:3.5mm; width:auto; opacity:.6; }
+.f4-solana { font-size:1.8mm; color:rgba(212,168,48,.5); font-weight:600; letter-spacing:.05em; }
+.f4-qr-col { flex:1; display:flex; align-items:center; justify-content:center; }
+.f4-qr-box { width:20mm; height:20mm; background:#fff; box-shadow:0 0 0 .6mm rgba(212,168,48,.6),0 0 5mm rgba(212,168,48,.2); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.f4-qr-box img { width:18mm; height:18mm; display:block; }
+
+/* S4 back */
+.b4 {
+  background-color:#090600;
+  background-image:radial-gradient(ellipse at 50% 45%,rgba(212,168,48,.12) 0%,transparent 60%);
+  display:flex; align-items:center; justify-content:center;
+}
+.b4-outer-frame { position:absolute; inset:2mm; border:.5mm solid rgba(212,168,48,.4); pointer-events:none; z-index:5; }
+.b4-inner-frame { position:absolute; inset:3.5mm; border:.3mm solid rgba(212,168,48,.2); pointer-events:none; z-index:5; }
+.b4-content { position:relative; z-index:6; display:flex; flex-direction:column; align-items:center; gap:1.5mm; }
+.b4-emblem  { width:13mm; height:13mm; border-radius:50%; border:.7mm solid #d4a830; background:rgba(212,168,48,.08); box-shadow:0 0 4mm rgba(212,168,48,.35),inset 0 0 3mm rgba(212,168,48,.08); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.b4-emblem-icon { font-size:7mm; line-height:1; }
+.b4-brand   { font-size:3.8mm; font-weight:900; color:#d4a830; letter-spacing:.08em; text-align:center; line-height:1; }
+.b4-divider { width:20mm; height:.4mm; background:linear-gradient(90deg,transparent,#d4a830,transparent); }
+.b4-date    { font-size:1.9mm; color:rgba(212,168,48,.55); letter-spacing:.14em; text-transform:uppercase; text-align:center; line-height:1; }
+.b4-sub     { font-size:1.8mm; color:rgba(212,168,48,.35); letter-spacing:.1em; text-transform:uppercase; text-align:center; line-height:1; }
+.b4-footer      { display:flex; align-items:center; gap:1.5mm; margin-top:.5mm; }
+.b4-footer-logo { height:3.5mm; width:auto; filter:sepia(1) saturate(2) hue-rotate(5deg) brightness(.8); opacity:.7; }
+.b4-solana { font-size:1.8mm; color:rgba(212,168,48,.45); font-weight:600; letter-spacing:.06em; }
+
+/* ══════════════════════════════════════════════════════════
+   S5: PARCHMENT — Diagonal Slash (dark left | cream right)
+   ══════════════════════════════════════════════════════════ */
+.f5 {
+  background:linear-gradient(105deg,#1e3d0e 0%,#1e3d0e 44%,#a3e635 44%,#a3e635 46%,#ede0c8 46%,#ede0c8 100%);
+}
+.f5-left {
+  position:absolute; left:0; top:0; bottom:0; width:46%;
+  padding:2.8mm 1.5mm 2.5mm 3.5mm;
+  display:flex; flex-direction:column; justify-content:space-between;
+}
+.f5-brand { display:flex; flex-direction:column; gap:.3mm; }
+.f5-brand-line1 { display:flex; align-items:center; gap:1mm; color:#a3e635; font-size:3mm; font-weight:900; line-height:1.1; white-space:nowrap; }
+.f5-icon        { font-size:4.5mm; line-height:1; }
+.f5-brand-line2 { color:#a3e635; font-size:3mm; font-weight:900; line-height:1.1; padding-left:.5mm; }
+.f5-event    { color:rgba(255,255,255,.38); font-size:1.7mm; font-weight:600; text-transform:uppercase; letter-spacing:.08em; margin-top:1.5mm; }
+.f5-cta-main { color:#fff; font-size:2.6mm; font-weight:700; line-height:1.2; margin-top:1.5mm; }
+.f5-cta-sub  { color:rgba(255,255,255,.45); font-size:1.7mm; margin-top:.5mm; line-height:1.3; }
+.f5-steps { margin-top:1.5mm; display:flex; flex-direction:column; gap:.8mm; }
+.f5-step  { color:rgba(255,255,255,.45); font-size:1.7mm; display:flex; align-items:flex-start; gap:1mm; line-height:1.3; }
+.f5-step::before { content:'●'; color:#a3e635; font-size:1.4mm; margin-top:.2mm; flex-shrink:0; }
+.f5-footer { display:flex; align-items:center; gap:1.5mm; margin-top:auto; padding-top:1.5mm; }
+.f5-footer img { height:3.5mm; width:auto; opacity:.5; }
+.f5-footer-sep { width:.3mm; height:3mm; background:rgba(255,255,255,.2); }
+.f5-solana { color:rgba(255,255,255,.3); font-size:1.7mm; font-weight:600; }
+.f5-right {
+  position:absolute; left:46%; right:0; top:0; bottom:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:1.5mm; padding:2.5mm;
+}
+.f5-qr-box { background:#fff8ee; border:.5mm solid #8b6914; border-radius:1.5mm; padding:1.2mm; display:flex; align-items:center; justify-content:center; }
+.f5-qr-box img { width:22mm; height:22mm; display:block; }
+.f5-scan-label { color:#4a7a30; font-size:2mm; font-weight:700; text-transform:uppercase; letter-spacing:.1em; }
+
+/* S5 back */
+.b5 {
+  background-color:#ede0c8;
+  background-image:radial-gradient(ellipse at 50% 50%,rgba(139,105,20,.12) 0%,transparent 70%);
+}
+.b5-strip-top    { position:absolute; top:0;    left:0; right:0; height:1.4mm; background:#1e3d0e; }
+.b5-strip-bottom { position:absolute; bottom:0; left:0; right:0; height:1.4mm; background:#1e3d0e; }
+.b5-center { position:absolute; inset:1.4mm; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.2mm; }
+.b5-big-icon  { font-size:10mm; line-height:1; }
+.b5-brand-name{ color:#1e3d0e; font-size:3.8mm; font-weight:900; text-align:center; letter-spacing:.04em; line-height:1.1; }
+.b5-divider   { width:20mm; height:.3mm; background:linear-gradient(90deg,transparent,#4a7a30,transparent); margin:.5mm 0; }
+.b5-location  { color:#5a6040; font-size:2mm; font-weight:700; text-transform:uppercase; letter-spacing:.1em; text-align:center; }
+.b5-tagline   { color:#7a6040; font-size:1.8mm; text-align:center; font-style:italic; }
+.b5-footer { display:flex; align-items:center; gap:1.5mm; margin-top:1mm; }
+.b5-footer img { height:3.5mm; width:auto; filter:invert(18%) sepia(60%) saturate(500%) hue-rotate(80deg) brightness(.5); }
+.b5-footer-sep { width:.3mm; height:3mm; background:rgba(90,96,64,.35); }
+.b5-solana { color:#888070; font-size:1.7mm; font-weight:600; }
+
+/* ══════════════════════════════════════════════════════════
+   S6: DUAL PANEL — Bold Type Left | QR Info Right
+   ══════════════════════════════════════════════════════════ */
+.f6 {
+  background:linear-gradient(90deg,#0f2d18 0%,#0f2d18 45%,#a3e635 45%,#a3e635 45.8%,#f4f9f0 45.8%,#f4f9f0 100%);
+}
+.f6-top-strip { position:absolute; top:0; left:0; right:0; height:1.4mm; background:linear-gradient(90deg,#a3e635 45%,#c8e8a0 45%); z-index:2; }
+.f6-left {
+  position:absolute; left:0; top:1.4mm; bottom:0; width:45%;
+  display:flex; flex-direction:column; justify-content:space-between;
+  padding:2.8mm 1.5mm 2.5mm 3.5mm;
+}
+.f6-left-icon  { font-size:8mm; line-height:1; }
+.f6-type-block { display:flex; flex-direction:column; gap:.8mm; }
+.f6-the        { color:rgba(255,255,255,.4); font-size:1.8mm; font-weight:700; text-transform:uppercase; letter-spacing:.2em; line-height:1; }
+.f6-upcycle    { color:#fff; font-size:6mm; font-weight:900; line-height:1; letter-spacing:-.02em; }
+.f6-type-line  { width:12mm; height:.4mm; background:#a3e635; }
+.f6-collective { color:#a3e635; font-size:2.2mm; font-weight:700; letter-spacing:.14em; text-transform:uppercase; line-height:1; }
+.f6-left-footer { display:flex; align-items:center; gap:1.2mm; }
+.f6-left-footer img { height:3.5mm; width:auto; opacity:.45; }
+.f6-left-footer-sep { width:.3mm; height:3mm; background:rgba(255,255,255,.2); }
+.f6-left-solana { color:rgba(255,255,255,.28); font-size:1.7mm; font-weight:600; }
+.f6-right {
+  position:absolute; left:45.8%; right:0; top:1.4mm; bottom:0;
+  display:flex; flex-direction:column; justify-content:space-between;
+  padding:2.8mm 3mm 2.5mm 2.5mm;
+}
+.f6-qr-box { background:#fff; border:.4mm solid #a3e635; border-radius:1.5mm; padding:1mm; display:inline-flex; align-items:center; justify-content:center; align-self:flex-start; }
+.f6-qr-box img { width:22mm; height:22mm; display:block; }
+.f6-info { display:flex; flex-direction:column; gap:.7mm; }
+.f6-cta-main { color:#0f2d18; font-size:2.6mm; font-weight:800; line-height:1.2; }
+.f6-cta-sub  { color:#5a8a5a; font-size:1.8mm; line-height:1.3; }
+.f6-steps { display:flex; flex-direction:column; gap:.5mm; margin-top:.5mm; }
+.f6-step  { color:#4a6e4a; font-size:1.8mm; display:flex; align-items:flex-start; gap:1mm; line-height:1.3; }
+.f6-step::before { content:'●'; color:#a3e635; font-size:1.4mm; margin-top:.2mm; flex-shrink:0; }
+.f6-right-date { color:#8aaa8a; font-size:1.8mm; font-weight:500; }
+.f6-scan-label { color:#2d6e20; font-size:1.9mm; font-weight:700; text-transform:uppercase; letter-spacing:.08em; }
+
+/* S6 back */
+.b6 {
+  background:linear-gradient(90deg,#0f2d18 0%,#0f2d18 45%,#a3e635 45%,#a3e635 45.8%,#f4f9f0 45.8%,#f4f9f0 100%);
+}
+.b6-top-strip { position:absolute; top:0; left:0; right:0; height:1.4mm; background:linear-gradient(90deg,#a3e635 45%,#c8e8a0 45%); z-index:2; }
+.b6-left { position:absolute; left:0; top:1.4mm; bottom:0; width:45%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.5mm; }
+.b6-left-icon { font-size:12mm; line-height:1; }
+.b6-tuc { color:#a3e635; font-size:6mm; font-weight:900; letter-spacing:.1em; line-height:1; }
+.b6-right { position:absolute; left:45.8%; right:0; top:1.4mm; bottom:0; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; padding:3mm 3mm 3mm 2.5mm; gap:1.2mm; }
+.b6-brand-name { color:#0f2d18; font-size:3.5mm; font-weight:900; line-height:1.2; }
+.b6-divider-line { width:16mm; height:.4mm; background:#a3e635; }
+.b6-location  { color:#5a8a5a; font-size:1.9mm; font-weight:700; text-transform:uppercase; letter-spacing:.08em; line-height:1; }
+.b6-tagline   { color:#8aaa8a; font-size:1.7mm; font-style:italic; line-height:1.3; }
+.b6-right-footer { display:flex; align-items:center; gap:1.2mm; margin-top:.5mm; }
+.b6-right-footer img { height:3.5mm; width:auto; filter:invert(18%) sepia(60%) saturate(500%) hue-rotate(80deg) brightness(.5); }
+.b6-right-footer-sep { width:.3mm; height:3mm; background:rgba(90,138,90,.35); }
+.b6-right-solana { color:#7a9a7a; font-size:1.7mm; font-weight:600; }
+
+/* ── Print ── */
 .print-sheets { display:none; }
 
 @media print {
@@ -252,109 +405,373 @@ body {
   body { background:#fff; padding:0; display:block; }
   .top-bar, .showcase { display:none !important; }
   .print-sheets { display:block; }
-
+  .print-pair   { display:none; }
+  .print-pair.selected { display:block; }
   .print-sheet {
-    display:none;
+    display:grid;
     width:210mm; padding:12mm 17mm 14mm;
-    grid-template-columns:repeat(2, 85.6mm);
-    grid-template-rows:repeat(3, 54mm);
+    grid-template-columns:repeat(2,85.6mm);
+    grid-template-rows:repeat(3,54mm);
     gap:5mm; align-content:start;
+    page-break-after:always;
   }
-  .print-sheet.selected { display:grid !important; }
+  .print-sheet:last-child { page-break-after:auto; }
+  .card { border-radius:2.8mm; }
 }
 </style>
 </head>
 <body>
 
-<!-- Header -->
 <div class="top-bar">
   <div class="top-info">
-    <h1>♻️  TUC Card — Style Options</h1>
-    <p>Click a style to select · Then print 6 copies on A4</p>
+    <h1>♻️&nbsp; TUC Card — 6 Layouts</h1>
+    <p>6 unique front + back designs · Click to select · Print on A4 (page 1 = fronts, page 2 = backs)</p>
   </div>
   <div class="top-right">
     <div id="selection-label">No style selected</div>
-    <button id="btn-print" onclick="printSelected()">🖨️ &nbsp;Print 6 Copies</button>
+    <button id="btn-print" onclick="printSelected()">🖨️&nbsp; Print Selected</button>
   </div>
 </div>
 
-<!-- Showcase -->
 <div class="showcase" id="showcase"></div>
-
-<!-- Print sheets (one per style, 6 cards each) -->
 <div class="print-sheets" id="print-sheets"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 'use strict';
-
 const QR_URL = 'https://upcycle-collective.vercel.app';
 
+/* ── S1: Dark Forest — Horizontal Split ── */
+function f1Front(qr) {
+  return `<div class="card f1">
+  <div class="f1-top-strip"></div>
+  <div class="f1-body">
+    <div class="f1-left">
+      <div class="f1-brand">
+        <span class="f1-brand-icon">♻️</span>
+        <span class="f1-brand-name">THE UPCYCLE COLLECTIVE</span>
+        <span class="f1-event-date">Kuching · 21 July 2026</span>
+      </div>
+      <div class="f1-cta">
+        <span class="f1-cta-head">Scan to open your wallet →</span>
+        <span class="f1-cta-sub">Earn TUC tokens at the event</span>
+      </div>
+      <div class="f1-steps">
+        <span class="f1-step">Donate items → earn tokens</span>
+        <span class="f1-step">Spend tokens at vendor booths</span>
+      </div>
+      <div class="f1-footer">
+        <img class="f1-footer-logo" src="STMY-White.png" alt="STMY">
+        <div class="f1-footer-sep"></div>
+        <span class="f1-footer-sol">⬡ Solana</span>
+      </div>
+    </div>
+    <div class="f1-divider"></div>
+    <div class="f1-right">
+      <div class="f1-qr-box"><img src="${qr}" alt="QR"></div>
+      <span class="f1-scan-label">↑ SCAN ME</span>
+    </div>
+  </div>
+</div>`;
+}
+function f1Back() {
+  return `<div class="card b1">
+  <div class="b1-strip-top"></div>
+  <div class="b1-strip-bottom"></div>
+  <div class="b1-content">
+    <span class="b1-icon">♻️</span>
+    <span class="b1-name">THE UPCYCLE COLLECTIVE</span>
+    <span class="b1-tagline">Festival Token Experience</span>
+    <div class="b1-line"></div>
+    <span class="b1-date">Kuching · 21 July 2026</span>
+    <div class="b1-footer">
+      <img class="b1-footer-logo" src="STMY-White.png" alt="STMY">
+      <div class="b1-footer-sep"></div>
+      <span class="b1-footer-sol">⬡ Solana</span>
+    </div>
+  </div>
+</div>`;
+}
+
+/* ── S2: Snow White — Large QR Left Panel ── */
+function f2Front(qr) {
+  return `<div class="card f2">
+  <div class="f2-top-strip"></div>
+  <div class="f2-body">
+    <div class="f2-left">
+      <div class="f2-qr-box"><img src="${qr}" alt="QR"></div>
+      <span class="f2-scan-label">↑ SCAN ME</span>
+    </div>
+    <div class="f2-divider"></div>
+    <div class="f2-right">
+      <div class="f2-brand">
+        <span class="f2-brand-icon">♻️</span>
+        <span class="f2-brand-name">THE UPCYCLE COLLECTIVE</span>
+      </div>
+      <div class="f2-cta">
+        <span class="f2-cta-head">Scan to open your wallet →</span>
+        <span class="f2-cta-sub">Earn TUC tokens at the event</span>
+      </div>
+      <div class="f2-steps">
+        <span class="f2-step">Donate items → earn tokens</span>
+        <span class="f2-step">Spend tokens at vendor booths</span>
+      </div>
+      <span class="f2-event-date">Kuching · 21 July 2026</span>
+      <div class="f2-footer">
+        <img class="f2-footer-logo" src="STMY-White.png" alt="STMY">
+        <div class="f2-footer-sep"></div>
+        <span class="f2-footer-sol">⬡ Solana</span>
+      </div>
+    </div>
+  </div>
+</div>`;
+}
+function f2Back() {
+  return `<div class="card b2">
+  <div class="b2-strip-top"></div>
+  <div class="b2-content">
+    <div class="b2-circle"><span class="b2-circle-icon">♻️</span></div>
+    <span class="b2-name">THE UPCYCLE COLLECTIVE</span>
+    <div class="b2-line"></div>
+    <span class="b2-date">Kuching · 21 July 2026</span>
+    <span class="b2-tagline">Festival Token Experience</span>
+    <div class="b2-footer">
+      <img class="b2-footer-logo" src="STMY-White.png" alt="STMY">
+      <div class="b2-footer-sep"></div>
+      <span class="b2-footer-sol">⬡ Solana</span>
+    </div>
+  </div>
+</div>`;
+}
+
+/* ── S3: Neon Night — Vertical Stack ── */
+function f3Front(qr) {
+  return `<div class="card f3">
+  <div class="f3-top-strip"></div>
+  <div class="f3-header">
+    <div class="f3-brand"><span class="f3-brand-icon">♻️</span> THE UPCYCLE COLLECTIVE</div>
+    <div class="f3-event-date">Kuching · 21 July 2026</div>
+  </div>
+  <div class="f3-divider"></div>
+  <div class="f3-qr-area">
+    <div class="f3-qr-box"><img src="${qr}" alt="QR"></div>
+    <div class="f3-cta">↑ SCAN TO OPEN YOUR WALLET</div>
+  </div>
+  <div class="f3-footer-row">
+    <div class="f3-steps">
+      <div class="f3-step">Donate items → earn tokens</div>
+      <div class="f3-step">Spend tokens at vendor booths</div>
+    </div>
+    <div class="f3-footer-brand">
+      <img class="f3-footer-logo" src="STMY-White.png" alt="STMY">
+      <span class="f3-solana">⬡ Solana</span>
+    </div>
+  </div>
+</div>`;
+}
+function f3Back() {
+  return `<div class="card b3">
+  <div class="b3-glow"></div>
+  <div class="b3-content">
+    <div class="b3-icon">♻️</div>
+    <div class="b3-brand">THE UPCYCLE COLLECTIVE</div>
+    <div class="b3-sub">Festival Token Experience</div>
+    <div class="b3-divider"></div>
+    <div class="b3-date">Kuching · 21 July 2026</div>
+    <div class="b3-footer">
+      <img class="b3-footer-logo" src="STMY-White.png" alt="STMY">
+      <span class="b3-solana">⬡ Solana</span>
+    </div>
+  </div>
+</div>`;
+}
+
+/* ── S4: Gold Edition — Framed Premium ── */
+function f4Front(qr) {
+  return `<div class="card f4">
+  <div class="f4-outer-frame"></div>
+  <div class="f4-inner-frame"></div>
+  <div class="f4-top-strip"></div>
+  <div class="f4-content">
+    <div class="f4-header">
+      <div class="f4-brand"><span class="f4-brand-icon">♻️</span> THE UPCYCLE COLLECTIVE</div>
+      <div class="f4-event-date">Kuching · 21 July 2026</div>
+    </div>
+    <div class="f4-center-row">
+      <div class="f4-info-col">
+        <div class="f4-cta-primary">Scan to open your wallet →</div>
+        <div class="f4-cta-sub">Earn TUC tokens at the event</div>
+        <div class="f4-steps">
+          <div class="f4-step">Donate items → earn tokens</div>
+          <div class="f4-step">Spend tokens at vendor booths</div>
+        </div>
+        <div class="f4-footer-brand">
+          <img class="f4-footer-logo" src="STMY-White.png" alt="STMY">
+          <span class="f4-solana">⬡ Solana</span>
+        </div>
+      </div>
+      <div class="f4-qr-col">
+        <div class="f4-qr-box"><img src="${qr}" alt="QR"></div>
+      </div>
+    </div>
+  </div>
+</div>`;
+}
+function f4Back() {
+  return `<div class="card b4">
+  <div class="b4-outer-frame"></div>
+  <div class="b4-inner-frame"></div>
+  <div class="b4-content">
+    <div class="b4-emblem"><span class="b4-emblem-icon">♻️</span></div>
+    <div class="b4-brand">THE UPCYCLE COLLECTIVE</div>
+    <div class="b4-divider"></div>
+    <div class="b4-date">Kuching · 21 July 2026</div>
+    <div class="b4-sub">Festival Token Experience</div>
+    <div class="b4-footer">
+      <img class="b4-footer-logo" src="STMY-White.png" alt="STMY">
+      <span class="b4-solana">⬡ Solana</span>
+    </div>
+  </div>
+</div>`;
+}
+
+/* ── S5: Parchment — Diagonal Slash ── */
+function f5Front(qr) {
+  return `<div class="card f5">
+  <div class="f5-left">
+    <div>
+      <div class="f5-brand">
+        <div class="f5-brand-line1"><span class="f5-icon">♻️</span><span>THE UPCYCLE</span></div>
+        <div class="f5-brand-line2">COLLECTIVE</div>
+      </div>
+      <div class="f5-event">Kuching · 21 July 2026</div>
+      <div class="f5-cta-main">Scan to open your wallet →</div>
+      <div class="f5-cta-sub">Earn TUC tokens at the event</div>
+      <div class="f5-steps">
+        <div class="f5-step">Donate items → earn tokens</div>
+        <div class="f5-step">Spend tokens at vendor booths</div>
+      </div>
+    </div>
+    <div class="f5-footer">
+      <img src="STMY-White.png" alt="STMY">
+      <div class="f5-footer-sep"></div>
+      <span class="f5-solana">⬡ Solana</span>
+    </div>
+  </div>
+  <div class="f5-right">
+    <div class="f5-qr-box"><img src="${qr}" alt="QR"></div>
+    <div class="f5-scan-label">↑ Scan me</div>
+  </div>
+</div>`;
+}
+function f5Back() {
+  return `<div class="card b5">
+  <div class="b5-strip-top"></div>
+  <div class="b5-strip-bottom"></div>
+  <div class="b5-center">
+    <div class="b5-big-icon">♻️</div>
+    <div class="b5-brand-name">THE UPCYCLE COLLECTIVE</div>
+    <div class="b5-divider"></div>
+    <div class="b5-location">Kuching · 21 July 2026</div>
+    <div class="b5-tagline">Festival Token Experience</div>
+    <div class="b5-footer">
+      <img src="STMY-White.png" alt="STMY">
+      <div class="b5-footer-sep"></div>
+      <span class="b5-solana">⬡ Solana</span>
+    </div>
+  </div>
+</div>`;
+}
+
+/* ── S6: Dual Panel — Bold Type Left ── */
+function f6Front(qr) {
+  return `<div class="card f6">
+  <div class="f6-top-strip"></div>
+  <div class="f6-left">
+    <div class="f6-left-icon">♻️</div>
+    <div class="f6-type-block">
+      <div class="f6-the">The</div>
+      <div class="f6-upcycle">UPCYCLE</div>
+      <div class="f6-type-line"></div>
+      <div class="f6-collective">Collective</div>
+    </div>
+    <div class="f6-left-footer">
+      <img src="STMY-White.png" alt="STMY">
+      <div class="f6-left-footer-sep"></div>
+      <span class="f6-left-solana">⬡ Solana</span>
+    </div>
+  </div>
+  <div class="f6-right">
+    <div class="f6-qr-box"><img src="${qr}" alt="QR"></div>
+    <div class="f6-info">
+      <div class="f6-cta-main">Scan to open your wallet →</div>
+      <div class="f6-cta-sub">Earn TUC tokens at the event</div>
+      <div class="f6-steps">
+        <div class="f6-step">Donate items → earn tokens</div>
+        <div class="f6-step">Spend tokens at vendor booths</div>
+      </div>
+      <div class="f6-right-date">Kuching · 21 July 2026</div>
+    </div>
+    <div class="f6-scan-label">↑ SCAN ME</div>
+  </div>
+</div>`;
+}
+function f6Back() {
+  return `<div class="card b6">
+  <div class="b6-top-strip"></div>
+  <div class="b6-left">
+    <div class="b6-left-icon">♻️</div>
+    <div class="b6-tuc">TUC</div>
+  </div>
+  <div class="b6-right">
+    <div class="b6-brand-name">THE UPCYCLE<br>COLLECTIVE</div>
+    <div class="b6-divider-line"></div>
+    <div class="b6-location">Kuching · 21 July 2026</div>
+    <div class="b6-tagline">Festival Token Experience</div>
+    <div class="b6-right-footer">
+      <img src="STMY-White.png" alt="STMY">
+      <div class="b6-right-footer-sep"></div>
+      <span class="b6-right-solana">⬡ Solana</span>
+    </div>
+  </div>
+</div>`;
+}
+
+/* ── Styles config ── */
 const STYLES = [
-  { num:'01', name:'Dark Forest',  desc:'Dark green · Festival feel',    cls:'s1' },
-  { num:'02', name:'Snow White',   desc:'Pure white · Minimal & clean',  cls:'s2' },
-  { num:'03', name:'Dual Panel',   desc:'Split dark/light · Bold edge',  cls:'s3' },
-  { num:'04', name:'Neon Night',   desc:'Near-black · Electric glow',    cls:'s4' },
-  { num:'05', name:'Parchment',    desc:'Warm cream · Organic/earthy',   cls:'s5' },
-  { num:'06', name:'Gold Edition', desc:'Dark warm · Luxury premium',    cls:'s6' },
+  { num:'01', name:'Dark Forest',  desc:'Horizontal split · Left brand / Right QR',    front:f1Front, back:f1Back },
+  { num:'02', name:'Snow White',   desc:'Large QR left panel · Text right',             front:f2Front, back:f2Back },
+  { num:'03', name:'Neon Night',   desc:'Vertical stack · QR center hero',              front:f3Front, back:f3Back },
+  { num:'04', name:'Gold Edition', desc:'Framed premium · Left info / Right QR',        front:f4Front, back:f4Back },
+  { num:'05', name:'Parchment',    desc:'Diagonal slash · Dark left / Cream right',     front:f5Front, back:f5Back },
+  { num:'06', name:'Dual Panel',   desc:'Bold type left · Dark green / Cream split',    front:f6Front, back:f6Back },
 ];
 
 let selectedStyle = null;
 
-// ── Card HTML template ─────────────────────────────────
-function cardHTML(cls, qrSrc) {
-  return `
-  <div class="card ${cls}">
-    <div class="cs-strip"></div>
-    <div class="cs-body">
-      <div class="cs-left">
-        <div class="cs-brand">
-          <div class="cs-brand-row">
-            <span class="cs-icon">♻️</span>
-            <span class="cs-name">THE UPCYCLE<br>COLLECTIVE</span>
-          </div>
-          <div class="cs-event">Kuching &nbsp;·&nbsp; 21 July 2026</div>
-        </div>
-        <div class="cs-divider"></div>
-        <div class="cs-cta">
-          <div class="cs-head">Scan to open<br>your wallet →</div>
-          <div class="cs-sub">Earn TUC tokens at the event</div>
-        </div>
-        <div class="cs-steps">
-          <div class="cs-step"><span class="cs-dot"></span>Donate items &nbsp;→&nbsp; earn tokens</div>
-          <div class="cs-step"><span class="cs-dot"></span>Spend tokens at vendor booths</div>
-        </div>
-        <div class="cs-foot">
-          <img class="cs-stmy" src="STMY-White.png" alt="Superteam MY">
-          <div class="cs-sep"></div>
-          <div class="cs-sol">⬡ Solana</div>
-        </div>
-      </div>
-      <div class="cs-right">
-        <div class="cs-qrwrap">
-          <img src="${qrSrc}" alt="QR Code">
-        </div>
-        <div class="cs-qrlabel">↑ Scan me</div>
-      </div>
-    </div>
-  </div>`;
-}
-
-// ── Generate QR once, then build all cards ─────────────
 function buildCards(qrSrc) {
-  const showcase = document.getElementById('showcase');
+  const showcase    = document.getElementById('showcase');
   const printSheets = document.getElementById('print-sheets');
 
   STYLES.forEach((s, i) => {
     const idx = i + 1;
 
-    // Showcase card
+    /* Showcase pair */
     const opt = document.createElement('div');
     opt.className = 'style-option';
     opt.dataset.style = idx;
     opt.onclick = () => selectStyle(idx, s.name);
     opt.innerHTML = `
-      <div class="card-wrap">${cardHTML(s.cls, qrSrc)}</div>
+      <div class="card-pair">
+        <div class="pair-side">
+          <div class="pair-lbl">Front</div>
+          ${s.front(qrSrc)}
+        </div>
+        <div class="pair-side">
+          <div class="pair-lbl">Back</div>
+          ${s.back()}
+        </div>
+      </div>
       <div class="style-meta">
         <div class="style-num">${s.num}</div>
         <div class="style-name">${s.name}</div>
@@ -362,51 +779,56 @@ function buildCards(qrSrc) {
       </div>`;
     showcase.appendChild(opt);
 
-    // Print sheet (6 copies)
-    const sheet = document.createElement('div');
-    sheet.className = 'print-sheet';
-    sheet.id = `ps-${idx}`;
-    for (let j=0;j<6;j++) sheet.innerHTML += cardHTML(s.cls, qrSrc);
-    printSheets.appendChild(sheet);
+    /* Print pair: page 1 = 6 fronts, page 2 = 6 backs */
+    const pair = document.createElement('div');
+    pair.className = 'print-pair';
+    pair.id = `pp-${idx}`;
+
+    const frontSheet = document.createElement('div');
+    frontSheet.className = 'print-sheet';
+    for (let j = 0; j < 6; j++) frontSheet.innerHTML += s.front(qrSrc);
+
+    const backSheet = document.createElement('div');
+    backSheet.className = 'print-sheet';
+    for (let j = 0; j < 6; j++) backSheet.innerHTML += s.back();
+
+    pair.appendChild(frontSheet);
+    pair.appendChild(backSheet);
+    printSheets.appendChild(pair);
   });
 }
 
-// ── Generate QR code ───────────────────────────────────
+/* ── QR generation ── */
 const tmp = document.createElement('div');
 Object.assign(tmp.style, {position:'fixed',left:'-9999px',top:'-9999px'});
 document.body.appendChild(tmp);
-
 new QRCode(tmp, {
   text: QR_URL, width:320, height:320,
   colorDark:'#0c1a0e', colorLight:'#ffffff',
   correctLevel: QRCode.CorrectLevel.M,
 });
-
-// Wait a tick for QRCode.js to render
 setTimeout(() => {
   const canvas = tmp.querySelector('canvas');
-  const qrSrc = canvas ? canvas.toDataURL() : '';
+  const qrSrc  = canvas ? canvas.toDataURL() : '';
   document.body.removeChild(tmp);
   buildCards(qrSrc);
 }, 150);
 
-// ── Selection ──────────────────────────────────────────
+/* ── Selection & print ── */
 function selectStyle(idx, name) {
   selectedStyle = idx;
   document.querySelectorAll('.style-option').forEach(el => el.classList.remove('selected'));
   document.querySelector(`.style-option[data-style="${idx}"]`).classList.add('selected');
-  document.getElementById('selection-label').textContent = `Selected: Style ${String(idx).padStart(2,'0')} — ${name}`;
+  document.getElementById('selection-label').textContent = `Selected: ${String(idx).padStart(2,'0')} — ${name}`;
   const btn = document.getElementById('btn-print');
   btn.classList.add('active');
   btn.textContent = `🖨️  Print Style ${String(idx).padStart(2,'0')}`;
 }
 
-// ── Print ──────────────────────────────────────────────
 function printSelected() {
   if (!selectedStyle) return;
-  // Mark selected sheet
-  document.querySelectorAll('.print-sheet').forEach(s => s.classList.remove('selected'));
-  document.getElementById(`ps-${selectedStyle}`).classList.add('selected');
+  document.querySelectorAll('.print-pair').forEach(s => s.classList.remove('selected'));
+  document.getElementById(`pp-${selectedStyle}`).classList.add('selected');
   window.print();
 }
 </script>
