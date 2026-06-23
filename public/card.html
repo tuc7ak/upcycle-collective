@@ -327,6 +327,42 @@ body {
 .d6-sep  { width:.2mm; height:2.5mm; background:rgba(0,0,0,.13); }
 .d6-sol  { font-size:1.55mm; font-weight:500; color:#6888A0; }
 
+/* ════════════════════════════════════════════
+   C7 · SAGE+ — Sage fork, bigger logo, no circle, cleaner footer
+   ════════════════════════════════════════════ */
+.c7 { background:#F7F5EF; display:flex; }
+.c7-strip { width:3mm; flex-shrink:0; background:linear-gradient(180deg,#6B9A6B 0%,#A4C49A 100%); }
+.c7-body  { flex:1; display:flex; flex-direction:column; padding:3mm 3.5mm 2.8mm 3mm; }
+.c7-hdr   { display:flex; align-items:flex-start; justify-content:space-between; }
+.c7-brand { display:flex; flex-direction:column; gap:.9mm; }
+.c7-br    { display:flex; align-items:center; gap:1.5mm; }
+.c7-ico   { width:4mm; height:4mm; object-fit:contain; flex-shrink:0; }
+.c7-nm    { font-size:3mm; font-weight:700; color:#1A1A1A; letter-spacing:.09em; text-transform:uppercase; }
+.c7-dt    { font-size:1.7mm; font-weight:400; color:#999; letter-spacing:.18em; text-transform:uppercase; }
+.c7-rule  { height:.2mm; background:rgba(0,0,0,.09); margin:2.5mm 0; flex-shrink:0; }
+.c7-main  { flex:1; display:flex; gap:3mm; }
+.c7-left  { flex:1; display:flex; flex-direction:column; justify-content:space-between; }
+.c7-h     { font-size:3.8mm; font-weight:600; color:#1A1A1A; line-height:1.25; }
+.c7-step  { font-size:1.85mm; font-weight:400; color:#888; display:flex; align-items:center; gap:1.2mm; margin-top:1.5mm; }
+.c7-step::before { content:''; width:.8mm; height:.8mm; border-radius:50%; background:#6B9A6B; flex-shrink:0; }
+.c7-foot  { display:flex; align-items:center; }
+.c7-stmy  { height:5mm; filter:saturate(0) brightness(.52); }
+.c7-right { flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; justify-content:flex-end; gap:1.2mm; }
+.c7-qr    { padding:1.3mm; background:#fff; border:.2mm solid rgba(0,0,0,.08); border-radius:1.2mm; }
+.c7-qr img{ width:20mm; height:20mm; display:block; }
+.c7-scan  { font-size:1.7mm; font-weight:600; color:#6B9A6B; letter-spacing:.16em; text-transform:uppercase; }
+
+/* C7 back */
+.d7 { background:#F7F5EF; display:flex; }
+.d7-strip { width:3mm; flex-shrink:0; background:linear-gradient(180deg,#6B9A6B 0%,#A4C49A 100%); }
+.d7-body  { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2.2mm; text-align:center; padding:3mm; }
+.d7-mico  { width:14mm; height:14mm; object-fit:contain; }
+.d7-nm    { font-size:4.2mm; font-weight:700; color:#1A1A1A; letter-spacing:.07em; line-height:1.2; }
+.d7-rule  { width:16mm; height:.2mm; background:rgba(0,0,0,.1); }
+.d7-dt    { font-size:1.7mm; font-weight:400; color:#999; letter-spacing:.2em; text-transform:uppercase; }
+.d7-foot  { display:flex; align-items:center; margin-top:.5mm; }
+.d7-stmy  { height:4.5mm; filter:saturate(0) brightness(.52); }
+
 /* ── Print ── */
 .print-sheets { display:none; }
 @media print {
@@ -390,6 +426,10 @@ function c4b(){return`<div class="card d4"><div class="d4-tbar"></div><div class
 function c5f(qr){return`<div class="card c5"><div class="c5-body"><div class="c5-top"><div class="c5-bc"><div class="c5-br"><img class="c5-ico" src="logo.png" alt="TUC"><span class="c5-nm">THE UPCYCLE COLLECTIVE</span></div><div class="c5-dt">KUCHING · 21 JULY 2026</div></div><div class="c5-gem"></div></div><div class="c5-mid"><div><div class="c5-h">Scan to earn →</div><div class="c5-step">Donate · Earn · Spend</div></div></div><div class="c5-bot"><div class="c5-foot"><img class="c5-stmy" src="STMY-White.png" alt="STMY"><div class="c5-sep"></div><span class="c5-sol">⬡ Solana</span></div><div class="c5-qrw"><div class="c5-qr"><img src="${qr}" alt="QR"></div><div class="c5-scan">↑ SCAN ME</div></div></div></div></div>`;}
 function c5b(){return`<div class="card d5"><div class="d5-body"><div class="d5-ga"></div><div class="d5-gb"></div><img class="d5-ico" src="logo.png" alt="TUC"><div class="d5-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d5-rule"></div><div class="d5-dt">KUCHING · 21 JULY 2026</div><div class="d5-foot"><img class="d5-stmy" src="STMY-White.png" alt="STMY"><div class="d5-sep"></div><span class="d5-sol">⬡ Solana</span></div></div></div>`;}
 
+/* ── C7: Sage+ · Bigger Logo, No Circle, Clean Footer ── */
+function c7f(qr){return`<div class="card c7"><div class="c7-strip"></div><div class="c7-body"><div class="c7-hdr"><div class="c7-brand"><div class="c7-br"><img class="c7-ico" src="logo.png" alt="TUC"><span class="c7-nm">THE UPCYCLE COLLECTIVE</span></div><div class="c7-dt">KUCHING · 21 JULY 2026</div></div></div><div class="c7-rule"></div><div class="c7-main"><div class="c7-left"><div class="c7-h">Scan to earn →</div><div class="c7-step">Donate · Earn · Spend</div><div class="c7-foot"><img class="c7-stmy" src="STMY-White.png" alt="STMY"></div></div><div class="c7-right"><div class="c7-qr"><img src="${qr}" alt="QR"></div><div class="c7-scan">↑ SCAN</div></div></div></div></div>`;}
+function c7b(){return`<div class="card d7"><div class="d7-strip"></div><div class="d7-body"><img class="d7-mico" src="logo.png" alt="TUC"><div class="d7-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d7-rule"></div><div class="d7-dt">KUCHING · 21 JULY 2026</div><div class="d7-foot"><img class="d7-stmy" src="STMY-White.png" alt="STMY"></div></div></div>`;}
+
 /* ── C6: Arc · Gradient Band ── */
 function c6f(qr){return`<div class="card c6"><div class="c6-band"><div class="c6-bbl"><img class="c6-bico" src="logo.png" alt="TUC"><span class="c6-bnm">THE UPCYCLE COLLECTIVE</span></div><div class="c6-bdt">21.07.2026</div></div><div class="c6-body"><div class="c6-info"><div class="c6-h">Scan to earn →</div><div class="c6-step">Donate · Earn · Spend</div><div class="c6-foot"><img class="c6-stmy" src="STMY-White.png" alt="STMY"><div class="c6-sep"></div><span class="c6-sol">⬡ Solana</span></div></div><div class="c6-qrw"><div class="c6-qr"><img src="${qr}" alt="QR"></div><div class="c6-scan">↑ SCAN</div></div></div></div>`;}
 function c6b(){return`<div class="card d6"><div class="d6-band"><img class="d6-bico" src="logo.png" alt="TUC"></div><div class="d6-body"><div class="d6-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d6-rule"></div><div class="d6-dt">KUCHING · 21 JULY 2026</div><div class="d6-foot"><img class="d6-stmy" src="STMY-White.png" alt="STMY"><div class="d6-sep"></div><span class="d6-sol">⬡ Solana</span></div></div></div>`;}
@@ -401,6 +441,7 @@ const STYLES = [
   { num:'04', name:'Night',  desc:'Dark premium · Soft cyan glow',          front:c4f, back:c4b },
   { num:'05', name:'Linen',  desc:'Warm linen · Corner anchor · Geometric', front:c5f, back:c5b },
   { num:'06', name:'Arc',    desc:'Gradient band header · Sky blue',        front:c6f, back:c6b },
+  { num:'07', name:'Sage+',  desc:'Sage · Big logo · No circle · Clean foot', front:c7f, back:c7b },
 ];
 
 let sel = null;
