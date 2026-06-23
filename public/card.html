@@ -90,7 +90,7 @@ body {
 .c1-hdr   { display:flex; align-items:flex-start; justify-content:space-between; }
 .c1-brand { display:flex; flex-direction:column; gap:.9mm; }
 .c1-br    { display:flex; align-items:center; gap:1.5mm; }
-.c1-ico   { font-size:4mm; line-height:1; }
+.c1-ico   { width:4mm; height:4mm; object-fit:contain; flex-shrink:0; }
 .c1-nm    { font-size:3mm; font-weight:700; color:#1A1A1A; letter-spacing:.09em; text-transform:uppercase; }
 .c1-dt    { font-size:1.7mm; font-weight:400; color:#999; letter-spacing:.18em; text-transform:uppercase; }
 .c1-rule  { height:.2mm; background:rgba(0,0,0,.09); margin:2.5mm 0; flex-shrink:0; }
@@ -113,7 +113,7 @@ body {
 .d1-strip { width:3mm; flex-shrink:0; background:linear-gradient(180deg,#6B9A6B 0%,#A4C49A 100%); }
 .d1-body  { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2.2mm; text-align:center; padding:3mm; }
 .d1-mark  { width:14mm; height:14mm; border-radius:50%; border:.3mm solid #6B9A6B; display:flex; align-items:center; justify-content:center; }
-.d1-mico  { font-size:7mm; line-height:1; }
+.d1-mico  { width:9mm; height:9mm; object-fit:contain; }
 .d1-nm    { font-size:4.2mm; font-weight:700; color:#1A1A1A; letter-spacing:.07em; line-height:1.2; }
 .d1-rule  { width:16mm; height:.2mm; background:rgba(0,0,0,.1); }
 .d1-dt    { font-size:1.7mm; font-weight:400; color:#999; letter-spacing:.2em; text-transform:uppercase; }
@@ -134,7 +134,7 @@ body {
 .c2-scan { font-size:1.7mm; font-weight:600; color:#2D6B5A; letter-spacing:.16em; text-transform:uppercase; }
 .c2-right{ flex:1; display:flex; flex-direction:column; justify-content:space-between; }
 .c2-brand{ display:flex; align-items:center; gap:1.5mm; }
-.c2-ico  { font-size:4mm; line-height:1; }
+.c2-ico  { width:4mm; height:4mm; object-fit:contain; flex-shrink:0; }
 .c2-nm   { font-size:3mm; font-weight:700; color:#111; letter-spacing:.09em; text-transform:uppercase; }
 .c2-dt   { font-size:1.7mm; font-weight:400; color:#BBB; letter-spacing:.18em; text-transform:uppercase; margin-top:.5mm; }
 .c2-h    { font-size:3.8mm; font-weight:600; color:#111; line-height:1.25; }
@@ -148,7 +148,7 @@ body {
 /* C2 back */
 .d2 { background:#FFFFFF; border:.2mm solid rgba(0,0,0,.06); display:flex; align-items:center; justify-content:center; }
 .d2-tbar { position:absolute; top:0; left:0; right:0; height:.8mm; background:linear-gradient(90deg,#2D6B5A,#56A08A,#2D6B5A); }
-.d2-wm   { position:absolute; font-size:34mm; line-height:1; color:rgba(45,107,90,.04); user-select:none; pointer-events:none; font-weight:800; }
+.d2-wm   { position:absolute; width:38mm; height:38mm; object-fit:contain; opacity:0.05; user-select:none; pointer-events:none; }
 .d2-body { position:relative; display:flex; flex-direction:column; align-items:center; gap:2.2mm; text-align:center; padding:3mm 6mm; }
 .d2-nm   { font-size:4.2mm; font-weight:700; color:#111; letter-spacing:.05em; line-height:1.2; }
 .d2-rule { width:16mm; height:.2mm; background:rgba(45,107,90,.25); }
@@ -165,7 +165,7 @@ body {
 .c3-top  { flex:1; display:flex; flex-direction:column; padding:3mm 3.5mm 2mm; gap:1.2mm; }
 .c3-hdr  { display:flex; align-items:center; justify-content:space-between; }
 .c3-brand{ display:flex; align-items:center; gap:1.5mm; }
-.c3-ico  { font-size:4mm; line-height:1; }
+.c3-ico  { width:4mm; height:4mm; object-fit:contain; flex-shrink:0; }
 .c3-nm   { font-size:3mm; font-weight:700; color:#0D1C1E; letter-spacing:.09em; text-transform:uppercase; }
 .c3-dt   { font-size:1.7mm; font-weight:400; color:#7A9898; letter-spacing:.18em; text-transform:uppercase; }
 .c3-h    { font-size:3.8mm; font-weight:600; color:#0D1C1E; line-height:1.25; margin-top:1mm; }
@@ -183,7 +183,7 @@ body {
 /* C3 back */
 .d3 { background:#F2F7F6; display:flex; flex-direction:column; }
 .d3-band { height:18mm; flex-shrink:0; background:linear-gradient(135deg,#1E5060 0%,#2C6E80 60%,#3A8090 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.5mm; }
-.d3-mico { font-size:9mm; line-height:1; }
+.d3-mico { width:10mm; height:10mm; object-fit:contain; filter:invert(1); }
 .d3-body { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2mm; text-align:center; padding:2.5mm 4mm; }
 .d3-nm   { font-size:4.2mm; font-weight:700; color:#0D1C1E; letter-spacing:.06em; line-height:1.2; }
 .d3-rule { width:16mm; height:.2mm; background:rgba(44,110,128,.22); }
@@ -206,7 +206,7 @@ body {
 .c4-left { flex:1; display:flex; flex-direction:column; justify-content:space-between; }
 .c4-brand{ display:flex; flex-direction:column; gap:.8mm; }
 .c4-br   { display:flex; align-items:center; gap:1.5mm; }
-.c4-ico  { font-size:4mm; line-height:1; }
+.c4-ico  { width:4mm; height:4mm; object-fit:contain; flex-shrink:0; filter:invert(1) brightness(2); }
 .c4-nm   { font-size:3mm; font-weight:600; color:#EFEFEF; letter-spacing:.1em; text-transform:uppercase; }
 .c4-dt   { font-size:1.7mm; font-weight:300; color:rgba(255,255,255,.35); letter-spacing:.18em; text-transform:uppercase; }
 .c4-h    { font-size:3.8mm; font-weight:500; color:#EFEFEF; line-height:1.25; }
@@ -230,7 +230,7 @@ body {
 .d4-tbar { position:absolute; top:0; left:0; right:0; height:.7mm; background:linear-gradient(90deg,#7CC4B2,#5AA090,#7CC4B2); }
 .d4-body { display:flex; flex-direction:column; align-items:center; gap:2.2mm; text-align:center; }
 .d4-mark { width:14mm; height:14mm; border-radius:50%; border:.3mm solid rgba(124,196,178,.45); background:rgba(124,196,178,.06); display:flex; align-items:center; justify-content:center; }
-.d4-mico { font-size:7mm; line-height:1; }
+.d4-mico { width:9mm; height:9mm; object-fit:contain; filter:invert(1) brightness(2); }
 .d4-nm   { font-size:4.2mm; font-weight:600; color:#EFEFEF; letter-spacing:.06em; line-height:1.2; }
 .d4-rule { width:18mm; height:.2mm; background:rgba(124,196,178,.22); }
 .d4-dt   { font-size:1.7mm; font-weight:300; color:rgba(255,255,255,.32); letter-spacing:.18em; text-transform:uppercase; }
@@ -253,7 +253,7 @@ body {
 .c5-top  { display:flex; align-items:flex-start; justify-content:space-between; }
 .c5-bc   { display:flex; flex-direction:column; gap:.8mm; }
 .c5-br   { display:flex; align-items:center; gap:1.5mm; }
-.c5-ico  { font-size:4mm; line-height:1; }
+.c5-ico  { width:4mm; height:4mm; object-fit:contain; flex-shrink:0; }
 .c5-nm   { font-size:3mm; font-weight:700; color:#1A140A; letter-spacing:.09em; text-transform:uppercase; }
 .c5-dt   { font-size:1.7mm; font-weight:400; color:#9A8878; letter-spacing:.18em; text-transform:uppercase; }
 .c5-gem  { width:6mm; height:6mm; border:.2mm solid rgba(88,120,88,.35); flex-shrink:0; }
@@ -282,7 +282,7 @@ body {
 .d5-body { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2.2mm; text-align:center; padding:3mm; }
 .d5-ga   { position:absolute; top:3.5mm; right:3.5mm; width:6mm; height:6mm; border:.2mm solid rgba(88,120,88,.3); }
 .d5-gb   { position:absolute; bottom:3.5mm; left:3.5mm; width:4mm; height:4mm; border:.2mm solid rgba(88,120,88,.22); }
-.d5-ico  { font-size:9mm; line-height:1; }
+.d5-ico  { width:10mm; height:10mm; object-fit:contain; }
 .d5-nm   { font-size:4.2mm; font-weight:700; color:#1A140A; letter-spacing:.07em; line-height:1.2; }
 .d5-rule { width:14mm; height:.2mm; background:rgba(88,120,88,.3); }
 .d5-dt   { font-size:1.7mm; font-weight:400; color:#9A8878; letter-spacing:.2em; text-transform:uppercase; }
@@ -297,7 +297,7 @@ body {
 .c6 { background:#F1F6FA; display:flex; flex-direction:column; }
 .c6-band { height:14.5mm; flex-shrink:0; background:linear-gradient(135deg,#1A4A68 0%,#2E72A0 55%,#2468A0 100%); display:flex; align-items:flex-end; justify-content:space-between; padding:0 3.5mm 2.5mm; }
 .c6-bbl  { display:flex; align-items:center; gap:1.8mm; }
-.c6-bico { font-size:4.5mm; line-height:1; }
+.c6-bico { width:5mm; height:5mm; object-fit:contain; flex-shrink:0; filter:invert(1); }
 .c6-bnm  { font-size:3mm; font-weight:700; color:rgba(255,255,255,.95); letter-spacing:.08em; text-transform:uppercase; }
 .c6-bdt  { font-size:1.7mm; font-weight:300; color:rgba(255,255,255,.48); letter-spacing:.16em; align-self:flex-end; }
 .c6-body { flex:1; display:flex; gap:3mm; padding:2.5mm 3.5mm; }
@@ -317,7 +317,7 @@ body {
 /* C6 back */
 .d6 { background:#F1F6FA; display:flex; flex-direction:column; }
 .d6-band { height:14.5mm; flex-shrink:0; background:linear-gradient(135deg,#1A4A68 0%,#2E72A0 55%,#2468A0 100%); display:flex; align-items:center; justify-content:center; }
-.d6-bico { font-size:8.5mm; line-height:1; }
+.d6-bico { width:9mm; height:9mm; object-fit:contain; flex-shrink:0; filter:invert(1); }
 .d6-body { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2.2mm; text-align:center; padding:2mm 4mm; }
 .d6-nm   { font-size:4.2mm; font-weight:700; color:#0E1C28; letter-spacing:.05em; line-height:1.2; }
 .d6-rule { width:16mm; height:.2mm; background:rgba(46,114,160,.28); }
@@ -371,28 +371,28 @@ body {
 const QR_URL = 'https://upcycle-collective.vercel.app';
 
 /* ── C1: Sage · Swiss Left-Strip ── */
-function c1f(qr){return`<div class="card c1"><div class="c1-strip"></div><div class="c1-body"><div class="c1-hdr"><div class="c1-brand"><div class="c1-br"><span class="c1-ico">♻️</span><span class="c1-nm">THE UPCYCLE COLLECTIVE</span></div><div class="c1-dt">KUCHING · 21 JULY 2026</div></div></div><div class="c1-rule"></div><div class="c1-main"><div class="c1-left"><div class="c1-h">Scan to earn →</div><div class="c1-step">Donate · Earn · Spend</div><div class="c1-foot"><img class="c1-stmy" src="STMY-White.png" alt="STMY"><div class="c1-sep"></div><span class="c1-sol">⬡ Solana</span></div></div><div class="c1-right"><div class="c1-qr"><img src="${qr}" alt="QR"></div><div class="c1-scan">↑ SCAN</div></div></div></div></div>`;}
-function c1b(){return`<div class="card d1"><div class="d1-strip"></div><div class="d1-body"><div class="d1-mark"><span class="d1-mico">♻️</span></div><div class="d1-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d1-rule"></div><div class="d1-dt">KUCHING · 21 JULY 2026</div><div class="d1-foot"><img class="d1-stmy" src="STMY-White.png" alt="STMY"><div class="d1-sep"></div><span class="d1-sol">⬡ Solana</span></div></div></div>`;}
+function c1f(qr){return`<div class="card c1"><div class="c1-strip"></div><div class="c1-body"><div class="c1-hdr"><div class="c1-brand"><div class="c1-br"><img class="c1-ico" src="logo.png" alt="TUC"><span class="c1-nm">THE UPCYCLE COLLECTIVE</span></div><div class="c1-dt">KUCHING · 21 JULY 2026</div></div></div><div class="c1-rule"></div><div class="c1-main"><div class="c1-left"><div class="c1-h">Scan to earn →</div><div class="c1-step">Donate · Earn · Spend</div><div class="c1-foot"><img class="c1-stmy" src="STMY-White.png" alt="STMY"><div class="c1-sep"></div><span class="c1-sol">⬡ Solana</span></div></div><div class="c1-right"><div class="c1-qr"><img src="${qr}" alt="QR"></div><div class="c1-scan">↑ SCAN</div></div></div></div></div>`;}
+function c1b(){return`<div class="card d1"><div class="d1-strip"></div><div class="d1-body"><div class="d1-mark"><img class="d1-mico" src="logo.png" alt="TUC"></div><div class="d1-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d1-rule"></div><div class="d1-dt">KUCHING · 21 JULY 2026</div><div class="d1-foot"><img class="d1-stmy" src="STMY-White.png" alt="STMY"><div class="d1-sep"></div><span class="d1-sol">⬡ Solana</span></div></div></div>`;}
 
 /* ── C2: Frost · White, QR Left Panel ── */
-function c2f(qr){return`<div class="card c2"><div class="c2-tbar"></div><div class="c2-body"><div class="c2-left"><div class="c2-qr"><img src="${qr}" alt="QR"></div><div class="c2-scan">↑ SCAN</div></div><div class="c2-right"><div class="c2-brand"><span class="c2-ico">♻️</span><span class="c2-nm">THE UPCYCLE COLLECTIVE</span></div><div class="c2-dt">KUCHING · 21.07.2026</div><div class="c2-h">Scan to earn →</div><div class="c2-step">Donate · Earn · Spend</div><div class="c2-foot"><img class="c2-stmy" src="STMY-White.png" alt="STMY"><div class="c2-sep"></div><span class="c2-sol">⬡ Solana</span></div></div></div></div>`;}
-function c2b(){return`<div class="card d2"><div class="d2-tbar"></div><div class="d2-wm">♻</div><div class="d2-body"><div class="d2-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d2-rule"></div><div class="d2-dt">KUCHING · 21 JULY 2026</div><div class="d2-foot"><img class="d2-stmy" src="STMY-White.png" alt="STMY"><div class="d2-sep"></div><span class="d2-sol">⬡ Solana</span></div></div></div>`;}
+function c2f(qr){return`<div class="card c2"><div class="c2-tbar"></div><div class="c2-body"><div class="c2-left"><div class="c2-qr"><img src="${qr}" alt="QR"></div><div class="c2-scan">↑ SCAN</div></div><div class="c2-right"><div class="c2-brand"><img class="c2-ico" src="logo.png" alt="TUC"><span class="c2-nm">THE UPCYCLE COLLECTIVE</span></div><div class="c2-dt">KUCHING · 21.07.2026</div><div class="c2-h">Scan to earn →</div><div class="c2-step">Donate · Earn · Spend</div><div class="c2-foot"><img class="c2-stmy" src="STMY-White.png" alt="STMY"><div class="c2-sep"></div><span class="c2-sol">⬡ Solana</span></div></div></div></div>`;}
+function c2b(){return`<div class="card d2"><div class="d2-tbar"></div><img class="d2-wm" src="logo.png" alt="TUC"><div class="d2-body"><div class="d2-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d2-rule"></div><div class="d2-dt">KUCHING · 21 JULY 2026</div><div class="d2-foot"><img class="d2-stmy" src="STMY-White.png" alt="STMY"><div class="d2-sep"></div><span class="d2-sol">⬡ Solana</span></div></div></div>`;}
 
 /* ── C3: Teal · Horizontal Band Split ── */
-function c3f(qr){return`<div class="card c3"><div class="c3-top"><div class="c3-hdr"><div class="c3-brand"><span class="c3-ico">♻️</span><span class="c3-nm">THE UPCYCLE COLLECTIVE</span></div><div class="c3-dt">21 JULY 2026</div></div><div class="c3-h">Scan to earn →</div><div class="c3-step">Donate · Earn · Spend</div></div><div class="c3-div"></div><div class="c3-bot"><div class="c3-qr"><img src="${qr}" alt="QR"></div><div class="c3-slbl">↑ Scan to earn</div><div class="c3-foot"><img class="c3-stmy" src="STMY-White.png" alt="STMY"><span class="c3-sol">⬡ Solana</span></div></div></div>`;}
-function c3b(){return`<div class="card d3"><div class="d3-band"><div class="d3-mico">♻️</div></div><div class="d3-body"><div class="d3-nm">THE UPCYCLE COLLECTIVE</div><div class="d3-rule"></div><div class="d3-dt">KUCHING · 21 JULY 2026</div><div class="d3-foot"><img class="d3-stmy" src="STMY-White.png" alt="STMY"><div class="d3-sep"></div><span class="d3-sol">⬡ Solana</span></div></div></div>`;}
+function c3f(qr){return`<div class="card c3"><div class="c3-top"><div class="c3-hdr"><div class="c3-brand"><img class="c3-ico" src="logo.png" alt="TUC"><span class="c3-nm">THE UPCYCLE COLLECTIVE</span></div><div class="c3-dt">21 JULY 2026</div></div><div class="c3-h">Scan to earn →</div><div class="c3-step">Donate · Earn · Spend</div></div><div class="c3-div"></div><div class="c3-bot"><div class="c3-qr"><img src="${qr}" alt="QR"></div><div class="c3-slbl">↑ Scan to earn</div><div class="c3-foot"><img class="c3-stmy" src="STMY-White.png" alt="STMY"><span class="c3-sol">⬡ Solana</span></div></div></div>`;}
+function c3b(){return`<div class="card d3"><div class="d3-band"><img class="d3-mico" src="logo.png" alt="TUC"></div><div class="d3-body"><div class="d3-nm">THE UPCYCLE COLLECTIVE</div><div class="d3-rule"></div><div class="d3-dt">KUCHING · 21 JULY 2026</div><div class="d3-foot"><img class="d3-stmy" src="STMY-White.png" alt="STMY"><div class="d3-sep"></div><span class="d3-sol">⬡ Solana</span></div></div></div>`;}
 
 /* ── C4: Night · Dark Premium ── */
-function c4f(qr){return`<div class="card c4"><div class="c4-tbar"></div><div class="c4-body"><div class="c4-left"><div class="c4-brand"><div class="c4-br"><span class="c4-ico">♻️</span><span class="c4-nm">THE UPCYCLE COLLECTIVE</span></div><div class="c4-dt">KUCHING · 21 JULY 2026</div></div><div class="c4-h">Scan to earn →</div><div class="c4-step">Donate · Earn · Spend</div><div class="c4-foot"><img class="c4-stmy" src="STMY-White.png" alt="STMY"><div class="c4-sep"></div><span class="c4-sol">⬡ Solana</span></div></div><div class="c4-right"><div class="c4-qr"><img src="${qr}" alt="QR"></div><div class="c4-scan">↑ SCAN</div></div></div></div>`;}
-function c4b(){return`<div class="card d4"><div class="d4-tbar"></div><div class="d4-body"><div class="d4-mark"><span class="d4-mico">♻️</span></div><div class="d4-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d4-rule"></div><div class="d4-dt">KUCHING · 21 JULY 2026</div><div class="d4-foot"><img class="d4-stmy" src="STMY-White.png" alt="STMY"><div class="d4-sep"></div><span class="d4-sol">⬡ Solana</span></div></div></div>`;}
+function c4f(qr){return`<div class="card c4"><div class="c4-tbar"></div><div class="c4-body"><div class="c4-left"><div class="c4-brand"><div class="c4-br"><img class="c4-ico" src="logo.png" alt="TUC"><span class="c4-nm">THE UPCYCLE COLLECTIVE</span></div><div class="c4-dt">KUCHING · 21 JULY 2026</div></div><div class="c4-h">Scan to earn →</div><div class="c4-step">Donate · Earn · Spend</div><div class="c4-foot"><img class="c4-stmy" src="STMY-White.png" alt="STMY"><div class="c4-sep"></div><span class="c4-sol">⬡ Solana</span></div></div><div class="c4-right"><div class="c4-qr"><img src="${qr}" alt="QR"></div><div class="c4-scan">↑ SCAN</div></div></div></div>`;}
+function c4b(){return`<div class="card d4"><div class="d4-tbar"></div><div class="d4-body"><div class="d4-mark"><img class="d4-mico" src="logo.png" alt="TUC"></div><div class="d4-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d4-rule"></div><div class="d4-dt">KUCHING · 21 JULY 2026</div><div class="d4-foot"><img class="d4-stmy" src="STMY-White.png" alt="STMY"><div class="d4-sep"></div><span class="d4-sol">⬡ Solana</span></div></div></div>`;}
 
 /* ── C5: Linen · Corner Anchor ── */
-function c5f(qr){return`<div class="card c5"><div class="c5-body"><div class="c5-top"><div class="c5-bc"><div class="c5-br"><span class="c5-ico">♻️</span><span class="c5-nm">THE UPCYCLE COLLECTIVE</span></div><div class="c5-dt">KUCHING · 21 JULY 2026</div></div><div class="c5-gem"></div></div><div class="c5-mid"><div><div class="c5-h">Scan to earn →</div><div class="c5-step">Donate · Earn · Spend</div></div></div><div class="c5-bot"><div class="c5-foot"><img class="c5-stmy" src="STMY-White.png" alt="STMY"><div class="c5-sep"></div><span class="c5-sol">⬡ Solana</span></div><div class="c5-qrw"><div class="c5-qr"><img src="${qr}" alt="QR"></div><div class="c5-scan">↑ SCAN ME</div></div></div></div></div>`;}
-function c5b(){return`<div class="card d5"><div class="d5-body"><div class="d5-ga"></div><div class="d5-gb"></div><div class="d5-ico">♻️</div><div class="d5-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d5-rule"></div><div class="d5-dt">KUCHING · 21 JULY 2026</div><div class="d5-foot"><img class="d5-stmy" src="STMY-White.png" alt="STMY"><div class="d5-sep"></div><span class="d5-sol">⬡ Solana</span></div></div></div>`;}
+function c5f(qr){return`<div class="card c5"><div class="c5-body"><div class="c5-top"><div class="c5-bc"><div class="c5-br"><img class="c5-ico" src="logo.png" alt="TUC"><span class="c5-nm">THE UPCYCLE COLLECTIVE</span></div><div class="c5-dt">KUCHING · 21 JULY 2026</div></div><div class="c5-gem"></div></div><div class="c5-mid"><div><div class="c5-h">Scan to earn →</div><div class="c5-step">Donate · Earn · Spend</div></div></div><div class="c5-bot"><div class="c5-foot"><img class="c5-stmy" src="STMY-White.png" alt="STMY"><div class="c5-sep"></div><span class="c5-sol">⬡ Solana</span></div><div class="c5-qrw"><div class="c5-qr"><img src="${qr}" alt="QR"></div><div class="c5-scan">↑ SCAN ME</div></div></div></div></div>`;}
+function c5b(){return`<div class="card d5"><div class="d5-body"><div class="d5-ga"></div><div class="d5-gb"></div><img class="d5-ico" src="logo.png" alt="TUC"><div class="d5-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d5-rule"></div><div class="d5-dt">KUCHING · 21 JULY 2026</div><div class="d5-foot"><img class="d5-stmy" src="STMY-White.png" alt="STMY"><div class="d5-sep"></div><span class="d5-sol">⬡ Solana</span></div></div></div>`;}
 
 /* ── C6: Arc · Gradient Band ── */
-function c6f(qr){return`<div class="card c6"><div class="c6-band"><div class="c6-bbl"><span class="c6-bico">♻️</span><span class="c6-bnm">THE UPCYCLE COLLECTIVE</span></div><div class="c6-bdt">21.07.2026</div></div><div class="c6-body"><div class="c6-info"><div class="c6-h">Scan to earn →</div><div class="c6-step">Donate · Earn · Spend</div><div class="c6-foot"><img class="c6-stmy" src="STMY-White.png" alt="STMY"><div class="c6-sep"></div><span class="c6-sol">⬡ Solana</span></div></div><div class="c6-qrw"><div class="c6-qr"><img src="${qr}" alt="QR"></div><div class="c6-scan">↑ SCAN</div></div></div></div>`;}
-function c6b(){return`<div class="card d6"><div class="d6-band"><span class="d6-bico">♻️</span></div><div class="d6-body"><div class="d6-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d6-rule"></div><div class="d6-dt">KUCHING · 21 JULY 2026</div><div class="d6-foot"><img class="d6-stmy" src="STMY-White.png" alt="STMY"><div class="d6-sep"></div><span class="d6-sol">⬡ Solana</span></div></div></div>`;}
+function c6f(qr){return`<div class="card c6"><div class="c6-band"><div class="c6-bbl"><img class="c6-bico" src="logo.png" alt="TUC"><span class="c6-bnm">THE UPCYCLE COLLECTIVE</span></div><div class="c6-bdt">21.07.2026</div></div><div class="c6-body"><div class="c6-info"><div class="c6-h">Scan to earn →</div><div class="c6-step">Donate · Earn · Spend</div><div class="c6-foot"><img class="c6-stmy" src="STMY-White.png" alt="STMY"><div class="c6-sep"></div><span class="c6-sol">⬡ Solana</span></div></div><div class="c6-qrw"><div class="c6-qr"><img src="${qr}" alt="QR"></div><div class="c6-scan">↑ SCAN</div></div></div></div>`;}
+function c6b(){return`<div class="card d6"><div class="d6-band"><img class="d6-bico" src="logo.png" alt="TUC"></div><div class="d6-body"><div class="d6-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d6-rule"></div><div class="d6-dt">KUCHING · 21 JULY 2026</div><div class="d6-foot"><img class="d6-stmy" src="STMY-White.png" alt="STMY"><div class="d6-sep"></div><span class="d6-sol">⬡ Solana</span></div></div></div>`;}
 
 const STYLES = [
   { num:'01', name:'Sage',   desc:'Swiss left-strip · Sage green',         front:c1f, back:c1b },
