@@ -26,7 +26,7 @@ body {
   backdrop-filter:blur(12px);
 }
 .top-info h1 { font-size:17px; font-weight:700; color:#111; letter-spacing:-0.02em; }
-.top-info p  { font-size:12px; color:#999; margin-top:3px; letter-spacing:0.01em; }
+.top-info p  { font-size:12px; color:#999; margin-top:3px; }
 .top-right   { display:flex; align-items:center; gap:12px; }
 #selection-label {
   font-size:12px; color:#777;
@@ -41,7 +41,6 @@ body {
   border-radius:7px; cursor:pointer;
   transition:opacity .15s, background .15s;
   opacity:.28; pointer-events:none;
-  letter-spacing:0.01em;
 }
 #btn-print.active { opacity:1; pointer-events:all; }
 #btn-print.active:hover { background:#333; }
@@ -65,14 +64,14 @@ body {
   transform:translateY(-4px);
 }
 .pair-side { display:flex; flex-direction:column; align-items:center; gap:7px; }
-.pair-lbl  { font-size:10px; font-weight:500; letter-spacing:0.18em; color:#BBB; text-transform:uppercase; }
+.pair-lbl  { font-size:10px; font-weight:500; letter-spacing:.18em; color:#BBB; text-transform:uppercase; }
 .style-meta { display:flex; flex-direction:column; align-items:center; gap:4px; }
-.style-num  { font-size:10px; font-weight:500; letter-spacing:0.2em; color:#BBB; text-transform:uppercase; }
+.style-num  { font-size:10px; font-weight:500; letter-spacing:.2em; color:#BBB; text-transform:uppercase; }
 .style-name { font-size:14px; font-weight:700; color:#1A1A1A; letter-spacing:-0.01em; }
 .style-desc { font-size:12px; color:#AAA; }
 .style-option.selected .style-name { color:#2A6040; }
 
-/* Base card */
+/* ── Base card ── */
 .card {
   width:85.6mm; height:54mm;
   border-radius:3mm; overflow:hidden;
@@ -84,7 +83,6 @@ body {
 
 /* ════════════════════════════════════════════
    C1 · SAGE — Swiss Left-Strip Grid
-   #F7F5EF · sage #6B9A6B · charcoal #1A1A1A
    ════════════════════════════════════════════ */
 .c1 { background:#F7F5EF; display:flex; }
 .c1-strip { width:3mm; flex-shrink:0; background:linear-gradient(180deg,#6B9A6B 0%,#A4C49A 100%); }
@@ -92,126 +90,111 @@ body {
 .c1-hdr   { display:flex; align-items:flex-start; justify-content:space-between; }
 .c1-brand { display:flex; flex-direction:column; gap:.9mm; }
 .c1-br    { display:flex; align-items:center; gap:1.5mm; }
-.c1-ico   { font-size:3.5mm; line-height:1; }
-.c1-nm    { font-size:2.3mm; font-weight:700; color:#1A1A1A; letter-spacing:0.09em; text-transform:uppercase; }
-.c1-dt    { font-size:1.6mm; font-weight:400; color:#999; letter-spacing:0.22em; text-transform:uppercase; }
-.c1-rule  { height:0.2mm; background:rgba(0,0,0,.09); margin:2.5mm 0; flex-shrink:0; }
+.c1-ico   { font-size:4mm; line-height:1; }
+.c1-nm    { font-size:3mm; font-weight:700; color:#1A1A1A; letter-spacing:.09em; text-transform:uppercase; }
+.c1-dt    { font-size:1.7mm; font-weight:400; color:#999; letter-spacing:.18em; text-transform:uppercase; }
+.c1-rule  { height:.2mm; background:rgba(0,0,0,.09); margin:2.5mm 0; flex-shrink:0; }
 .c1-main  { flex:1; display:flex; gap:3mm; }
 .c1-left  { flex:1; display:flex; flex-direction:column; justify-content:space-between; }
-.c1-cta   { display:flex; flex-direction:column; gap:.9mm; }
-.c1-h     { font-size:2.7mm; font-weight:600; color:#1A1A1A; line-height:1.3; }
-.c1-s     { font-size:1.7mm; font-weight:400; color:#888; line-height:1.4; }
-.c1-steps { display:flex; flex-direction:column; gap:.8mm; margin-top:1.5mm; }
-.c1-step  { font-size:1.6mm; font-weight:400; color:#666; display:flex; align-items:center; gap:1.2mm; line-height:1.3; }
+.c1-h     { font-size:3.8mm; font-weight:600; color:#1A1A1A; line-height:1.25; }
+.c1-step  { font-size:1.85mm; font-weight:400; color:#888; display:flex; align-items:center; gap:1.2mm; margin-top:1.5mm; }
 .c1-step::before { content:''; width:.8mm; height:.8mm; border-radius:50%; background:#6B9A6B; flex-shrink:0; }
-.c1-foot  { display:flex; align-items:center; gap:1.5mm; margin-top:auto; }
+.c1-foot  { display:flex; align-items:center; gap:1.5mm; }
 .c1-stmy  { height:3mm; filter:saturate(0) brightness(.52); }
 .c1-sep   { width:.2mm; height:2.5mm; background:rgba(0,0,0,.15); }
-.c1-sol   { font-size:1.5mm; font-weight:500; color:#AAA; letter-spacing:.05em; }
+.c1-sol   { font-size:1.55mm; font-weight:500; color:#AAA; }
 .c1-right { flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; justify-content:flex-end; gap:1.2mm; }
 .c1-qr    { padding:1.3mm; background:#fff; border:.2mm solid rgba(0,0,0,.08); border-radius:1.2mm; }
-.c1-qr img{ width:19mm; height:19mm; display:block; }
-.c1-scan  { font-size:1.5mm; font-weight:600; color:#6B9A6B; letter-spacing:.18em; text-transform:uppercase; }
+.c1-qr img{ width:20mm; height:20mm; display:block; }
+.c1-scan  { font-size:1.7mm; font-weight:600; color:#6B9A6B; letter-spacing:.16em; text-transform:uppercase; }
 
 /* C1 back */
 .d1 { background:#F7F5EF; display:flex; }
 .d1-strip { width:3mm; flex-shrink:0; background:linear-gradient(180deg,#6B9A6B 0%,#A4C49A 100%); }
-.d1-body  { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2mm; text-align:center; padding:3mm; }
+.d1-body  { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2.2mm; text-align:center; padding:3mm; }
 .d1-mark  { width:14mm; height:14mm; border-radius:50%; border:.3mm solid #6B9A6B; display:flex; align-items:center; justify-content:center; }
 .d1-mico  { font-size:7mm; line-height:1; }
-.d1-nm    { font-size:3mm; font-weight:700; color:#1A1A1A; letter-spacing:.07em; line-height:1.2; }
-.d1-tag   { font-size:1.5mm; font-weight:500; color:#6B9A6B; letter-spacing:.26em; text-transform:uppercase; }
+.d1-nm    { font-size:4.2mm; font-weight:700; color:#1A1A1A; letter-spacing:.07em; line-height:1.2; }
 .d1-rule  { width:16mm; height:.2mm; background:rgba(0,0,0,.1); }
-.d1-dt    { font-size:1.5mm; font-weight:400; color:#999; letter-spacing:.2em; text-transform:uppercase; }
+.d1-dt    { font-size:1.7mm; font-weight:400; color:#999; letter-spacing:.2em; text-transform:uppercase; }
 .d1-foot  { display:flex; align-items:center; gap:1.5mm; margin-top:.5mm; }
 .d1-stmy  { height:2.8mm; filter:saturate(0) brightness(.52); }
 .d1-sep   { width:.2mm; height:2.5mm; background:rgba(0,0,0,.13); }
-.d1-sol   { font-size:1.5mm; font-weight:500; color:#AAA; }
+.d1-sol   { font-size:1.55mm; font-weight:500; color:#AAA; }
 
 /* ════════════════════════════════════════════
-   C2 · FROST — White, QR Left, Text Right
-   #FFFFFF · forest-teal #2D6B5A · #111
+   C2 · FROST — White, QR Left Panel
    ════════════════════════════════════════════ */
 .c2 { background:#FFFFFF; border:.2mm solid rgba(0,0,0,.06); display:flex; flex-direction:column; }
 .c2-tbar { height:.8mm; background:linear-gradient(90deg,#2D6B5A,#56A08A,#2D6B5A); flex-shrink:0; }
-.c2-body { flex:1; display:flex; padding:2.5mm 3.5mm 2.5mm; }
-.c2-left { flex-shrink:0; width:34mm; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.2mm; border-right:.2mm solid rgba(0,0,0,.07); padding-right:3mm; margin-right:3mm; }
+.c2-body { flex:1; display:flex; padding:2.5mm 3.5mm; }
+.c2-left { flex-shrink:0; width:34mm; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.5mm; border-right:.2mm solid rgba(0,0,0,.07); padding-right:3mm; margin-right:3mm; }
 .c2-qr   { padding:1.3mm; background:#F6FAF6; border:.2mm solid rgba(45,107,90,.2); border-radius:1.5mm; }
-.c2-qr img{ width:21mm; height:21mm; display:block; }
-.c2-scan { font-size:1.5mm; font-weight:600; color:#2D6B5A; letter-spacing:.18em; text-transform:uppercase; }
+.c2-qr img{ width:22mm; height:22mm; display:block; }
+.c2-scan { font-size:1.7mm; font-weight:600; color:#2D6B5A; letter-spacing:.16em; text-transform:uppercase; }
 .c2-right{ flex:1; display:flex; flex-direction:column; justify-content:space-between; }
 .c2-brand{ display:flex; align-items:center; gap:1.5mm; }
-.c2-ico  { font-size:3.5mm; line-height:1; }
-.c2-nm   { font-size:2.2mm; font-weight:700; color:#111; letter-spacing:.1em; text-transform:uppercase; }
-.c2-dt   { font-size:1.5mm; font-weight:400; color:#BBB; letter-spacing:.2em; text-transform:uppercase; margin-top:.5mm; }
-.c2-cta  { display:flex; flex-direction:column; gap:.8mm; }
-.c2-h    { font-size:2.6mm; font-weight:600; color:#111; line-height:1.3; }
-.c2-s    { font-size:1.7mm; color:#888; line-height:1.4; }
-.c2-steps{ display:flex; flex-direction:column; gap:.7mm; }
-.c2-step { font-size:1.6mm; color:#666; display:flex; align-items:center; gap:1.2mm; }
+.c2-ico  { font-size:4mm; line-height:1; }
+.c2-nm   { font-size:3mm; font-weight:700; color:#111; letter-spacing:.09em; text-transform:uppercase; }
+.c2-dt   { font-size:1.7mm; font-weight:400; color:#BBB; letter-spacing:.18em; text-transform:uppercase; margin-top:.5mm; }
+.c2-h    { font-size:3.8mm; font-weight:600; color:#111; line-height:1.25; }
+.c2-step { font-size:1.85mm; color:#888; display:flex; align-items:center; gap:1.2mm; margin-top:1.5mm; }
 .c2-step::before { content:''; width:.8mm; height:.8mm; border-radius:50%; background:#2D6B5A; flex-shrink:0; }
 .c2-foot { display:flex; align-items:center; gap:1.5mm; }
 .c2-stmy { height:2.8mm; filter:saturate(0) brightness(.52); }
 .c2-sep  { width:.2mm; height:2.5mm; background:rgba(0,0,0,.13); }
-.c2-sol  { font-size:1.5mm; font-weight:500; color:#BBB; }
+.c2-sol  { font-size:1.55mm; font-weight:500; color:#BBB; }
 
 /* C2 back */
 .d2 { background:#FFFFFF; border:.2mm solid rgba(0,0,0,.06); display:flex; align-items:center; justify-content:center; }
 .d2-tbar { position:absolute; top:0; left:0; right:0; height:.8mm; background:linear-gradient(90deg,#2D6B5A,#56A08A,#2D6B5A); }
 .d2-wm   { position:absolute; font-size:34mm; line-height:1; color:rgba(45,107,90,.04); user-select:none; pointer-events:none; font-weight:800; }
-.d2-body { position:relative; display:flex; flex-direction:column; align-items:center; gap:1.8mm; text-align:center; padding:3mm 6mm; }
-.d2-tag  { font-size:1.5mm; font-weight:500; color:#2D6B5A; letter-spacing:.28em; text-transform:uppercase; }
-.d2-nm   { font-size:3.5mm; font-weight:700; color:#111; letter-spacing:.05em; line-height:1.2; }
+.d2-body { position:relative; display:flex; flex-direction:column; align-items:center; gap:2.2mm; text-align:center; padding:3mm 6mm; }
+.d2-nm   { font-size:4.2mm; font-weight:700; color:#111; letter-spacing:.05em; line-height:1.2; }
 .d2-rule { width:16mm; height:.2mm; background:rgba(45,107,90,.25); }
-.d2-dt   { font-size:1.55mm; font-weight:400; color:#AAA; letter-spacing:.2em; text-transform:uppercase; }
-.d2-foot { display:flex; align-items:center; gap:1.5mm; margin-top:.8mm; }
+.d2-dt   { font-size:1.7mm; font-weight:400; color:#AAA; letter-spacing:.2em; text-transform:uppercase; }
+.d2-foot { display:flex; align-items:center; gap:1.5mm; margin-top:1mm; }
 .d2-stmy { height:2.8mm; filter:saturate(0) brightness(.52); }
 .d2-sep  { width:.2mm; height:2.5mm; background:rgba(0,0,0,.12); }
-.d2-sol  { font-size:1.5mm; font-weight:500; color:#BBB; }
+.d2-sol  { font-size:1.55mm; font-weight:500; color:#BBB; }
 
 /* ════════════════════════════════════════════
    C3 · TEAL — Horizontal Band Split
-   #F2F7F6 · teal #2C6E80 · deep #0D1C1E
    ════════════════════════════════════════════ */
 .c3 { background:#F2F7F6; display:flex; flex-direction:column; }
-.c3-top  { flex:1; display:flex; flex-direction:column; padding:3mm 3.5mm 2mm; gap:1mm; }
+.c3-top  { flex:1; display:flex; flex-direction:column; padding:3mm 3.5mm 2mm; gap:1.2mm; }
 .c3-hdr  { display:flex; align-items:center; justify-content:space-between; }
 .c3-brand{ display:flex; align-items:center; gap:1.5mm; }
-.c3-ico  { font-size:3.5mm; line-height:1; }
-.c3-nm   { font-size:2.3mm; font-weight:700; color:#0D1C1E; letter-spacing:.09em; text-transform:uppercase; }
-.c3-dt   { font-size:1.5mm; font-weight:400; color:#7A9898; letter-spacing:.2em; text-transform:uppercase; }
-.c3-cta  { display:flex; flex-direction:column; gap:.8mm; margin-top:1mm; }
-.c3-h    { font-size:2.9mm; font-weight:600; color:#0D1C1E; line-height:1.3; }
-.c3-s    { font-size:1.7mm; color:#7A9898; }
-.c3-steps{ display:flex; flex-direction:column; gap:.7mm; margin-top:.8mm; }
-.c3-step { font-size:1.6mm; color:#5A8080; display:flex; align-items:center; gap:1.2mm; }
+.c3-ico  { font-size:4mm; line-height:1; }
+.c3-nm   { font-size:3mm; font-weight:700; color:#0D1C1E; letter-spacing:.09em; text-transform:uppercase; }
+.c3-dt   { font-size:1.7mm; font-weight:400; color:#7A9898; letter-spacing:.18em; text-transform:uppercase; }
+.c3-h    { font-size:3.8mm; font-weight:600; color:#0D1C1E; line-height:1.25; margin-top:1mm; }
+.c3-step { font-size:1.85mm; color:#5A8080; display:flex; align-items:center; gap:1.2mm; margin-top:1.5mm; }
 .c3-step::before { content:''; width:.8mm; height:.8mm; border-radius:50%; background:#2C6E80; flex-shrink:0; }
 .c3-div  { height:.2mm; background:rgba(44,110,128,.18); margin:0 3.5mm; flex-shrink:0; }
 .c3-bot  { height:18mm; flex-shrink:0; display:flex; align-items:center; padding:0 3.5mm; gap:3mm; }
 .c3-qr   { flex-shrink:0; padding:1mm; background:rgba(255,255,255,.85); border:.2mm solid rgba(44,110,128,.18); border-radius:1.2mm; }
 .c3-qr img{ width:14.5mm; height:14.5mm; display:block; }
-.c3-slbl { font-size:1.5mm; font-weight:600; color:#2C6E80; letter-spacing:.18em; text-transform:uppercase; flex:1; }
+.c3-slbl { font-size:1.7mm; font-weight:600; color:#2C6E80; letter-spacing:.16em; text-transform:uppercase; flex:1; }
 .c3-foot { display:flex; flex-direction:column; gap:1mm; align-items:flex-end; }
 .c3-stmy { height:2.8mm; filter:saturate(20%) brightness(.48); align-self:flex-end; }
-.c3-sol  { font-size:1.5mm; font-weight:500; color:#7A9898; }
+.c3-sol  { font-size:1.55mm; font-weight:500; color:#7A9898; }
 
 /* C3 back */
 .d3 { background:#F2F7F6; display:flex; flex-direction:column; }
 .d3-band { height:18mm; flex-shrink:0; background:linear-gradient(135deg,#1E5060 0%,#2C6E80 60%,#3A8090 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.5mm; }
 .d3-mico { font-size:9mm; line-height:1; }
-.d3-mtag { font-size:1.4mm; font-weight:500; color:rgba(255,255,255,.6); letter-spacing:.28em; text-transform:uppercase; }
-.d3-body { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.8mm; text-align:center; padding:2.5mm 4mm; }
-.d3-nm   { font-size:3.2mm; font-weight:700; color:#0D1C1E; letter-spacing:.06em; line-height:1.2; }
+.d3-body { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2mm; text-align:center; padding:2.5mm 4mm; }
+.d3-nm   { font-size:4.2mm; font-weight:700; color:#0D1C1E; letter-spacing:.06em; line-height:1.2; }
 .d3-rule { width:16mm; height:.2mm; background:rgba(44,110,128,.22); }
-.d3-dt   { font-size:1.55mm; font-weight:400; color:#7A9898; letter-spacing:.18em; text-transform:uppercase; }
+.d3-dt   { font-size:1.7mm; font-weight:400; color:#7A9898; letter-spacing:.18em; text-transform:uppercase; }
 .d3-foot { display:flex; align-items:center; gap:1.5mm; margin-top:.8mm; }
 .d3-stmy { height:2.8mm; filter:saturate(20%) brightness(.48); }
 .d3-sep  { width:.2mm; height:2.5mm; background:rgba(0,0,0,.13); }
-.d3-sol  { font-size:1.5mm; font-weight:500; color:#7A9898; }
+.d3-sol  { font-size:1.55mm; font-weight:500; color:#7A9898; }
 
 /* ════════════════════════════════════════════
    C4 · NIGHT — Dark Premium, Soft Glow
-   #131313 · soft cyan #7CC4B2 · #EFEFEF
    ════════════════════════════════════════════ */
 .c4 {
   background:#131313;
@@ -223,23 +206,20 @@ body {
 .c4-left { flex:1; display:flex; flex-direction:column; justify-content:space-between; }
 .c4-brand{ display:flex; flex-direction:column; gap:.8mm; }
 .c4-br   { display:flex; align-items:center; gap:1.5mm; }
-.c4-ico  { font-size:3.5mm; line-height:1; }
-.c4-nm   { font-size:2.3mm; font-weight:600; color:#EFEFEF; letter-spacing:.1em; text-transform:uppercase; }
-.c4-dt   { font-size:1.55mm; font-weight:300; color:rgba(255,255,255,.35); letter-spacing:.2em; text-transform:uppercase; }
-.c4-cta  { display:flex; flex-direction:column; gap:.8mm; }
-.c4-h    { font-size:2.6mm; font-weight:500; color:#EFEFEF; line-height:1.35; }
-.c4-s    { font-size:1.7mm; font-weight:300; color:rgba(255,255,255,.42); }
-.c4-steps{ display:flex; flex-direction:column; gap:.7mm; }
-.c4-step { font-size:1.6mm; font-weight:300; color:rgba(255,255,255,.38); display:flex; align-items:center; gap:1.2mm; }
+.c4-ico  { font-size:4mm; line-height:1; }
+.c4-nm   { font-size:3mm; font-weight:600; color:#EFEFEF; letter-spacing:.1em; text-transform:uppercase; }
+.c4-dt   { font-size:1.7mm; font-weight:300; color:rgba(255,255,255,.35); letter-spacing:.18em; text-transform:uppercase; }
+.c4-h    { font-size:3.8mm; font-weight:500; color:#EFEFEF; line-height:1.25; }
+.c4-step { font-size:1.85mm; font-weight:300; color:rgba(255,255,255,.42); display:flex; align-items:center; gap:1.2mm; margin-top:1.5mm; }
 .c4-step::before { content:''; width:.8mm; height:.8mm; border-radius:50%; background:#7CC4B2; flex-shrink:0; }
 .c4-foot { display:flex; align-items:center; gap:1.5mm; }
 .c4-stmy { height:2.8mm; opacity:.38; }
 .c4-sep  { width:.2mm; height:2.5mm; background:rgba(255,255,255,.15); }
-.c4-sol  { font-size:1.5mm; font-weight:400; color:rgba(255,255,255,.32); }
+.c4-sol  { font-size:1.55mm; font-weight:400; color:rgba(255,255,255,.32); }
 .c4-right{ flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; justify-content:flex-end; gap:1.2mm; }
 .c4-qr   { padding:1.3mm; background:rgba(255,255,255,.06); border:.2mm solid rgba(255,255,255,.11); border-radius:1.5mm; }
-.c4-qr img{ width:19mm; height:19mm; display:block; }
-.c4-scan { font-size:1.5mm; font-weight:600; color:#7CC4B2; letter-spacing:.18em; text-transform:uppercase; }
+.c4-qr img{ width:20mm; height:20mm; display:block; }
+.c4-scan { font-size:1.7mm; font-weight:600; color:#7CC4B2; letter-spacing:.16em; text-transform:uppercase; }
 
 /* C4 back */
 .d4 {
@@ -248,21 +228,19 @@ body {
   display:flex; align-items:center; justify-content:center;
 }
 .d4-tbar { position:absolute; top:0; left:0; right:0; height:.7mm; background:linear-gradient(90deg,#7CC4B2,#5AA090,#7CC4B2); }
-.d4-body { display:flex; flex-direction:column; align-items:center; gap:2mm; text-align:center; }
+.d4-body { display:flex; flex-direction:column; align-items:center; gap:2.2mm; text-align:center; }
 .d4-mark { width:14mm; height:14mm; border-radius:50%; border:.3mm solid rgba(124,196,178,.45); background:rgba(124,196,178,.06); display:flex; align-items:center; justify-content:center; }
 .d4-mico { font-size:7mm; line-height:1; }
-.d4-tag  { font-size:1.5mm; font-weight:400; color:#7CC4B2; letter-spacing:.28em; text-transform:uppercase; }
-.d4-nm   { font-size:3mm; font-weight:600; color:#EFEFEF; letter-spacing:.06em; line-height:1.2; }
+.d4-nm   { font-size:4.2mm; font-weight:600; color:#EFEFEF; letter-spacing:.06em; line-height:1.2; }
 .d4-rule { width:18mm; height:.2mm; background:rgba(124,196,178,.22); }
-.d4-dt   { font-size:1.55mm; font-weight:300; color:rgba(255,255,255,.32); letter-spacing:.18em; text-transform:uppercase; }
+.d4-dt   { font-size:1.7mm; font-weight:300; color:rgba(255,255,255,.32); letter-spacing:.18em; text-transform:uppercase; }
 .d4-foot { display:flex; align-items:center; gap:1.5mm; margin-top:.5mm; }
 .d4-stmy { height:2.8mm; opacity:.34; }
 .d4-sep  { width:.2mm; height:2.5mm; background:rgba(255,255,255,.14); }
-.d4-sol  { font-size:1.5mm; font-weight:400; color:rgba(255,255,255,.28); }
+.d4-sol  { font-size:1.55mm; font-weight:400; color:rgba(255,255,255,.28); }
 
 /* ════════════════════════════════════════════
    C5 · LINEN — Corner Anchor, Max White Space
-   #EDE8DF · muted forest #587858 · #1A140A
    ════════════════════════════════════════════ */
 .c5 { background:#EDE8DF; position:relative; }
 .c5::before {
@@ -275,26 +253,23 @@ body {
 .c5-top  { display:flex; align-items:flex-start; justify-content:space-between; }
 .c5-bc   { display:flex; flex-direction:column; gap:.8mm; }
 .c5-br   { display:flex; align-items:center; gap:1.5mm; }
-.c5-ico  { font-size:3mm; line-height:1; }
-.c5-nm   { font-size:2.3mm; font-weight:700; color:#1A140A; letter-spacing:.09em; text-transform:uppercase; }
-.c5-dt   { font-size:1.5mm; font-weight:400; color:#9A8878; letter-spacing:.22em; text-transform:uppercase; }
+.c5-ico  { font-size:4mm; line-height:1; }
+.c5-nm   { font-size:3mm; font-weight:700; color:#1A140A; letter-spacing:.09em; text-transform:uppercase; }
+.c5-dt   { font-size:1.7mm; font-weight:400; color:#9A8878; letter-spacing:.18em; text-transform:uppercase; }
 .c5-gem  { width:6mm; height:6mm; border:.2mm solid rgba(88,120,88,.35); flex-shrink:0; }
 .c5-mid  { flex:1; display:flex; align-items:center; padding:1.5mm 0; }
-.c5-cta  { display:flex; flex-direction:column; gap:1mm; }
-.c5-h    { font-size:2.8mm; font-weight:600; color:#1A140A; line-height:1.3; }
-.c5-s    { font-size:1.7mm; color:#8A7860; }
-.c5-steps{ display:flex; flex-direction:column; gap:.8mm; margin-top:1mm; }
-.c5-step { font-size:1.6mm; color:#7A6850; display:flex; align-items:center; gap:1.2mm; }
+.c5-h    { font-size:3.8mm; font-weight:600; color:#1A140A; line-height:1.25; }
+.c5-step { font-size:1.85mm; color:#8A7860; display:flex; align-items:center; gap:1.2mm; margin-top:1.5mm; }
 .c5-step::before { content:''; width:.8mm; height:.8mm; border-radius:50%; background:#587858; flex-shrink:0; }
 .c5-bot  { display:flex; align-items:flex-end; justify-content:space-between; }
 .c5-foot { display:flex; align-items:center; gap:1.5mm; }
 .c5-stmy { height:2.8mm; filter:saturate(25%) brightness(.48); }
 .c5-sep  { width:.2mm; height:2.5mm; background:rgba(0,0,0,.15); }
-.c5-sol  { font-size:1.5mm; font-weight:500; color:#9A8878; }
+.c5-sol  { font-size:1.55mm; font-weight:500; color:#9A8878; }
 .c5-qrw  { display:flex; flex-direction:column; align-items:flex-end; gap:1mm; }
 .c5-qr   { padding:1.2mm; background:rgba(255,255,255,.68); border:.2mm solid rgba(0,0,0,.09); border-radius:1mm; }
-.c5-qr img{ width:17mm; height:17mm; display:block; }
-.c5-scan { font-size:1.5mm; font-weight:600; color:#587858; letter-spacing:.18em; text-transform:uppercase; }
+.c5-qr img{ width:18mm; height:18mm; display:block; }
+.c5-scan { font-size:1.7mm; font-weight:600; color:#587858; letter-spacing:.16em; text-transform:uppercase; }
 
 /* C5 back */
 .d5 { background:#EDE8DF; position:relative; }
@@ -304,59 +279,53 @@ body {
     repeating-linear-gradient(0deg,transparent,transparent 2mm,rgba(0,0,0,.012) 2mm,rgba(0,0,0,.012) 2.1mm),
     repeating-linear-gradient(90deg,transparent,transparent 2mm,rgba(0,0,0,.012) 2mm,rgba(0,0,0,.012) 2.1mm);
 }
-.d5-body { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2mm; text-align:center; padding:3mm; }
+.d5-body { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2.2mm; text-align:center; padding:3mm; }
 .d5-ga   { position:absolute; top:3.5mm; right:3.5mm; width:6mm; height:6mm; border:.2mm solid rgba(88,120,88,.3); }
 .d5-gb   { position:absolute; bottom:3.5mm; left:3.5mm; width:4mm; height:4mm; border:.2mm solid rgba(88,120,88,.22); }
 .d5-ico  { font-size:9mm; line-height:1; }
-.d5-nm   { font-size:3mm; font-weight:700; color:#1A140A; letter-spacing:.07em; line-height:1.2; }
+.d5-nm   { font-size:4.2mm; font-weight:700; color:#1A140A; letter-spacing:.07em; line-height:1.2; }
 .d5-rule { width:14mm; height:.2mm; background:rgba(88,120,88,.3); }
-.d5-dt   { font-size:1.5mm; font-weight:400; color:#9A8878; letter-spacing:.2em; text-transform:uppercase; }
-.d5-tag  { font-size:1.5mm; font-weight:400; color:#AA9888; font-style:italic; }
+.d5-dt   { font-size:1.7mm; font-weight:400; color:#9A8878; letter-spacing:.2em; text-transform:uppercase; }
 .d5-foot { display:flex; align-items:center; gap:1.5mm; margin-top:.8mm; }
 .d5-stmy { height:2.8mm; filter:saturate(25%) brightness(.48); }
 .d5-sep  { width:.2mm; height:2.5mm; background:rgba(0,0,0,.14); }
-.d5-sol  { font-size:1.5mm; font-weight:400; color:#9A8878; }
+.d5-sol  { font-size:1.55mm; font-weight:400; color:#9A8878; }
 
 /* ════════════════════════════════════════════
-   C6 · ARC — Gradient Header Band + Clean Grid
-   #F1F6FA · sky-blue #2E72A0 · #0E1C28
+   C6 · ARC — Gradient Header Band
    ════════════════════════════════════════════ */
 .c6 { background:#F1F6FA; display:flex; flex-direction:column; }
 .c6-band { height:14.5mm; flex-shrink:0; background:linear-gradient(135deg,#1A4A68 0%,#2E72A0 55%,#2468A0 100%); display:flex; align-items:flex-end; justify-content:space-between; padding:0 3.5mm 2.5mm; }
 .c6-bbl  { display:flex; align-items:center; gap:1.8mm; }
-.c6-bico { font-size:4mm; line-height:1; }
-.c6-bnm  { font-size:2.4mm; font-weight:700; color:rgba(255,255,255,.95); letter-spacing:.08em; text-transform:uppercase; }
-.c6-bdt  { font-size:1.55mm; font-weight:300; color:rgba(255,255,255,.48); letter-spacing:.16em; align-self:flex-end; }
+.c6-bico { font-size:4.5mm; line-height:1; }
+.c6-bnm  { font-size:3mm; font-weight:700; color:rgba(255,255,255,.95); letter-spacing:.08em; text-transform:uppercase; }
+.c6-bdt  { font-size:1.7mm; font-weight:300; color:rgba(255,255,255,.48); letter-spacing:.16em; align-self:flex-end; }
 .c6-body { flex:1; display:flex; gap:3mm; padding:2.5mm 3.5mm; }
 .c6-info { flex:1; display:flex; flex-direction:column; justify-content:space-between; }
-.c6-cta  { display:flex; flex-direction:column; gap:.8mm; }
-.c6-h    { font-size:2.6mm; font-weight:600; color:#0E1C28; line-height:1.3; }
-.c6-s    { font-size:1.7mm; color:#6888A0; }
-.c6-steps{ display:flex; flex-direction:column; gap:.7mm; margin-top:.8mm; }
-.c6-step { font-size:1.6mm; color:#4878A0; display:flex; align-items:center; gap:1.2mm; }
+.c6-h    { font-size:3.8mm; font-weight:600; color:#0E1C28; line-height:1.25; }
+.c6-step { font-size:1.85mm; color:#6888A0; display:flex; align-items:center; gap:1.2mm; margin-top:1.5mm; }
 .c6-step::before { content:''; width:.8mm; height:.8mm; border-radius:50%; background:#2E72A0; flex-shrink:0; }
 .c6-foot { display:flex; align-items:center; gap:1.5mm; }
 .c6-stmy { height:2.8mm; filter:saturate(20%) brightness(.44); }
 .c6-sep  { width:.2mm; height:2.5mm; background:rgba(0,0,0,.13); }
-.c6-sol  { font-size:1.5mm; font-weight:500; color:#6888A0; }
+.c6-sol  { font-size:1.55mm; font-weight:500; color:#6888A0; }
 .c6-qrw  { flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; justify-content:flex-end; gap:1.2mm; }
 .c6-qr   { padding:1.3mm; background:#fff; border:.2mm solid rgba(46,114,160,.18); border-radius:1.2mm; }
-.c6-qr img{ width:19mm; height:19mm; display:block; }
-.c6-scan { font-size:1.5mm; font-weight:600; color:#2E72A0; letter-spacing:.18em; text-transform:uppercase; }
+.c6-qr img{ width:20mm; height:20mm; display:block; }
+.c6-scan { font-size:1.7mm; font-weight:600; color:#2E72A0; letter-spacing:.16em; text-transform:uppercase; }
 
 /* C6 back */
 .d6 { background:#F1F6FA; display:flex; flex-direction:column; }
 .d6-band { height:14.5mm; flex-shrink:0; background:linear-gradient(135deg,#1A4A68 0%,#2E72A0 55%,#2468A0 100%); display:flex; align-items:center; justify-content:center; }
 .d6-bico { font-size:8.5mm; line-height:1; }
-.d6-body { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.8mm; text-align:center; padding:2mm 4mm; }
-.d6-tag  { font-size:1.5mm; font-weight:500; color:#2E72A0; letter-spacing:.28em; text-transform:uppercase; }
-.d6-nm   { font-size:3mm; font-weight:700; color:#0E1C28; letter-spacing:.05em; line-height:1.2; }
+.d6-body { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2.2mm; text-align:center; padding:2mm 4mm; }
+.d6-nm   { font-size:4.2mm; font-weight:700; color:#0E1C28; letter-spacing:.05em; line-height:1.2; }
 .d6-rule { width:16mm; height:.2mm; background:rgba(46,114,160,.28); }
-.d6-dt   { font-size:1.55mm; font-weight:400; color:#6888A0; letter-spacing:.18em; text-transform:uppercase; }
+.d6-dt   { font-size:1.7mm; font-weight:400; color:#6888A0; letter-spacing:.18em; text-transform:uppercase; }
 .d6-foot { display:flex; align-items:center; gap:1.5mm; margin-top:.8mm; }
 .d6-stmy { height:2.8mm; filter:saturate(20%) brightness(.44); }
 .d6-sep  { width:.2mm; height:2.5mm; background:rgba(0,0,0,.13); }
-.d6-sol  { font-size:1.5mm; font-weight:500; color:#6888A0; }
+.d6-sol  { font-size:1.55mm; font-weight:500; color:#6888A0; }
 
 /* ── Print ── */
 .print-sheets { display:none; }
@@ -385,7 +354,7 @@ body {
 <div class="top-bar">
   <div class="top-info">
     <h1>TUC · Premium Card Concepts</h1>
-    <p>6 curated front + back designs · Click to select · Print on A4 — page 1 fronts, page 2 backs</p>
+    <p>6 curated front + back designs · Click to select · Print on A4 double-sided</p>
   </div>
   <div class="top-right">
     <div id="selection-label">No design selected</div>
@@ -402,32 +371,32 @@ body {
 const QR_URL = 'https://upcycle-collective.vercel.app';
 
 /* ── C1: Sage · Swiss Left-Strip ── */
-function c1f(qr){return`<div class="card c1"><div class="c1-strip"></div><div class="c1-body"><div class="c1-hdr"><div class="c1-brand"><div class="c1-br"><span class="c1-ico">♻️</span><span class="c1-nm">THE UPCYCLE COLLECTIVE</span></div><div class="c1-dt">KUCHING · 21 JULY 2026</div></div></div><div class="c1-rule"></div><div class="c1-main"><div class="c1-left"><div class="c1-cta"><div class="c1-h">Scan to open your wallet →</div><div class="c1-s">Earn TUC tokens at the event</div></div><div class="c1-steps"><div class="c1-step">Donate items → earn tokens</div><div class="c1-step">Spend tokens at vendor booths</div></div><div class="c1-foot"><img class="c1-stmy" src="STMY-White.png" alt="STMY"><div class="c1-sep"></div><span class="c1-sol">⬡ Solana</span></div></div><div class="c1-right"><div class="c1-qr"><img src="${qr}" alt="QR"></div><div class="c1-scan">↑ SCAN</div></div></div></div></div>`;}
-function c1b(){return`<div class="card d1"><div class="d1-strip"></div><div class="d1-body"><div class="d1-mark"><span class="d1-mico">♻️</span></div><div class="d1-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d1-tag">Festival Token Experience</div><div class="d1-rule"></div><div class="d1-dt">KUCHING · 21 JULY 2026</div><div class="d1-foot"><img class="d1-stmy" src="STMY-White.png" alt="STMY"><div class="d1-sep"></div><span class="d1-sol">⬡ Solana</span></div></div></div>`;}
+function c1f(qr){return`<div class="card c1"><div class="c1-strip"></div><div class="c1-body"><div class="c1-hdr"><div class="c1-brand"><div class="c1-br"><span class="c1-ico">♻️</span><span class="c1-nm">THE UPCYCLE COLLECTIVE</span></div><div class="c1-dt">KUCHING · 21 JULY 2026</div></div></div><div class="c1-rule"></div><div class="c1-main"><div class="c1-left"><div class="c1-h">Scan to earn →</div><div class="c1-step">Donate · Earn · Spend</div><div class="c1-foot"><img class="c1-stmy" src="STMY-White.png" alt="STMY"><div class="c1-sep"></div><span class="c1-sol">⬡ Solana</span></div></div><div class="c1-right"><div class="c1-qr"><img src="${qr}" alt="QR"></div><div class="c1-scan">↑ SCAN</div></div></div></div></div>`;}
+function c1b(){return`<div class="card d1"><div class="d1-strip"></div><div class="d1-body"><div class="d1-mark"><span class="d1-mico">♻️</span></div><div class="d1-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d1-rule"></div><div class="d1-dt">KUCHING · 21 JULY 2026</div><div class="d1-foot"><img class="d1-stmy" src="STMY-White.png" alt="STMY"><div class="d1-sep"></div><span class="d1-sol">⬡ Solana</span></div></div></div>`;}
 
 /* ── C2: Frost · White, QR Left Panel ── */
-function c2f(qr){return`<div class="card c2"><div class="c2-tbar"></div><div class="c2-body"><div class="c2-left"><div class="c2-qr"><img src="${qr}" alt="QR"></div><div class="c2-scan">↑ SCAN</div></div><div class="c2-right"><div class="c2-brand"><span class="c2-ico">♻️</span><span class="c2-nm">THE UPCYCLE COLLECTIVE</span></div><div class="c2-dt">KUCHING · 21.07.2026</div><div class="c2-cta"><div class="c2-h">Scan to open your wallet →</div><div class="c2-s">Earn TUC tokens at the event</div></div><div class="c2-steps"><div class="c2-step">Donate items → earn tokens</div><div class="c2-step">Spend tokens at vendor booths</div></div><div class="c2-foot"><img class="c2-stmy" src="STMY-White.png" alt="STMY"><div class="c2-sep"></div><span class="c2-sol">⬡ Solana</span></div></div></div></div>`;}
-function c2b(){return`<div class="card d2"><div class="d2-tbar"></div><div class="d2-wm">♻</div><div class="d2-body"><div class="d2-tag">Festival Token Experience</div><div class="d2-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d2-rule"></div><div class="d2-dt">KUCHING · 21 JULY 2026</div><div class="d2-foot"><img class="d2-stmy" src="STMY-White.png" alt="STMY"><div class="d2-sep"></div><span class="d2-sol">⬡ Solana</span></div></div></div>`;}
+function c2f(qr){return`<div class="card c2"><div class="c2-tbar"></div><div class="c2-body"><div class="c2-left"><div class="c2-qr"><img src="${qr}" alt="QR"></div><div class="c2-scan">↑ SCAN</div></div><div class="c2-right"><div class="c2-brand"><span class="c2-ico">♻️</span><span class="c2-nm">THE UPCYCLE COLLECTIVE</span></div><div class="c2-dt">KUCHING · 21.07.2026</div><div class="c2-h">Scan to earn →</div><div class="c2-step">Donate · Earn · Spend</div><div class="c2-foot"><img class="c2-stmy" src="STMY-White.png" alt="STMY"><div class="c2-sep"></div><span class="c2-sol">⬡ Solana</span></div></div></div></div>`;}
+function c2b(){return`<div class="card d2"><div class="d2-tbar"></div><div class="d2-wm">♻</div><div class="d2-body"><div class="d2-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d2-rule"></div><div class="d2-dt">KUCHING · 21 JULY 2026</div><div class="d2-foot"><img class="d2-stmy" src="STMY-White.png" alt="STMY"><div class="d2-sep"></div><span class="d2-sol">⬡ Solana</span></div></div></div>`;}
 
 /* ── C3: Teal · Horizontal Band Split ── */
-function c3f(qr){return`<div class="card c3"><div class="c3-top"><div class="c3-hdr"><div class="c3-brand"><span class="c3-ico">♻️</span><span class="c3-nm">THE UPCYCLE COLLECTIVE</span></div><div class="c3-dt">21 JULY 2026</div></div><div class="c3-cta"><div class="c3-h">Scan to open your wallet →</div><div class="c3-s">Earn TUC tokens at the event</div></div><div class="c3-steps"><div class="c3-step">Donate items → earn tokens</div><div class="c3-step">Spend tokens at vendor booths</div></div></div><div class="c3-div"></div><div class="c3-bot"><div class="c3-qr"><img src="${qr}" alt="QR"></div><div class="c3-slbl">↑ Scan to open wallet</div><div class="c3-foot"><img class="c3-stmy" src="STMY-White.png" alt="STMY"><span class="c3-sol">⬡ Solana</span></div></div></div>`;}
-function c3b(){return`<div class="card d3"><div class="d3-band"><div class="d3-mico">♻️</div><div class="d3-mtag">Festival Token Experience</div></div><div class="d3-body"><div class="d3-nm">THE UPCYCLE COLLECTIVE</div><div class="d3-rule"></div><div class="d3-dt">KUCHING · 21 JULY 2026</div><div class="d3-foot"><img class="d3-stmy" src="STMY-White.png" alt="STMY"><div class="d3-sep"></div><span class="d3-sol">⬡ Solana</span></div></div></div>`;}
+function c3f(qr){return`<div class="card c3"><div class="c3-top"><div class="c3-hdr"><div class="c3-brand"><span class="c3-ico">♻️</span><span class="c3-nm">THE UPCYCLE COLLECTIVE</span></div><div class="c3-dt">21 JULY 2026</div></div><div class="c3-h">Scan to earn →</div><div class="c3-step">Donate · Earn · Spend</div></div><div class="c3-div"></div><div class="c3-bot"><div class="c3-qr"><img src="${qr}" alt="QR"></div><div class="c3-slbl">↑ Scan to earn</div><div class="c3-foot"><img class="c3-stmy" src="STMY-White.png" alt="STMY"><span class="c3-sol">⬡ Solana</span></div></div></div>`;}
+function c3b(){return`<div class="card d3"><div class="d3-band"><div class="d3-mico">♻️</div></div><div class="d3-body"><div class="d3-nm">THE UPCYCLE COLLECTIVE</div><div class="d3-rule"></div><div class="d3-dt">KUCHING · 21 JULY 2026</div><div class="d3-foot"><img class="d3-stmy" src="STMY-White.png" alt="STMY"><div class="d3-sep"></div><span class="d3-sol">⬡ Solana</span></div></div></div>`;}
 
 /* ── C4: Night · Dark Premium ── */
-function c4f(qr){return`<div class="card c4"><div class="c4-tbar"></div><div class="c4-body"><div class="c4-left"><div class="c4-brand"><div class="c4-br"><span class="c4-ico">♻️</span><span class="c4-nm">THE UPCYCLE COLLECTIVE</span></div><div class="c4-dt">KUCHING · 21 JULY 2026</div></div><div class="c4-cta"><div class="c4-h">Scan to open your wallet →</div><div class="c4-s">Earn TUC tokens at the event</div></div><div class="c4-steps"><div class="c4-step">Donate items → earn tokens</div><div class="c4-step">Spend tokens at vendor booths</div></div><div class="c4-foot"><img class="c4-stmy" src="STMY-White.png" alt="STMY"><div class="c4-sep"></div><span class="c4-sol">⬡ Solana</span></div></div><div class="c4-right"><div class="c4-qr"><img src="${qr}" alt="QR"></div><div class="c4-scan">↑ SCAN</div></div></div></div>`;}
-function c4b(){return`<div class="card d4"><div class="d4-tbar"></div><div class="d4-body"><div class="d4-mark"><span class="d4-mico">♻️</span></div><div class="d4-tag">Festival Token Experience</div><div class="d4-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d4-rule"></div><div class="d4-dt">KUCHING · 21 JULY 2026</div><div class="d4-foot"><img class="d4-stmy" src="STMY-White.png" alt="STMY"><div class="d4-sep"></div><span class="d4-sol">⬡ Solana</span></div></div></div>`;}
+function c4f(qr){return`<div class="card c4"><div class="c4-tbar"></div><div class="c4-body"><div class="c4-left"><div class="c4-brand"><div class="c4-br"><span class="c4-ico">♻️</span><span class="c4-nm">THE UPCYCLE COLLECTIVE</span></div><div class="c4-dt">KUCHING · 21 JULY 2026</div></div><div class="c4-h">Scan to earn →</div><div class="c4-step">Donate · Earn · Spend</div><div class="c4-foot"><img class="c4-stmy" src="STMY-White.png" alt="STMY"><div class="c4-sep"></div><span class="c4-sol">⬡ Solana</span></div></div><div class="c4-right"><div class="c4-qr"><img src="${qr}" alt="QR"></div><div class="c4-scan">↑ SCAN</div></div></div></div>`;}
+function c4b(){return`<div class="card d4"><div class="d4-tbar"></div><div class="d4-body"><div class="d4-mark"><span class="d4-mico">♻️</span></div><div class="d4-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d4-rule"></div><div class="d4-dt">KUCHING · 21 JULY 2026</div><div class="d4-foot"><img class="d4-stmy" src="STMY-White.png" alt="STMY"><div class="d4-sep"></div><span class="d4-sol">⬡ Solana</span></div></div></div>`;}
 
 /* ── C5: Linen · Corner Anchor ── */
-function c5f(qr){return`<div class="card c5"><div class="c5-body"><div class="c5-top"><div class="c5-bc"><div class="c5-br"><span class="c5-ico">♻️</span><span class="c5-nm">THE UPCYCLE COLLECTIVE</span></div><div class="c5-dt">KUCHING · 21 JULY 2026</div></div><div class="c5-gem"></div></div><div class="c5-mid"><div class="c5-cta"><div class="c5-h">Scan to open your wallet →</div><div class="c5-s">Earn TUC tokens at the event</div><div class="c5-steps"><div class="c5-step">Donate items → earn tokens</div><div class="c5-step">Spend tokens at vendor booths</div></div></div></div><div class="c5-bot"><div class="c5-foot"><img class="c5-stmy" src="STMY-White.png" alt="STMY"><div class="c5-sep"></div><span class="c5-sol">⬡ Solana</span></div><div class="c5-qrw"><div class="c5-qr"><img src="${qr}" alt="QR"></div><div class="c5-scan">↑ SCAN ME</div></div></div></div></div>`;}
-function c5b(){return`<div class="card d5"><div class="d5-body"><div class="d5-ga"></div><div class="d5-gb"></div><div class="d5-ico">♻️</div><div class="d5-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d5-rule"></div><div class="d5-dt">KUCHING · 21 JULY 2026</div><div class="d5-tag">Festival Token Experience</div><div class="d5-foot"><img class="d5-stmy" src="STMY-White.png" alt="STMY"><div class="d5-sep"></div><span class="d5-sol">⬡ Solana</span></div></div></div>`;}
+function c5f(qr){return`<div class="card c5"><div class="c5-body"><div class="c5-top"><div class="c5-bc"><div class="c5-br"><span class="c5-ico">♻️</span><span class="c5-nm">THE UPCYCLE COLLECTIVE</span></div><div class="c5-dt">KUCHING · 21 JULY 2026</div></div><div class="c5-gem"></div></div><div class="c5-mid"><div><div class="c5-h">Scan to earn →</div><div class="c5-step">Donate · Earn · Spend</div></div></div><div class="c5-bot"><div class="c5-foot"><img class="c5-stmy" src="STMY-White.png" alt="STMY"><div class="c5-sep"></div><span class="c5-sol">⬡ Solana</span></div><div class="c5-qrw"><div class="c5-qr"><img src="${qr}" alt="QR"></div><div class="c5-scan">↑ SCAN ME</div></div></div></div></div>`;}
+function c5b(){return`<div class="card d5"><div class="d5-body"><div class="d5-ga"></div><div class="d5-gb"></div><div class="d5-ico">♻️</div><div class="d5-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d5-rule"></div><div class="d5-dt">KUCHING · 21 JULY 2026</div><div class="d5-foot"><img class="d5-stmy" src="STMY-White.png" alt="STMY"><div class="d5-sep"></div><span class="d5-sol">⬡ Solana</span></div></div></div>`;}
 
-/* ── C6: Arc · Gradient Band + Grid ── */
-function c6f(qr){return`<div class="card c6"><div class="c6-band"><div class="c6-bbl"><span class="c6-bico">♻️</span><span class="c6-bnm">THE UPCYCLE COLLECTIVE</span></div><div class="c6-bdt">21.07.2026</div></div><div class="c6-body"><div class="c6-info"><div class="c6-cta"><div class="c6-h">Scan to open your wallet →</div><div class="c6-s">Earn TUC tokens at the event</div></div><div class="c6-steps"><div class="c6-step">Donate items → earn tokens</div><div class="c6-step">Spend tokens at vendor booths</div></div><div class="c6-foot"><img class="c6-stmy" src="STMY-White.png" alt="STMY"><div class="c6-sep"></div><span class="c6-sol">⬡ Solana</span></div></div><div class="c6-qrw"><div class="c6-qr"><img src="${qr}" alt="QR"></div><div class="c6-scan">↑ SCAN</div></div></div></div>`;}
-function c6b(){return`<div class="card d6"><div class="d6-band"><span class="d6-bico">♻️</span></div><div class="d6-body"><div class="d6-tag">Festival Token Experience</div><div class="d6-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d6-rule"></div><div class="d6-dt">KUCHING · 21 JULY 2026</div><div class="d6-foot"><img class="d6-stmy" src="STMY-White.png" alt="STMY"><div class="d6-sep"></div><span class="d6-sol">⬡ Solana</span></div></div></div>`;}
+/* ── C6: Arc · Gradient Band ── */
+function c6f(qr){return`<div class="card c6"><div class="c6-band"><div class="c6-bbl"><span class="c6-bico">♻️</span><span class="c6-bnm">THE UPCYCLE COLLECTIVE</span></div><div class="c6-bdt">21.07.2026</div></div><div class="c6-body"><div class="c6-info"><div class="c6-h">Scan to earn →</div><div class="c6-step">Donate · Earn · Spend</div><div class="c6-foot"><img class="c6-stmy" src="STMY-White.png" alt="STMY"><div class="c6-sep"></div><span class="c6-sol">⬡ Solana</span></div></div><div class="c6-qrw"><div class="c6-qr"><img src="${qr}" alt="QR"></div><div class="c6-scan">↑ SCAN</div></div></div></div>`;}
+function c6b(){return`<div class="card d6"><div class="d6-band"><span class="d6-bico">♻️</span></div><div class="d6-body"><div class="d6-nm">THE UPCYCLE<br>COLLECTIVE</div><div class="d6-rule"></div><div class="d6-dt">KUCHING · 21 JULY 2026</div><div class="d6-foot"><img class="d6-stmy" src="STMY-White.png" alt="STMY"><div class="d6-sep"></div><span class="d6-sol">⬡ Solana</span></div></div></div>`;}
 
 const STYLES = [
   { num:'01', name:'Sage',   desc:'Swiss left-strip · Sage green',         front:c1f, back:c1b },
-  { num:'02', name:'Frost',  desc:'White · Forest-teal accent · QR panel', front:c2f, back:c2b },
+  { num:'02', name:'Frost',  desc:'White · Forest-teal · QR left panel',   front:c2f, back:c2b },
   { num:'03', name:'Teal',   desc:'Horizontal band split · Deep teal',      front:c3f, back:c3b },
   { num:'04', name:'Night',  desc:'Dark premium · Soft cyan glow',          front:c4f, back:c4b },
   { num:'05', name:'Linen',  desc:'Warm linen · Corner anchor · Geometric', front:c5f, back:c5b },
