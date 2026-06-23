@@ -14,6 +14,7 @@ body {
   display:flex; flex-direction:column; align-items:center;
   padding:40px 32px 80px;
   gap:36px;
+  overflow-x:hidden;
 }
 
 .top-bar {
@@ -48,14 +49,15 @@ body {
 .showcase {
   display:grid;
   grid-template-columns:repeat(3,auto);
-  gap:52px 72px;
+  gap:40px 48px;
+  justify-content:center;
 }
 .style-option {
   display:flex; flex-direction:column; align-items:center; gap:16px;
   cursor:pointer;
 }
 .card-pair {
-  display:flex; gap:16px; align-items:flex-start;
+  display:flex; flex-direction:column; gap:10px; align-items:center;
   transition:transform .22s cubic-bezier(.25,.46,.45,.94);
 }
 .style-option:hover .card-pair { transform:translateY(-7px); }
