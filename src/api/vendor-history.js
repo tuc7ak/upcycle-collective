@@ -25,15 +25,20 @@ module.exports = async function handler(req, res) {
     const vendorATA  = getAssociatedTokenAddressSync(mint, vendorPubkey, false, TOKEN_2022_PROGRAM_ID);
     const vendorATAStr = vendorATA.toBase58();
 
-    const sigs = await connection.getSignaturesForAddress(vendorATA, { limit: 20 }, 'confirmed');
+    const sigs = await connection.getSignaturesForAddress(vendorATA, { limit: 5 }, 'confirmed');
     if (!sigs.length) {
       return jsonOk(res, { walletAddress: VENDOR_WALLET, transactions: [] });
     }
 
-    const txs = await connection.getParsedTransactions(
-      sigs.map(s => s.signature),
-      { maxSupportedTransactionVersion: 0, commitment: 'confirmed' },
-    );
+    // Fetch one at a time — Helius free plan does not support batch requests
+    const txs = [];
+    for (const sig of sigs) {
+      const tx = await connection.getParsedTransaction(
+        sig.signature,
+        { maxSupportedTransactionVersion: 0, commitment: 'confirmed' },
+      );
+      txs.push(tx);
+    }
 
     const results = [];
     for (let i = 0; i < txs.length; i++) {

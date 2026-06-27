@@ -22175,7 +22175,7 @@ var require_index_cjs = __commonJS({
     var buffer = require("buffer");
     var ed25519 = require_ed25519();
     var BN = require_bn();
-    var bs58 = require_bs58();
+    var bs582 = require_bs58();
     var sha256 = require_sha256();
     var borsh = require_lib();
     var BufferLayout = require_Layout();
@@ -22212,7 +22212,7 @@ var require_index_cjs = __commonJS({
       return Object.freeze(n);
     }
     var BN__default = /* @__PURE__ */ _interopDefaultCompat(BN);
-    var bs58__default = /* @__PURE__ */ _interopDefaultCompat(bs58);
+    var bs58__default = /* @__PURE__ */ _interopDefaultCompat(bs582);
     var BufferLayout__namespace = /* @__PURE__ */ _interopNamespaceCompat(BufferLayout);
     var require$$0__default = /* @__PURE__ */ _interopDefaultCompat(require$$0);
     var require$$0__default$1 = /* @__PURE__ */ _interopDefaultCompat(require$$0$1);
@@ -24090,7 +24090,7 @@ Message: ${transactionMessage}.
         this.name = "SolanaJSONRPCError";
       }
     };
-    async function sendAndConfirmTransaction2(connection, transaction, signers, options) {
+    async function sendAndConfirmTransaction(connection, transaction, signers, options) {
       const sendOptions = options && {
         skipPreflight: options.skipPreflight,
         preflightCommitment: options.preflightCommitment || options.commitment,
@@ -24911,7 +24911,7 @@ Message: ${transactionMessage}.
             }));
           }
           if (transaction !== null) {
-            await sendAndConfirmTransaction2(connection, transaction, [payer, program], {
+            await sendAndConfirmTransaction(connection, transaction, [payer, program], {
               commitment: "confirmed"
             });
           }
@@ -24941,7 +24941,7 @@ Message: ${transactionMessage}.
             programId,
             data: data2
           });
-          transactions.push(sendAndConfirmTransaction2(connection, transaction, [payer, program], {
+          transactions.push(sendAndConfirmTransaction(connection, transaction, [payer, program], {
             commitment: "confirmed"
           }));
           if (connection._rpcEndpoint.includes("solana.com")) {
@@ -31335,7 +31335,7 @@ Message: ${transactionMessage}.
     exports2.VoteProgram = VoteProgram;
     exports2.clusterApiUrl = clusterApiUrl;
     exports2.sendAndConfirmRawTransaction = sendAndConfirmRawTransaction;
-    exports2.sendAndConfirmTransaction = sendAndConfirmTransaction2;
+    exports2.sendAndConfirmTransaction = sendAndConfirmTransaction;
   }
 });
 
@@ -33500,7 +33500,7 @@ var require_account = __commonJS({
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.ACCOUNT_SIZE = exports2.AccountLayout = exports2.AccountState = void 0;
-    exports2.getAccount = getAccount;
+    exports2.getAccount = getAccount2;
     exports2.getMultipleAccounts = getMultipleAccounts;
     exports2.getMinimumBalanceForRentExemptAccount = getMinimumBalanceForRentExemptAccount;
     exports2.getMinimumBalanceForRentExemptAccountWithExtensions = getMinimumBalanceForRentExemptAccountWithExtensions;
@@ -33532,7 +33532,7 @@ var require_account = __commonJS({
       (0, buffer_layout_utils_1.publicKey)("closeAuthority")
     ]);
     exports2.ACCOUNT_SIZE = exports2.AccountLayout.span;
-    function getAccount(connection_1, address_1, commitment_1) {
+    function getAccount2(connection_1, address_1, commitment_1) {
       return __awaiter(this, arguments, void 0, function* (connection, address, commitment, programId = constants_js_1.TOKEN_PROGRAM_ID) {
         const info = yield connection.getAccountInfo(address, commitment);
         return unpackAccount(address, info, programId);
@@ -39813,7 +39813,7 @@ var require_mint = __commonJS({
     exports2.getMinimumBalanceForRentExemptMint = getMinimumBalanceForRentExemptMint;
     exports2.getMinimumBalanceForRentExemptMintWithExtensions = getMinimumBalanceForRentExemptMintWithExtensions;
     exports2.getAssociatedTokenAddress = getAssociatedTokenAddress;
-    exports2.getAssociatedTokenAddressSync = getAssociatedTokenAddressSync;
+    exports2.getAssociatedTokenAddressSync = getAssociatedTokenAddressSync2;
     var buffer_layout_1 = require_Layout();
     var buffer_layout_utils_1 = require_cjs();
     var web3_js_1 = require_index_cjs();
@@ -39886,7 +39886,7 @@ var require_mint = __commonJS({
         return address;
       });
     }
-    function getAssociatedTokenAddressSync(mint, owner, allowOwnerOffCurve = false, programId = constants_js_1.TOKEN_PROGRAM_ID, associatedTokenProgramId = constants_js_1.ASSOCIATED_TOKEN_PROGRAM_ID) {
+    function getAssociatedTokenAddressSync2(mint, owner, allowOwnerOffCurve = false, programId = constants_js_1.TOKEN_PROGRAM_ID, associatedTokenProgramId = constants_js_1.ASSOCIATED_TOKEN_PROGRAM_ID) {
       if (!allowOwnerOffCurve && !web3_js_1.PublicKey.isOnCurve(owner.toBuffer()))
         throw new errors_js_1.TokenOwnerOffCurveError();
       const [address] = web3_js_1.PublicKey.findProgramAddressSync([owner.toBuffer(), programId.toBuffer(), mint.toBuffer()], associatedTokenProgramId);
@@ -40693,14 +40693,14 @@ var require_associatedTokenAccount = __commonJS({
   "node_modules/@solana/spl-token/lib/cjs/instructions/associatedTokenAccount.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.createAssociatedTokenAccountInstruction = createAssociatedTokenAccountInstruction;
+    exports2.createAssociatedTokenAccountInstruction = createAssociatedTokenAccountInstruction2;
     exports2.createAssociatedTokenAccountIdempotentInstruction = createAssociatedTokenAccountIdempotentInstruction;
     exports2.createAssociatedTokenAccountIdempotentInstructionWithDerivation = createAssociatedTokenAccountIdempotentInstructionWithDerivation;
     exports2.createRecoverNestedInstruction = createRecoverNestedInstruction;
     var web3_js_1 = require_index_cjs();
     var constants_js_1 = require_constants2();
     var mint_js_1 = require_mint();
-    function createAssociatedTokenAccountInstruction(payer, associatedToken, owner, mint, programId = constants_js_1.TOKEN_PROGRAM_ID, associatedTokenProgramId = constants_js_1.ASSOCIATED_TOKEN_PROGRAM_ID) {
+    function createAssociatedTokenAccountInstruction2(payer, associatedToken, owner, mint, programId = constants_js_1.TOKEN_PROGRAM_ID, associatedTokenProgramId = constants_js_1.ASSOCIATED_TOKEN_PROGRAM_ID) {
       return buildAssociatedTokenAccountInstruction(payer, associatedToken, owner, mint, Buffer.alloc(0), programId, associatedTokenProgramId);
     }
     function createAssociatedTokenAccountIdempotentInstruction(payer, associatedToken, owner, mint, programId = constants_js_1.TOKEN_PROGRAM_ID, associatedTokenProgramId = constants_js_1.ASSOCIATED_TOKEN_PROGRAM_ID) {
@@ -41491,14 +41491,14 @@ var require_getOrCreateAssociatedTokenAccount = __commonJS({
       });
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.getOrCreateAssociatedTokenAccount = getOrCreateAssociatedTokenAccount2;
+    exports2.getOrCreateAssociatedTokenAccount = getOrCreateAssociatedTokenAccount;
     var web3_js_1 = require_index_cjs();
     var constants_js_1 = require_constants2();
     var errors_js_1 = require_errors();
     var associatedTokenAccount_js_1 = require_associatedTokenAccount();
     var account_js_1 = require_account();
     var mint_js_1 = require_mint();
-    function getOrCreateAssociatedTokenAccount2(connection_1, payer_1, mint_1, owner_1) {
+    function getOrCreateAssociatedTokenAccount(connection_1, payer_1, mint_1, owner_1) {
       return __awaiter(this, arguments, void 0, function* (connection, payer, mint, owner, allowOwnerOffCurve = false, commitment, confirmOptions, programId = constants_js_1.TOKEN_PROGRAM_ID, associatedTokenProgramId = constants_js_1.ASSOCIATED_TOKEN_PROGRAM_ID) {
         const associatedToken = (0, mint_js_1.getAssociatedTokenAddressSync)(mint, owner, allowOwnerOffCurve, programId, associatedTokenProgramId);
         let account;
@@ -44549,7 +44549,7 @@ var require_bs583 = __commonJS({
 var require_utils4 = __commonJS({
   "src/api/_utils.js"(exports2, module2) {
     var { Connection, Keypair, PublicKey: PublicKey2 } = require_index_cjs();
-    var bs58 = require_bs583();
+    var bs582 = require_bs583();
     function getConnection2() {
       const rpc = process.env.HELIUS_RPC || "https://api.devnet.solana.com";
       return new Connection(rpc, "confirmed");
@@ -44557,7 +44557,7 @@ var require_utils4 = __commonJS({
     function getOrganiser2() {
       const key = process.env.ORGANISER_PRIVATE_KEY;
       if (!key) throw new Error("ORGANISER_PRIVATE_KEY not set");
-      return Keypair.fromSecretKey(bs58.decode(key));
+      return Keypair.fromSecretKey(bs582.decode(key));
     }
     function getMintPublicKey2() {
       const mint = process.env.TOKEN_MINT;
@@ -44577,22 +44577,34 @@ var require_utils4 = __commonJS({
 });
 
 // src/api/checkin.js
-var { PublicKey, Transaction, sendAndConfirmTransaction } = require_index_cjs();
+var { PublicKey, Transaction } = require_index_cjs();
 var {
   TOKEN_2022_PROGRAM_ID,
-  getOrCreateAssociatedTokenAccount,
+  getAssociatedTokenAddressSync,
+  getAccount,
+  createAssociatedTokenAccountInstruction,
   createMintToInstruction
 } = require_cjs4();
 var { createMemoInstruction } = require_cjs5();
 var { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require_utils4();
-var CHECKIN_AMOUNT = 10;
+var bs58 = require_bs583();
+var CHECKIN_AMOUNT = 50;
+var CHECKIN_MEMO = "TUC:CHECKIN";
+var MEMO_PROGRAM = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr";
+var WINDOW_SECS = 86400;
 module.exports = async function handler(req, res) {
-  if (req.method !== "POST") return jsonErr(res, 405, "POST only");
-  const { wallet } = req.body ?? {};
-  if (!wallet) return jsonErr(res, 400, "wallet address required");
+  if (req.method === "GET") {
+    return jsonOk(res, {
+      label: "TUC Check-in \u2014 The Upcycle Collective",
+      icon: "https://upcycle-collective.vercel.app/tuc-logo.png"
+    });
+  }
+  if (req.method !== "POST") return jsonErr(res, 405, "GET or POST only");
+  const { account } = req.body ?? {};
+  if (!account) return jsonErr(res, 400, "account required");
   let attendeePubkey;
   try {
-    attendeePubkey = new PublicKey(wallet);
+    attendeePubkey = new PublicKey(account);
   } catch {
     return jsonErr(res, 400, "invalid wallet address");
   }
@@ -44600,24 +44612,70 @@ module.exports = async function handler(req, res) {
     const connection = getConnection();
     const organiser = getOrganiser();
     const mint = getMintPublicKey();
-    const tokenAccount = await getOrCreateAssociatedTokenAccount(
-      connection,
-      organiser,
-      mint,
-      attendeePubkey,
-      false,
-      "confirmed",
-      {},
-      TOKEN_2022_PROGRAM_ID
-    );
-    const tx = new Transaction().add(createMintToInstruction(mint, tokenAccount.address, organiser.publicKey, CHECKIN_AMOUNT, [], TOKEN_2022_PROGRAM_ID)).add(createMemoInstruction("TUC:CHECKIN", [organiser.publicKey]));
-    const signature = await sendAndConfirmTransaction(connection, tx, [organiser]);
+    const attendeeATA = getAssociatedTokenAddressSync(mint, attendeePubkey, false, TOKEN_2022_PROGRAM_ID);
+    const cutoff = Math.floor(Date.now() / 1e3) - WINDOW_SECS;
+    let alreadyIn = false;
+    try {
+      const sigs = await connection.getSignaturesForAddress(attendeeATA, { limit: 20 }, "confirmed");
+      for (const sig of sigs) {
+        if (sig.blockTime !== null && sig.blockTime < cutoff) break;
+        let tx2 = null;
+        try {
+          tx2 = await connection.getParsedTransaction(
+            sig.signature,
+            { maxSupportedTransactionVersion: 0, commitment: "confirmed" }
+          );
+        } catch {
+          continue;
+        }
+        if (!tx2) continue;
+        const allIx = [
+          ...tx2.transaction?.message?.instructions ?? [],
+          ...(tx2.meta?.innerInstructions ?? []).flatMap((ii) => ii?.instructions ?? [])
+        ].filter(Boolean);
+        for (const ix of allIx) {
+          const pid = typeof ix.programId === "string" ? ix.programId : ix.programId?.toBase58?.() ?? ix.program ?? "";
+          if (pid !== MEMO_PROGRAM) continue;
+          let memo = "";
+          if (ix.parsed && typeof ix.parsed === "string") memo = ix.parsed.trim();
+          else if (ix.data) {
+            try {
+              memo = Buffer.from(bs58.decode(ix.data)).toString("utf8").trim();
+            } catch {
+            }
+          }
+          if (memo.includes("CHECKIN")) {
+            alreadyIn = true;
+            break;
+          }
+        }
+        if (alreadyIn) break;
+      }
+    } catch {
+    }
+    if (alreadyIn) {
+      return jsonErr(res, 429, "Already checked in today.");
+    }
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+    const tx = new Transaction({ feePayer: organiser.publicKey, blockhash, lastValidBlockHeight });
+    try {
+      await getAccount(connection, attendeeATA, "confirmed", TOKEN_2022_PROGRAM_ID);
+    } catch {
+      tx.add(createAssociatedTokenAccountInstruction(
+        organiser.publicKey,
+        attendeeATA,
+        attendeePubkey,
+        mint,
+        TOKEN_2022_PROGRAM_ID
+      ));
+    }
+    tx.add(createMintToInstruction(mint, attendeeATA, organiser.publicKey, CHECKIN_AMOUNT, [], TOKEN_2022_PROGRAM_ID));
+    tx.add(createMemoInstruction(CHECKIN_MEMO, [organiser.publicKey, attendeePubkey]));
+    tx.partialSign(organiser);
+    const serialised = tx.serialize({ requireAllSignatures: false });
     return jsonOk(res, {
-      success: true,
-      wallet,
-      tokensAwarded: CHECKIN_AMOUNT,
-      tokenAccount: tokenAccount.address.toBase58(),
-      signature
+      transaction: Buffer.from(serialised).toString("base64"),
+      message: `Welcome! You've received ${CHECKIN_AMOUNT} TUC tokens.`
     });
   } catch (err) {
     console.error("[checkin]", err);

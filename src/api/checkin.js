@@ -1,56 +1,113 @@
-const { PublicKey, Transaction, sendAndConfirmTransaction } = require('@solana/web3.js');
+const { PublicKey, Transaction } = require('@solana/web3.js');
 const {
   TOKEN_2022_PROGRAM_ID,
-  getOrCreateAssociatedTokenAccount,
+  getAssociatedTokenAddressSync,
+  getAccount,
+  createAssociatedTokenAccountInstruction,
   createMintToInstruction,
 } = require('@solana/spl-token');
 const { createMemoInstruction } = require('@solana/spl-memo');
 const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require('./_utils');
+const bs58 = require('bs58');
 
-const CHECKIN_AMOUNT = 10;
+const CHECKIN_AMOUNT = 50;
+const CHECKIN_MEMO   = 'TUC:CHECKIN';
+const MEMO_PROGRAM   = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
+const WINDOW_SECS    = 86400; // 24 hours
 
 module.exports = async function handler(req, res) {
-  if (req.method !== 'POST') return jsonErr(res, 405, 'POST only');
 
-  const { wallet } = req.body ?? {};
-  if (!wallet) return jsonErr(res, 400, 'wallet address required');
+  // ── GET — Solana Pay label/icon ─────────────────────────────────────────
+  if (req.method === 'GET') {
+    return jsonOk(res, {
+      label: 'TUC Check-in — The Upcycle Collective',
+      icon:  'https://upcycle-collective.vercel.app/tuc-logo.png',
+    });
+  }
+
+  if (req.method !== 'POST') return jsonErr(res, 405, 'GET or POST only');
+
+  // ── POST — build mint transaction ────────────────────────────────────────
+  const { account } = req.body ?? {};
+  if (!account) return jsonErr(res, 400, 'account required');
 
   let attendeePubkey;
-  try {
-    attendeePubkey = new PublicKey(wallet);
-  } catch {
+  try { attendeePubkey = new PublicKey(account); } catch {
     return jsonErr(res, 400, 'invalid wallet address');
   }
 
   try {
-    const connection = getConnection();
-    const organiser  = getOrganiser();
-    const mint       = getMintPublicKey();
+    const connection  = getConnection();
+    const organiser   = getOrganiser();
+    const mint        = getMintPublicKey();
+    const attendeeATA = getAssociatedTokenAddressSync(mint, attendeePubkey, false, TOKEN_2022_PROGRAM_ID);
 
-    const tokenAccount = await getOrCreateAssociatedTokenAccount(
-      connection,
-      organiser,
-      mint,
-      attendeePubkey,
-      false,
-      'confirmed',
-      {},
-      TOKEN_2022_PROGRAM_ID,
-    );
+    // ── 24-hour duplicate check ─────────────────────────────────────────
+    const cutoff   = Math.floor(Date.now() / 1000) - WINDOW_SECS;
+    let alreadyIn  = false;
 
-    const tx = new Transaction()
-      .add(createMintToInstruction(mint, tokenAccount.address, organiser.publicKey, CHECKIN_AMOUNT, [], TOKEN_2022_PROGRAM_ID))
-      .add(createMemoInstruction('TUC:CHECKIN', [organiser.publicKey]));
+    try {
+      const sigs = await connection.getSignaturesForAddress(attendeeATA, { limit: 20 }, 'confirmed');
+      for (const sig of sigs) {
+        // Only skip if blockTime is confirmed older than 24h — null means very recent, still check it
+        if (sig.blockTime !== null && sig.blockTime < cutoff) break;
+        let tx = null;
+        try {
+          tx = await connection.getParsedTransaction(
+            sig.signature, { maxSupportedTransactionVersion: 0, commitment: 'confirmed' }
+          );
+        } catch { continue; }
+        if (!tx) continue;
+        const allIx = [
+          ...(tx.transaction?.message?.instructions ?? []),
+          ...(tx.meta?.innerInstructions ?? []).flatMap(ii => ii?.instructions ?? []),
+        ].filter(Boolean);
+        for (const ix of allIx) {
+          const pid = typeof ix.programId === 'string'
+            ? ix.programId
+            : (ix.programId?.toBase58?.() ?? ix.program ?? '');
+          if (pid !== MEMO_PROGRAM) continue;
+          let memo = '';
+          if (ix.parsed && typeof ix.parsed === 'string') memo = ix.parsed.trim();
+          else if (ix.data) {
+            try { memo = Buffer.from(bs58.decode(ix.data)).toString('utf8').trim(); } catch {}
+          }
+          if (memo.includes('CHECKIN')) { alreadyIn = true; break; }
+        }
+        if (alreadyIn) break;
+      }
+    } catch { /* ATA may not exist yet — first check-in */ }
 
-    const signature = await sendAndConfirmTransaction(connection, tx, [organiser]);
+    if (alreadyIn) {
+      return jsonErr(res, 429, 'Already checked in today.');
+    }
 
+    // ── Build mint transaction ──────────────────────────────────────────
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+    const tx = new Transaction({ feePayer: organiser.publicKey, blockhash, lastValidBlockHeight });
+
+    // Create ATA if first-time wallet
+    try {
+      await getAccount(connection, attendeeATA, 'confirmed', TOKEN_2022_PROGRAM_ID);
+    } catch {
+      tx.add(createAssociatedTokenAccountInstruction(
+        organiser.publicKey, attendeeATA, attendeePubkey, mint, TOKEN_2022_PROGRAM_ID,
+      ));
+    }
+
+    tx.add(createMintToInstruction(mint, attendeeATA, organiser.publicKey, CHECKIN_AMOUNT, [], TOKEN_2022_PROGRAM_ID));
+
+    // Attendee as co-signer on memo so Phantom shows the approval screen
+    tx.add(createMemoInstruction(CHECKIN_MEMO, [organiser.publicKey, attendeePubkey]));
+
+    tx.partialSign(organiser);
+
+    const serialised = tx.serialize({ requireAllSignatures: false });
     return jsonOk(res, {
-      success: true,
-      wallet,
-      tokensAwarded: CHECKIN_AMOUNT,
-      tokenAccount: tokenAccount.address.toBase58(),
-      signature,
+      transaction: Buffer.from(serialised).toString('base64'),
+      message: `Welcome! You've received ${CHECKIN_AMOUNT} TUC tokens.`,
     });
+
   } catch (err) {
     console.error('[checkin]', err);
     return jsonErr(res, 500, err.message);

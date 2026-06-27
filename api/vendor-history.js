@@ -44591,12 +44591,12 @@ var require_vendor = __commonJS({
     var { getConnection: getConnection2, getOrganiser, getMintPublicKey: getMintPublicKey2, jsonOk: jsonOk2, jsonErr: jsonErr2 } = require_utils4();
     var TOKEN_DECIMALS = 0;
     var VENDORS2 = {
-      "drinks": { label: "Drinks", memo: "DRINKS", envKey: "VENDOR_DRINKS", defaultCost: 5 },
-      "food-booth": { label: "Food Booth", memo: "FOOD_BOOTH", envKey: "VENDOR_FOOD_BOOTH", defaultCost: 8 },
-      "merch": { label: "Merch", memo: "MERCH", envKey: "VENDOR_MERCH", defaultCost: 15 },
-      "vip": { label: "VIP Upgrade", memo: "VIP_UPGRADE", envKey: "VENDOR_VIP", defaultCost: 30 },
-      "game-zone": { label: "Game Zone", memo: "GAME_ZONE", envKey: "VENDOR_GAME_ZONE", defaultCost: 3 },
-      "spice-market": { label: "Spice Market", memo: "SPICE_MARKET", envKey: "VENDOR_SPICE_MARKET", defaultCost: 10 }
+      "drinks": { label: "Drinks", memo: "drinks", envKey: "VENDOR_DRINKS", defaultCost: 5 },
+      "food-booth": { label: "Food Booth", memo: "food-booth", envKey: "VENDOR_FOOD_BOOTH", defaultCost: 8 },
+      "merch": { label: "Merch", memo: "merch", envKey: "VENDOR_MERCH", defaultCost: 15 },
+      "vip": { label: "VIP Upgrade", memo: "vip-upgrade", envKey: "VENDOR_VIP", defaultCost: 30 },
+      "game-zone": { label: "Game Zone", memo: "game-zone", envKey: "VENDOR_GAME_ZONE", defaultCost: 3 },
+      "spice-market": { label: "Spice Market", memo: "spice-market", envKey: "VENDOR_SPICE_MARKET", defaultCost: 10 }
     };
     function createVendorHandler(vendorId) {
       const vendor = VENDORS2[vendorId];
@@ -44633,6 +44633,16 @@ var require_vendor = __commonJS({
           const mint = getMintPublicKey2();
           const attendeeATA = getAssociatedTokenAddressSync2(mint, attendeePubkey, false, TOKEN_2022_PROGRAM_ID2);
           const vendorATA = getAssociatedTokenAddressSync2(mint, vendorPubkey, false, TOKEN_2022_PROGRAM_ID2);
+          let attendeeBalance = 0;
+          try {
+            const attendeeAccount = await getAccount(connection, attendeeATA, "confirmed", TOKEN_2022_PROGRAM_ID2);
+            attendeeBalance = Number(attendeeAccount.amount);
+          } catch {
+            return jsonErr2(res, 400, "Wallet not checked in \u2014 visit the check-in desk to receive your TUC tokens first.");
+          }
+          if (attendeeBalance < cost) {
+            return jsonErr2(res, 400, `Not enough TUC \u2014 you have ${attendeeBalance} but need ${cost}.`);
+          }
           const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
           const tx = new Transaction({ feePayer: organiser.publicKey, blockhash, lastValidBlockHeight });
           try {
@@ -44698,14 +44708,18 @@ module.exports = async function handler(req, res) {
     const mint = getMintPublicKey();
     const vendorATA = getAssociatedTokenAddressSync(mint, vendorPubkey, false, TOKEN_2022_PROGRAM_ID);
     const vendorATAStr = vendorATA.toBase58();
-    const sigs = await connection.getSignaturesForAddress(vendorATA, { limit: 20 }, "confirmed");
+    const sigs = await connection.getSignaturesForAddress(vendorATA, { limit: 5 }, "confirmed");
     if (!sigs.length) {
       return jsonOk(res, { walletAddress: VENDOR_WALLET, transactions: [] });
     }
-    const txs = await connection.getParsedTransactions(
-      sigs.map((s) => s.signature),
-      { maxSupportedTransactionVersion: 0, commitment: "confirmed" }
-    );
+    const txs = [];
+    for (const sig of sigs) {
+      const tx = await connection.getParsedTransaction(
+        sig.signature,
+        { maxSupportedTransactionVersion: 0, commitment: "confirmed" }
+      );
+      txs.push(tx);
+    }
     const results = [];
     for (let i = 0; i < txs.length; i++) {
       const tx = txs[i];

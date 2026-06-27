@@ -12,12 +12,12 @@ const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = requi
 const TOKEN_DECIMALS = 0;
 
 const VENDORS = {
-  'drinks':        { label: 'Drinks',        memo: 'DRINKS',        envKey: 'VENDOR_DRINKS',        defaultCost: 5  },
-  'food-booth':    { label: 'Food Booth',    memo: 'FOOD_BOOTH',    envKey: 'VENDOR_FOOD_BOOTH',    defaultCost: 8  },
-  'merch':         { label: 'Merch',         memo: 'MERCH',         envKey: 'VENDOR_MERCH',         defaultCost: 15 },
-  'vip':           { label: 'VIP Upgrade',   memo: 'VIP_UPGRADE',   envKey: 'VENDOR_VIP',           defaultCost: 30 },
-  'game-zone':     { label: 'Game Zone',     memo: 'GAME_ZONE',     envKey: 'VENDOR_GAME_ZONE',     defaultCost: 3  },
-  'spice-market':  { label: 'Spice Market',  memo: 'SPICE_MARKET',  envKey: 'VENDOR_SPICE_MARKET',  defaultCost: 10 },
+  'drinks':        { label: 'Drinks',        memo: 'drinks',        envKey: 'VENDOR_DRINKS',        defaultCost: 5  },
+  'food-booth':    { label: 'Food Booth',    memo: 'food-booth',    envKey: 'VENDOR_FOOD_BOOTH',    defaultCost: 8  },
+  'merch':         { label: 'Merch',         memo: 'merch',         envKey: 'VENDOR_MERCH',         defaultCost: 15 },
+  'vip':           { label: 'VIP Upgrade',   memo: 'vip-upgrade',   envKey: 'VENDOR_VIP',           defaultCost: 30 },
+  'game-zone':     { label: 'Game Zone',     memo: 'game-zone',     envKey: 'VENDOR_GAME_ZONE',     defaultCost: 3  },
+  'spice-market':  { label: 'Spice Market',  memo: 'spice-market',  envKey: 'VENDOR_SPICE_MARKET',  defaultCost: 10 },
 };
 
 function createVendorHandler(vendorId) {
@@ -55,6 +55,18 @@ function createVendorHandler(vendorId) {
 
       const attendeeATA = getAssociatedTokenAddressSync(mint, attendeePubkey, false, TOKEN_2022_PROGRAM_ID);
       const vendorATA   = getAssociatedTokenAddressSync(mint, vendorPubkey,   false, TOKEN_2022_PROGRAM_ID);
+
+      // Check attendee has been checked in and has enough tokens
+      let attendeeBalance = 0;
+      try {
+        const attendeeAccount = await getAccount(connection, attendeeATA, 'confirmed', TOKEN_2022_PROGRAM_ID);
+        attendeeBalance = Number(attendeeAccount.amount);
+      } catch {
+        return jsonErr(res, 400, 'Wallet not checked in — visit the check-in desk to receive your TUC tokens first.');
+      }
+      if (attendeeBalance < cost) {
+        return jsonErr(res, 400, `Not enough TUC — you have ${attendeeBalance} but need ${cost}.`);
+      }
 
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
       const tx = new Transaction({ feePayer: organiser.publicKey, blockhash, lastValidBlockHeight });

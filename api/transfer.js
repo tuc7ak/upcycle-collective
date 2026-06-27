@@ -44553,6 +44553,29 @@ var require_utils4 = __commonJS({
   }
 });
 
+// node_modules/@solana/spl-memo/lib/cjs/index.js
+var require_cjs5 = __commonJS({
+  "node_modules/@solana/spl-memo/lib/cjs/index.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.createMemoInstruction = exports2.MEMO_PROGRAM_ID = void 0;
+    var buffer_1 = require("buffer");
+    var web3_js_1 = require_index_cjs();
+    exports2.MEMO_PROGRAM_ID = new web3_js_1.PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
+    function createMemoInstruction(memo, signerPubkeys) {
+      const keys = signerPubkeys == null ? [] : signerPubkeys.map(function(key) {
+        return { pubkey: key, isSigner: true, isWritable: false };
+      });
+      return new web3_js_1.TransactionInstruction({
+        keys,
+        programId: exports2.MEMO_PROGRAM_ID,
+        data: buffer_1.Buffer.from(memo, "utf8")
+      });
+    }
+    exports2.createMemoInstruction = createMemoInstruction;
+  }
+});
+
 // src/api/transfer.js
 var { PublicKey, Transaction } = require_index_cjs();
 var {
@@ -44575,7 +44598,7 @@ module.exports = async function handler(req, res) {
     }
   }
   if (body.step === "build") {
-    const { from, to, amount } = body;
+    const { from, to, amount, memo } = body;
     if (!from) return jsonErr(res, 400, "from required");
     if (!to) return jsonErr(res, 400, "to required");
     if (!amount || amount < 1) return jsonErr(res, 400, "amount >= 1 required");
@@ -44583,12 +44606,12 @@ module.exports = async function handler(req, res) {
     try {
       fromPubkey = new PublicKey(from);
     } catch {
-      return jsonErr(res, 400, "invalid from");
+      return jsonErr(res, 400, "invalid from address");
     }
     try {
       toPubkey = new PublicKey(to);
     } catch {
-      return jsonErr(res, 400, "invalid to");
+      return jsonErr(res, 400, "invalid to address");
     }
     if (fromPubkey.equals(toPubkey)) return jsonErr(res, 400, "cannot send to yourself");
     try {
@@ -44597,6 +44620,16 @@ module.exports = async function handler(req, res) {
       const mint = getMintPublicKey();
       const fromATA = getAssociatedTokenAddressSync(mint, fromPubkey, false, TOKEN_2022_PROGRAM_ID);
       const toATA = getAssociatedTokenAddressSync(mint, toPubkey, false, TOKEN_2022_PROGRAM_ID);
+      let senderBalance = 0;
+      try {
+        const senderAccount = await getAccount(connection, fromATA, "confirmed", TOKEN_2022_PROGRAM_ID);
+        senderBalance = Number(senderAccount.amount);
+      } catch {
+        return jsonErr(res, 400, "Sender wallet has no TUC tokens \u2014 check in at the desk first.");
+      }
+      if (senderBalance < amount) {
+        return jsonErr(res, 400, `Not enough TUC \u2014 you have ${senderBalance} but need ${amount}.`);
+      }
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
       const tx = new Transaction({ feePayer: organiser.publicKey, blockhash, lastValidBlockHeight });
       try {
@@ -44620,7 +44653,12 @@ module.exports = async function handler(req, res) {
         [],
         TOKEN_2022_PROGRAM_ID
       ));
-      const serialised = tx.serialize({ requireAllSignatures: false, verifySignatures: false });
+      if (memo && memo.trim()) {
+        const { createMemoInstruction } = require_cjs5();
+        tx.add(createMemoInstruction(memo.trim(), [organiser.publicKey]));
+      }
+      tx.partialSign(organiser);
+      const serialised = tx.serialize({ requireAllSignatures: false });
       return jsonOk(res, { transaction: Buffer.from(serialised).toString("base64") });
     } catch (err) {
       console.error("[transfer/build]", err);
@@ -44632,10 +44670,8 @@ module.exports = async function handler(req, res) {
     if (!transaction) return jsonErr(res, 400, "transaction required");
     try {
       const connection = getConnection();
-      const organiser = getOrganiser();
       const txBuf = Buffer.from(transaction, "base64");
       const tx = Transaction.from(txBuf);
-      tx.partialSign(organiser);
       const sig = await connection.sendRawTransaction(tx.serialize(), { skipPreflight: false });
       await connection.confirmTransaction(sig, "confirmed");
       return jsonOk(res, { success: true, signature: sig });

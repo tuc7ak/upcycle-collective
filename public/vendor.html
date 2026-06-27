@@ -190,9 +190,11 @@
   <div class="wallet-card">
     <div class="wallet-card-label">Scan to Pay</div>
     <div id="qr-wrap"><div id="qr-canvas"></div></div>
-    <div class="qr-hint">Open TUC Wallet → tap scan icon</div>
+    <div class="qr-hint">Scan with Phantom → send TUC tokens</div>
+    <div class="wallet-card-label" style="margin-top:16px">On-Chain Memo</div>
+    <div class="wallet-addr" id="memo-value" style="font-size:15px;font-weight:700;opacity:1;color:#7fff7f;">—</div>
     <div class="wallet-card-label" style="margin-top:16px">Vendor Wallet Address</div>
-    <div class="wallet-addr" id="wallet-addr">Loading…</div>
+    <div class="wallet-addr" id="wallet-addr">—</div>
     <button class="copy-btn" id="copy-btn" onclick="copyWallet()" disabled>📋 Copy Address</button>
   </div>
 
@@ -214,30 +216,44 @@
 
   <script>
     const BASE_URL = 'https://upcycle-collective.vercel.app';
-    const REFRESH_INTERVAL = 15000;
+    const REFRESH_INTERVAL = 30000;
 
-    const VENDOR_NAMES = {
-      'drinks':       'Drinks 🍺',
-      'food-booth':   'Food Booth 🍛',
-      'merch':        'Merch 👕',
-      'vip':          'VIP Upgrade ⭐',
-      'game-zone':    'Game Zone 🎮',
-      'spice-market': 'Spice Market 🌶',
+    const TOKEN_MINT   = '2hgWyBDWgw4xesu8NpwTAhHgy2gnAo5iBhsBNSasngRj';
+    const VENDOR_WALLET = 'HGPiNcN1kUUbAbpWg15hvgzNaa5b931DmC8q4YDqw1GC';
+
+    const VENDORS = {
+      'drinks':       { name: 'Drinks 🍺',       cost: 5,  memo: 'TUC:drinks' },
+      'food-booth':   { name: 'Food Booth 🍛',   cost: 8,  memo: 'TUC:food-booth' },
+      'merch':        { name: 'Merch 👕',         cost: 15, memo: 'TUC:merch' },
+      'vip':          { name: 'VIP Upgrade ⭐',  cost: 30, memo: 'TUC:vip-upgrade' },
+      'game-zone':    { name: 'Game Zone 🎮',    cost: 3,  memo: 'TUC:game-zone' },
+      'spice-market': { name: 'Spice Market 🌶', cost: 10, memo: 'TUC:spice-market' },
     };
 
     const params   = new URLSearchParams(window.location.search);
     const vendorId = params.get('id') || 'drinks';
-    const name     = VENDOR_NAMES[vendorId];
+    const vendor   = VENDORS[vendorId];
 
-    if (!name) {
+    if (!vendor) {
       document.body.innerHTML = '<p style="color:#f44;padding:40px;text-align:center">Unknown vendor ID.<br>Use <b>?id=drinks</b> in the URL.</p>';
     } else {
-      document.getElementById('vendor-name').textContent = name;
-      document.title = `${name} — TUC`;
+      document.getElementById('vendor-name').textContent = vendor.name;
+      document.title = `${vendor.name} — TUC`;
 
-      const solanaPayUrl = `solana:${BASE_URL}/api/pay/${vendorId}`;
+      document.getElementById('memo-value').textContent = vendor.memo;
+      document.getElementById('wallet-addr').textContent = VENDOR_WALLET;
+      document.getElementById('copy-btn').disabled = false;
+
+      // Solana Pay Transfer Request — encodes wallet + token + amount + memo
+      // Phantom reads this natively and writes the memo on-chain
+      const transferUrl = `solana:${VENDOR_WALLET}` +
+        `?spl-token=${TOKEN_MINT}` +
+        `&amount=${vendor.cost}` +
+        `&label=${encodeURIComponent('TUC — ' + vendor.name)}` +
+        `&memo=${encodeURIComponent(vendor.memo)}`;
+
       new QRCode(document.getElementById('qr-canvas'), {
-        text: solanaPayUrl,
+        text: transferUrl,
         width: 220,
         height: 220,
         colorDark: '#000000',
@@ -249,20 +265,12 @@
     }
 
     // ── Wallet copy ───────────────────────────────────────────────────────
-    let fullWalletAddr = '';
     function copyWallet() {
-      if (!fullWalletAddr) return;
-      navigator.clipboard.writeText(fullWalletAddr).then(() => {
+      navigator.clipboard.writeText(VENDOR_WALLET).then(() => {
         const btn = document.getElementById('copy-btn');
         btn.textContent = '✅ Copied!';
         setTimeout(() => { btn.textContent = '📋 Copy Address'; }, 2000);
       });
-    }
-    function displayWallet(addr) {
-      if (fullWalletAddr === addr) return;
-      fullWalletAddr = addr;
-      document.getElementById('wallet-addr').textContent = addr;
-      document.getElementById('copy-btn').disabled = false;
     }
 
     // ── History feed ──────────────────────────────────────────────────────
@@ -277,7 +285,6 @@
         if (data.error) { showError(data.error); return; }
         hideError();
 
-        if (data.walletAddress) displayWallet(data.walletAddress);
 
         const txs = data.transactions ?? [];
         if (txs.length === 0) {
