@@ -3,3 +3,10 @@ node_modules/
 .vercel/
 .vercel
 recovery-codes.txt
+recovery-codes-github.txt
+.DS_Store
+html/
+logo/
+screenshot ideas/
+solana grant milestone.png
+public/privy-login.js

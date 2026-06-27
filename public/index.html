@@ -213,6 +213,45 @@
     .card h3 { font-size: 15px; font-weight: 700; color: var(--cream); margin-bottom: 8px; }
     .card p { font-size: 13px; color: var(--muted); line-height: 1.7; }
 
+    /* ── TUC FLOW (What is TUC) ── */
+    .tuc-flow-wrap { margin-top: 48px; }
+    .tuc-flow { display: flex; align-items: stretch; gap: 0; }
+    .tuc-step {
+      flex: 1; background: var(--bg-card);
+      border: 1px solid var(--border); border-top: 2px solid var(--green-dim);
+      border-radius: 20px; padding: 24px 20px 22px; position: relative;
+      transition: transform .25s cubic-bezier(.16,1,.3,1), box-shadow .25s, border-top-color .2s;
+    }
+    .tuc-step:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 48px rgba(0,0,0,0.45), 0 0 0 1px rgba(163,230,53,0.1);
+      border-top-color: var(--lime);
+    }
+    .tuc-step-num { font-size: 26px; font-weight: 900; color: var(--lime); line-height: 1; margin-bottom: 14px; }
+    .tuc-step h3 {
+      font-size: clamp(20px, 2.2vw, 28px); font-weight: 800; color: var(--cream);
+      margin-bottom: 6px; letter-spacing: -0.5px; line-height: 1.08;
+    }
+    .tuc-step p { font-size: 13px; color: var(--muted); line-height: 1.65; }
+    .tuc-step.tuc-step-highlight {
+      background: var(--lime); border-color: var(--lime); border-top-color: var(--lime);
+    }
+    .tuc-step.tuc-step-highlight .tuc-step-num { color: #0c1a0e; }
+    .tuc-step.tuc-step-highlight h3 { color: #0c1a0e; }
+    .tuc-step.tuc-step-highlight p { color: rgba(12,26,14,0.65); }
+    .tuc-step.tuc-step-highlight:hover { box-shadow: 0 20px 48px rgba(163,230,53,0.25); border-top-color: var(--lime); }
+    .tuc-arrow {
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 10px; padding-bottom: 20px;
+      color: var(--green); font-size: 20px; font-weight: 900; flex-shrink: 0;
+    }
+    .tuc-phase2 {
+      background: var(--bg-raised); border: 1px solid var(--border-g);
+      border-radius: 20px; padding: 20px 24px; margin-top: 12px;
+    }
+    .tuc-phase2 p { font-size: 13px; color: var(--muted); line-height: 1.7; }
+    .tuc-phase2 strong { color: var(--lime); font-weight: 800; }
+
     /* ── STEPS ── */
     .steps { margin-top: 56px; position: relative; }
     .steps::before {
@@ -515,28 +554,36 @@
 <!-- WHAT IS TUC -->
 <div class="section" id="what">
   <span class="section-label" data-reveal>What is TUC</span>
-  <h2 data-reveal data-reveal-delay="1">Your generosity,<br>turned into currency</h2>
-  <p class="sub" data-reveal data-reveal-delay="2">TUC (The Upcycle Collective Token) is a real token on the Solana blockchain. Earn it at the door, top it up by donating, spend it at stations.</p>
-  <div class="cards">
-    <div class="card" data-reveal data-reveal-delay="1">
-      <span class="icon">🪙</span>
-      <h3>A real digital token</h3>
-      <p>Every TUC you earn or spend is recorded permanently on Solana — transparent and verifiable by anyone, anytime.</p>
+  <h2 data-reveal data-reveal-delay="1">The model behind<br>the token</h2>
+  <p class="sub" data-reveal data-reveal-delay="2">Asset-light from day one — we own the waste and the sales; the co-ops make the products.</p>
+  <div class="tuc-flow-wrap" data-reveal data-reveal-delay="3">
+    <div class="tuc-flow">
+      <div class="tuc-step">
+        <div class="tuc-step-num">1</div>
+        <h3>COLLECT</h3>
+        <p>Recover lanyards, banners &amp; event materials from venues.</p>
+      </div>
+      <div class="tuc-arrow">→</div>
+      <div class="tuc-step tuc-step-highlight">
+        <div class="tuc-step-num">2</div>
+        <h3>UPCYCLE</h3>
+        <p>Sewing co-ops &amp; women's associations craft the products.</p>
+      </div>
+      <div class="tuc-arrow">→</div>
+      <div class="tuc-step">
+        <div class="tuc-step-num">3</div>
+        <h3>SELL</h3>
+        <p>Supply upcycled gift sets to GLCs &amp; corporates.</p>
+      </div>
+      <div class="tuc-arrow">→</div>
+      <div class="tuc-step">
+        <div class="tuc-step-num">4</div>
+        <h3>REINVEST</h3>
+        <p>Commission income funds the next phase — no factory.</p>
+      </div>
     </div>
-    <div class="card" data-reveal data-reveal-delay="2">
-      <span class="icon">🛍️</span>
-      <h3>Earned by doing good</h3>
-      <p>Get TUC tokens at check-in. Earn more by donating recycle bags. Every bag earns tokens, instantly minted to your wallet.</p>
-    </div>
-    <div class="card" data-reveal data-reveal-delay="3">
-      <span class="icon">♻️</span>
-      <h3>Spent at stations</h3>
-      <p>Use TUC at upcycle workshops, swap corners, lucky draws, and more.</p>
-    </div>
-    <div class="card" data-reveal data-reveal-delay="4">
-      <span class="icon">❤️</span>
-      <h3>Backed by real action</h3>
-      <p>All donated items go to Donation Partners. Your generosity has a real-world impact beyond the token.</p>
+    <div class="tuc-phase2">
+      <p><strong>PHASE 2:</strong> Blockchain smart collection bins at BCCK &amp; venues — automate collection and verify ESG impact on-chain, funded by commission.</p>
     </div>
   </div>
 </div>

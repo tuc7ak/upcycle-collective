@@ -44656,7 +44656,7 @@ var require_vendor = __commonJS({
             [],
             TOKEN_2022_PROGRAM_ID2
           ));
-          tx.add(createMemoInstruction(`TUC:${vendor.memo}:${cost}`, [organiser.publicKey]));
+          tx.add(createMemoInstruction(`TUC:${vendor.memo}`, [organiser.publicKey]));
           tx.partialSign(organiser);
           const serialised = tx.serialize({ requireAllSignatures: false });
           return jsonOk2(res, {
