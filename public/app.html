@@ -862,60 +862,39 @@ async function refresh() {
 }
 
 /* ── Dashboard ── */
+let dashFeedAll = [];
+let dash24hOnly = false;
+
 async function loadDashboard() {
   dashLoaded = true;
   const content = document.getElementById('dash-content');
   content.innerHTML = '<div class="dash-loading">Fetching event data…</div>';
 
   try {
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const todayStartTs = Math.floor(todayStart.getTime() / 1000);
-
-    // Get recent signatures for the mint
     const sigs = await rpc('getSignaturesForAddress', [MINT, {limit: 100}]);
-    if (!sigs?.length) { renderDashboard(0, 0, 0, []); return; }
+    if (!sigs?.length) { dashFeedAll = []; renderDashboard(); return; }
 
-    const todaySigs = sigs.filter(s => s.blockTime && s.blockTime >= todayStartTs);
-    const totalSigs = todaySigs.length;
-
-    if (!todaySigs.length) { renderDashboard(0, totalSigs, 0, []); return; }
-
-    // Fetch today's transactions (limit 30 to avoid rate limits)
     const txs = await Promise.all(
-      todaySigs.slice(0, 30).map(s =>
+      sigs.slice(0, 30).map(s =>
         rpc('getTransaction', [s.signature, {encoding:'jsonParsed', maxSupportedTransactionVersion:0}])
       )
     );
 
-    const uniqueWallets = new Set();
-    const feedItems = [];
-    let totalTUCToday = 0;
-
+    dashFeedAll = [];
     txs.forEach((tx, i) => {
       if (!tx) return;
       const meta = tx.meta;
-      const allBalances = [...(meta?.preTokenBalances ?? []), ...(meta?.postTokenBalances ?? [])];
-      const keys = tx.transaction.message.accountKeys.map(k => k.pubkey ?? k);
-
-      // Collect unique wallet owners
-      allBalances.forEach(b => { if (b.owner) uniqueWallets.add(b.owner); });
-
-      // Calculate delta for feed
       const pre  = meta?.preTokenBalances?.[0];
       const post = meta?.postTokenBalances?.[0];
-      if (pre && post) {
-        const delta = Number(post.uiTokenAmount?.uiAmount ?? 0) - Number(pre.uiTokenAmount?.uiAmount ?? 0);
-        if (delta > 0) totalTUCToday += delta;
-        if (feedItems.length < 6 && delta !== 0) {
-          const owner = post.owner ?? pre.owner ?? '';
-          const ts = tx.blockTime ? new Date(tx.blockTime * 1000) : null;
-          feedItems.push({ delta, owner, ts, sig: todaySigs[i].signature });
-        }
-      }
+      if (!pre || !post) return;
+      const delta = Number(post.uiTokenAmount?.uiAmount ?? 0) - Number(pre.uiTokenAmount?.uiAmount ?? 0);
+      if (delta === 0) return;
+      const owner = post.owner ?? pre.owner ?? '';
+      const ts    = tx.blockTime ? new Date(tx.blockTime * 1000) : null;
+      dashFeedAll.push({ delta, owner, ts, sig: sigs[i].signature });
     });
 
-    renderDashboard(uniqueWallets.size, totalSigs, totalTUCToday, feedItems);
+    renderDashboard();
   } catch(e) {
     console.error(e);
     document.getElementById('dash-content').innerHTML =
@@ -923,8 +902,23 @@ async function loadDashboard() {
   }
 }
 
-function renderDashboard(activeToday, totalTxns, tucToday, feed) {
+function toggleDash24h() {
+  dash24hOnly = !dash24hOnly;
+  const btn = document.getElementById('filter-24h');
+  if (btn) {
+    btn.style.background    = dash24hOnly ? '#a3e635' : 'rgba(255,255,255,.07)';
+    btn.style.color         = dash24hOnly ? '#0c1a0e' : 'rgba(255,255,255,.7)';
+    btn.style.borderColor   = dash24hOnly ? '#a3e635' : 'rgba(255,255,255,.15)';
+  }
+  renderDashboard();
+}
+
+function renderDashboard() {
   const content = document.getElementById('dash-content');
+  const cutoff  = Date.now() - 24 * 60 * 60 * 1000;
+  const feed    = dash24hOnly
+    ? dashFeedAll.filter(f => f.ts && f.ts.getTime() >= cutoff)
+    : dashFeedAll;
 
   const feedHtml = feed.length ? feed.map(f => {
     const short = f.owner ? f.owner.slice(0,6)+'…'+f.owner.slice(-4) : '—';
@@ -935,11 +929,17 @@ function renderDashboard(activeToday, totalTxns, tucToday, feed) {
       <div class="feed-text">${short} · ${isIn ? '+' : ''}${f.delta} TUC</div>
       <div class="feed-time">${time}</div>
     </div>`;
-  }).join('') : '<div style="opacity:.4;font-size:13px;padding:12px 0">No activity yet today</div>';
+  }).join('') : '<div style="opacity:.4;font-size:13px;padding:12px 0">No activity in this period</div>';
 
   content.innerHTML = `
-    <div class="activity-feed">
-      <div class="feed-title">Recent activity</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div class="feed-title" style="margin-bottom:0">Recent activity</div>
+      <button id="filter-24h" onclick="toggleDash24h()"
+        style="font-size:11px;font-weight:700;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:rgba(255,255,255,.7);cursor:pointer;transition:all .15s;${dash24hOnly ? 'background:#a3e635;color:#0c1a0e;border-color:#a3e635;' : ''}">
+        Last 24h
+      </button>
+    </div>
+    <div class="activity-feed" style="padding-top:0">
       ${feedHtml}
     </div>
   `;
