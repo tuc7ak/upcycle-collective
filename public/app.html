@@ -877,7 +877,7 @@ async function loadDashboard() {
     if (!sigs?.length) { renderDashboard(0, 0, 0, []); return; }
 
     const todaySigs = sigs.filter(s => s.blockTime && s.blockTime >= todayStartTs);
-    const totalSigs = sigs.length;
+    const totalSigs = todaySigs.length;
 
     if (!todaySigs.length) { renderDashboard(0, totalSigs, 0, []); return; }
 
@@ -938,24 +938,6 @@ function renderDashboard(activeToday, totalTxns, tucToday, feed) {
   }).join('') : '<div style="opacity:.4;font-size:13px;padding:12px 0">No activity yet today</div>';
 
   content.innerHTML = `
-    <div class="stat-grid">
-      <div class="stat-card highlight full">
-        <div class="stat-label">Active wallets today</div>
-        <div class="stat-value">${activeToday}</div>
-        <div class="stat-desc">${activeToday === 1 ? 'person' : 'people'} transacted today</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Total transactions</div>
-        <div class="stat-value white">${totalTxns}</div>
-        <div class="stat-desc">All time on this token</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">TUC distributed today</div>
-        <div class="stat-value white">${Number(tucToday).toFixed(4)}</div>
-        <div class="stat-desc">Tokens earned today</div>
-      </div>
-    </div>
-
     <div class="activity-feed">
       <div class="feed-title">Recent activity</div>
       ${feedHtml}
