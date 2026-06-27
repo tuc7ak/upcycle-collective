@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TUC Dashboard — Token Activity</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #0c1a0e;
+  --surface: #111f13;
+  --raised:  #172319;
+  --green:   #22c55e;
+  --lime:    #a3e635;
+  --gold:    #fbbf24;
+  --red:     #ef4444;
+  --blue:    #3b82f6;
+  --purple:  #a855f7;
+  --cream:   #f0ebe0;
+  --muted:   rgba(240,235,224,0.48);
+  --border:  rgba(255,255,255,0.07);
+  --borderg: rgba(34,197,94,0.2);
+}
+
+html, body {
+  font-family: 'Geist', -apple-system, sans-serif;
+  background: var(--bg); color: var(--cream);
+  min-height: 100vh; line-height: 1.5;
+}
+
+/* ── TOP NAV ── */
+.nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(12,26,14,0.92); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--borderg);
+  padding: 14px 28px; display: flex; align-items: center; justify-content: space-between;
+}
+.nav-left { display: flex; align-items: center; gap: 14px; }
+.nav-logo  { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; }
+.nav-ca    {
+  font-size: 11px; font-weight: 600; color: var(--muted);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 4px 10px; cursor: pointer;
+  font-family: monospace; transition: border-color .2s;
+}
+.nav-ca:hover { border-color: var(--lime); color: var(--cream); }
+.nav-right { display: flex; align-items: center; gap: 10px; }
+.live-pill {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(34,197,94,0.1); border: 1px solid var(--borderg);
+  border-radius: 999px; padding: 5px 12px;
+  font-size: 11px; font-weight: 700; color: var(--green);
+}
+.live-dot  { width: 7px; height: 7px; border-radius: 50%; background: var(--lime); animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.nav-btn {
+  padding: 7px 16px; font-family: 'Geist', sans-serif; font-size: 12px; font-weight: 700;
+  border-radius: 10px; cursor: pointer; transition: .15s;
+}
+.btn-outline { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn-outline:hover { border-color: var(--lime); color: var(--cream); }
+.btn-lime { background: var(--lime); color: #0c1a0e; border: none; }
+.btn-lime:hover { background: #b8ed3f; }
+
+/* ── MAIN LAYOUT ── */
+.wrap { max-width: 1280px; margin: 0 auto; padding: 28px 28px 80px; }
+
+/* ── SUMMARY CARDS ── */
+.stats-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-bottom: 28px; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-top: 2px solid var(--borderg);
+  border-radius: 16px; padding: 18px 20px;
+  transition: border-top-color .2s;
+}
+.stat-card:hover { border-top-color: var(--lime); }
+.stat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 8px; }
+.stat-val   { font-size: 28px; font-weight: 900; color: var(--cream); letter-spacing: -1px; line-height: 1; }
+.stat-sub   { font-size: 11px; color: var(--muted); margin-top: 5px; }
+
+/* ── FILTER BAR ── */
+.filter-bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.search-wrap { position: relative; flex: 1; min-width: 220px; }
+.search-wrap input {
+  width: 100%; padding: 10px 14px 10px 38px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; color: var(--cream);
+  font-family: 'Geist', sans-serif; font-size: 13px; outline: none;
+  transition: border-color .2s;
+}
+.search-wrap input:focus { border-color: var(--lime); }
+.search-wrap input::placeholder { color: var(--muted); }
+.search-icon {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  font-size: 15px; pointer-events: none;
+}
+.filter-select {
+  padding: 10px 14px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; color: var(--cream);
+  font-family: 'Geist', sans-serif; font-size: 13px; outline: none; cursor: pointer;
+}
+.filter-select:focus { border-color: var(--lime); }
+
+/* ── TABLE ── */
+.table-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; overflow: hidden;
+}
+.table-head {
+  padding: 14px 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.table-title { font-size: 13px; font-weight: 700; color: var(--muted); }
+.table-count { font-size: 12px; color: var(--muted); }
+
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  text-align: left; padding: 12px 16px;
+  font-size: 10px; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--muted);
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--raised); }
+tbody td { padding: 12px 16px; font-size: 13px; vertical-align: middle; }
+
+.badge {
+  display: inline-block; padding: 3px 10px; border-radius: 6px;
+  font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+}
+.badge-mint     { background: rgba(34,197,94,.15);  color: #22c55e; border: 1px solid rgba(34,197,94,.25); }
+.badge-transfer { background: rgba(163,230,53,.12); color: #a3e635; border: 1px solid rgba(163,230,53,.22); }
+.badge-burn     { background: rgba(239,68,68,.12);  color: #ef4444; border: 1px solid rgba(239,68,68,.22); }
+.badge-unknown  { background: rgba(255,255,255,.06); color: var(--muted); border: 1px solid var(--border); }
+
+.wallet-cell { display: flex; align-items: center; gap: 6px; }
+.wallet-addr {
+  font-family: monospace; font-size: 12px; color: var(--cream);
+  text-decoration: none; transition: color .15s;
+}
+.wallet-addr:hover { color: var(--lime); }
+.copy-btn {
+  background: none; border: none; cursor: pointer; color: var(--muted);
+  font-size: 12px; padding: 2px 4px; border-radius: 4px; transition: .15s;
+}
+.copy-btn:hover { color: var(--lime); background: rgba(163,230,53,.08); }
+
+.memo-cell {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12px; max-width: 240px;
+}
+.memo-source {
+  flex-shrink: 0;
+  display: inline-block; padding: 2px 7px; border-radius: 5px;
+  font-size: 9px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+}
+.source-staff  { background: rgba(168,85,247,.15);  color: #a855f7; border: 1px solid rgba(168,85,247,.28); }
+.source-vendor { background: rgba(251,191,36,.13);  color: #fbbf24; border: 1px solid rgba(251,191,36,.28); }
+.source-wallet { background: rgba(59,130,246,.13);  color: #3b82f6; border: 1px solid rgba(59,130,246,.28); }
+.memo-text  { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--cream); font-weight: 600; }
+.memo-empty { color: var(--muted); font-style: italic; font-weight: 400; }
+
+.amount-cell { font-weight: 800; font-size: 14px; color: var(--lime); white-space: nowrap; }
+.amount-neg  { color: var(--red); }
+.amount-mint { color: var(--green); }
+
+.time-cell { font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+.tx-link {
+  font-family: monospace; font-size: 11px; color: var(--muted);
+  text-decoration: none; transition: color .15s;
+}
+.tx-link:hover { color: var(--lime); }
+
+/* ── EMPTY / LOADING ── */
+.table-msg { padding: 60px 20px; text-align: center; color: var(--muted); font-size: 14px; }
+.spinner { display: inline-block; width: 28px; height: 28px; border: 3px solid var(--border); border-top-color: var(--lime); border-radius: 50%; animation: spin .8s linear infinite; margin-bottom: 14px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── LOAD MORE ── */
+.load-more-wrap { padding: 20px; text-align: center; border-top: 1px solid var(--border); }
+#btn-load-more {
+  padding: 10px 32px; background: transparent; color: var(--muted);
+  border: 1px solid var(--border); border-radius: 12px;
+  font-family: 'Geist', sans-serif; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: .15s;
+}
+#btn-load-more:hover { border-color: var(--lime); color: var(--cream); }
+#btn-load-more:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ── TOAST ── */
+#toast {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+  z-index: 200; padding: 10px 20px; border-radius: 10px;
+  background: var(--raised); border: 1px solid var(--borderg);
+  font-size: 13px; font-weight: 600; color: var(--cream);
+  box-shadow: 0 8px 28px rgba(0,0,0,.4);
+  transition: opacity .3s; pointer-events: none; white-space: nowrap;
+}
+#toast.hidden { opacity: 0; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .nav { padding: 12px 16px; }
+  .wrap { padding: 16px 12px 60px; }
+  .col-from, .col-to, .col-tx { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- PIN GATE -->
+<div id="pin-gate" style="position:fixed;inset:0;background:#0a1f0c;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;">
+  <div style="font-size:36px">🔒</div>
+  <div style="font-size:20px;font-weight:800;color:#f0ebe0;">Dashboard Overview</div>
+  <div style="font-size:13px;color:rgba(240,235,224,0.5);margin-bottom:4px;">Enter PIN to continue</div>
+  <input id="pin-input" type="password" inputmode="numeric" maxlength="10" placeholder="PIN" autocomplete="off"
+    style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:12px;color:#fff;font-size:24px;letter-spacing:0.3em;padding:14px 20px;text-align:center;outline:none;width:220px;font-family:monospace;"
+    onkeydown="if(event.key==='Enter')checkPin()" />
+  <button onclick="checkPin()" style="background:#a3e635;border:none;border-radius:12px;color:#0c1a0e;font-size:16px;font-weight:800;padding:14px 0;cursor:pointer;width:220px;font-family:'Geist',sans-serif;">Unlock</button>
+  <div id="pin-err" style="color:#ef4444;font-size:13px;display:none;">Incorrect PIN</div>
+</div>
+<script>
+  (function(){
+    if (sessionStorage.getItem('tuc_pin') === 'ak90') document.getElementById('pin-gate').style.display = 'none';
+    else setTimeout(() => document.getElementById('pin-input')?.focus(), 100);
+  })();
+  function checkPin() {
+    if (document.getElementById('pin-input').value === 'ak90') {
+      sessionStorage.setItem('tuc_pin', 'ak90');
+      document.getElementById('pin-gate').style.display = 'none';
+    } else {
+      document.getElementById('pin-err').style.display = 'block';
+      document.getElementById('pin-input').value = '';
+    }
+  }
+</script>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-left">
+    <div class="nav-logo">♻️ TUC Dashboard</div>
+    <div class="nav-ca" id="nav-ca" title="Click to copy CA">2hgWy…ngRj</div>
+  </div>
+  <div class="nav-right">
+    <div class="live-pill"><div class="live-dot"></div><span id="refresh-label">Live</span></div>
+    <a class="nav-btn btn-outline" href="https://solscan.io/token/2hgWyBDWgw4xesu8NpwTAhHgy2gnAo5iBhsBNSasngRj" target="_blank" rel="noopener">↗ Solscan</a>
+    <button class="nav-btn btn-outline" id="btn-export">⬇ Export CSV</button>
+    <button class="nav-btn btn-lime"    id="btn-refresh">↻ Refresh</button>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- SUMMARY STATS -->
+  <div class="stats-row" id="stats-row">
+    <div class="stat-card"><div class="stat-label">Total Transactions</div><div class="stat-val" id="s-total">—</div><div class="stat-sub">all time</div></div>
+    <div class="stat-card"><div class="stat-label">Unique Wallets</div><div class="stat-val" id="s-wallets">—</div><div class="stat-sub">distinct addresses</div></div>
+    <div class="stat-card"><div class="stat-label">TUC Minted</div><div class="stat-val" id="s-minted">—</div><div class="stat-sub">tokens created</div></div>
+    <div class="stat-card"><div class="stat-label">TUC Transferred</div><div class="stat-val" id="s-transferred">—</div><div class="stat-sub">vendor payments</div></div>
+    <div class="stat-card"><div class="stat-label">Most Common Memo</div><div class="stat-val" id="s-topmemo" style="font-size:16px;margin-top:4px;">—</div><div class="stat-sub">by frequency</div></div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search" placeholder="Search wallet address or memo…" />
+    </div>
+    <select class="filter-select" id="filter-type">
+      <option value="">All Types</option>
+      <option value="MINT">Mint</option>
+      <option value="TRANSFER">Transfer</option>
+      <option value="BURN">Burn</option>
+    </select>
+    <select class="filter-select" id="filter-memo">
+      <option value="">All Memos</option>
+    </select>
+    <button id="filter-24h" onclick="toggle24h()" style="font-size:12px;font-weight:700;padding:8px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:rgba(255,255,255,.7);cursor:pointer;transition:all .15s;white-space:nowrap;">Last 24h</button>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <div class="table-head">
+      <div class="table-title">Transaction Activity</div>
+      <div class="table-count" id="row-count">—</div>
+    </div>
+    <div id="table-container">
+      <div class="table-msg"><div class="spinner"></div><br>Loading transactions…</div>
+    </div>
+    <div class="load-more-wrap" id="load-more-wrap" style="display:none;">
+      <button id="btn-load-more">Load More</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="hidden">Copied!</div>
+
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════
+   CONFIG
+   ═══════════════════════════════════════════ */
+const MINT    = '2hgWyBDWgw4xesu8NpwTAhHgy2gnAo5iBhsBNSasngRj';
+const API_KEY = 'a353da56-f27a-4a7a-9091-bdc6f8d66f27';
+const RPC_URL = `https://mainnet.helius-rpc.com/?api-key=${API_KEY}`;
+const HELIUS  = `https://api.helius.xyz/v0`;
+
+const MEMO_PROGRAMS = new Set([
+  'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr',  // SPL Memo v2 (current)
+  'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo',   // SPL Memo v1 (legacy)
+]);
+
+/* ═══════════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════════ */
+let allTxs    = [];   // parsed rows
+let cursor    = null; // last sig for pagination
+let loading   = false;
+let autoTimer = null;
+const AUTO_REFRESH_SEC = 30;
+
+/* ═══════════════════════════════════════════
+   BASE58 DECODE (for memo extraction)
+   ═══════════════════════════════════════════ */
+const B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+function b58decode(str) {
+  let n = 0n;
+  for (const c of str) {
+    const i = B58.indexOf(c);
+    if (i < 0) throw new Error('invalid');
+    n = n * 58n + BigInt(i);
+  }
+  const bytes = [];
+  while (n > 0n) { bytes.unshift(Number(n & 0xffn)); n >>= 8n; }
+  for (const c of str) { if (c !== '1') break; bytes.unshift(0); }
+  return new Uint8Array(bytes);
+}
+const PRINTABLE = /^[\x20-\x7E\t\n\r]+$/;
+function decodeMemoData(data) {
+  if (!data) return null;
+  // 1. base58 (standard Solana instruction data)
+  try {
+    const t = new TextDecoder().decode(b58decode(data));
+    if (PRINTABLE.test(t)) return t;
+  } catch {}
+  // 2. base64 (some Helius endpoints)
+  try {
+    const t = new TextDecoder().decode(Uint8Array.from(atob(data), c => c.charCodeAt(0)));
+    if (PRINTABLE.test(t)) return t;
+  } catch {}
+  // 3. already a plain string (Helius may pre-decode)
+  if (PRINTABLE.test(data)) return data;
+  return null;
+}
+
+/* ═══════════════════════════════════════════
+   HELIUS ENHANCED TRANSACTIONS API
+   ═══════════════════════════════════════════ */
+async function fetchPage(before = null) {
+  let url = `${HELIUS}/addresses/${MINT}/transactions?api-key=${API_KEY}&limit=100`;
+  if (before) url += `&before=${before}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+/* ═══════════════════════════════════════════
+   PARSE ONE RAW HELIUS TX → ROW OBJECT
+   ═══════════════════════════════════════════ */
+function parseTx(tx) {
+  // Extract memo from instructions (walk top-level + inner)
+  let memo = null;
+  function walkIx(ixList) {
+    for (const ix of (ixList || [])) {
+      if (MEMO_PROGRAMS.has(ix.programId)) {
+        // Helius may pre-parse the memo into a parsed field
+        const parsedMemo = ix.parsed?.info?.memo ?? ix.parsed?.memo;
+        if (parsedMemo && String(parsedMemo).trim()) { memo = String(parsedMemo).trim(); return; }
+        // Fall back to decoding raw data field
+        const decoded = decodeMemoData(ix.data);
+        if (decoded && decoded.trim()) { memo = decoded.trim(); return; }
+      }
+      walkIx(ix.innerInstructions);
+    }
+  }
+  walkIx(tx.instructions);
+
+  // Find TUC token transfers
+  const tucTransfers = (tx.tokenTransfers || []).filter(t => t.mint === MINT);
+
+  if (!tucTransfers.length) {
+    // Non-transfer tx that touched the mint (e.g. account creation, metadata update)
+    return [{
+      sig:       tx.signature,
+      time:      tx.timestamp * 1000,
+      type:      'UNKNOWN',
+      from:      tx.feePayer || null,
+      to:        null,
+      amount:    0,
+      memo,
+      err:       !!tx.transactionError,
+    }];
+  }
+
+  return tucTransfers.map(t => {
+    const fromWallet = t.fromUserAccount || null;
+    const toWallet   = t.toUserAccount   || null;
+    const amount     = Number(t.tokenAmount) || 0;
+
+    let type = 'TRANSFER';
+    if (!fromWallet || fromWallet === MINT) type = 'MINT';
+    else if (!toWallet)                     type = 'BURN';
+
+    return {
+      sig:    tx.signature,
+      time:   tx.timestamp * 1000,
+      type,
+      from:   fromWallet,
+      to:     toWallet,
+      amount,
+      memo,
+      err:    !!tx.transactionError,
+    };
+  });
+}
+
+/* ═══════════════════════════════════════════
+   LOAD TRANSACTIONS
+   ═══════════════════════════════════════════ */
+async function loadTxs(reset = false) {
+  if (loading) return;
+  loading = true;
+
+  if (reset) {
+    allTxs = [];
+    cursor = null;
+    setTableHTML('<div class="table-msg"><div class="spinner"></div><br>Loading transactions…</div>');
+    document.getElementById('load-more-wrap').style.display = 'none';
+  }
+
+  try {
+    const raw = await fetchPage(cursor);
+    if (raw.length) {
+      cursor = raw[raw.length - 1].signature;
+      const parsed = raw.flatMap(parseTx);
+      allTxs = [...allTxs, ...parsed];
+    }
+
+    updateStats();
+    updateMemoFilter();
+    renderTable();
+
+    const hasMore = raw.length === 100;
+    document.getElementById('load-more-wrap').style.display = hasMore ? 'block' : 'none';
+    document.getElementById('btn-load-more').disabled = false;
+  } catch (e) {
+    setTableHTML(`<div class="table-msg">⚠️ Error: ${e.message}<br><br><button onclick="loadTxs(true)" style="color:var(--lime);background:none;border:1px solid var(--borderg);border-radius:8px;padding:8px 20px;cursor:pointer;font-family:Geist,sans-serif;font-weight:700;">Retry</button></div>`);
+  } finally {
+    loading = false;
+    updateRefreshLabel();
+  }
+}
+
+/* ═══════════════════════════════════════════
+   STATS
+   ═══════════════════════════════════════════ */
+function updateStats() {
+  const wallets = new Set();
+  let minted = 0, transferred = 0;
+  const memoCounts = {};
+
+  for (const tx of allTxs) {
+    if (tx.from)   wallets.add(tx.from);
+    if (tx.to)     wallets.add(tx.to);
+    if (tx.type === 'MINT')     minted += tx.amount;
+    if (tx.type === 'TRANSFER') transferred += tx.amount;
+    if (tx.memo) memoCounts[tx.memo] = (memoCounts[tx.memo] || 0) + 1;
+  }
+
+  document.getElementById('s-total').textContent       = fmt(allTxs.length);
+  document.getElementById('s-wallets').textContent     = fmt(wallets.size);
+  document.getElementById('s-minted').textContent      = fmt(minted);
+  document.getElementById('s-transferred').textContent = fmt(transferred);
+
+  const topMemo = Object.entries(memoCounts).sort((a,b) => b[1]-a[1])[0];
+  document.getElementById('s-topmemo').textContent = topMemo ? topMemo[0] : '—';
+}
+
+function fmt(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000)    return (n/1000).toFixed(1) + 'K';
+  return n.toLocaleString();
+}
+
+/* ═══════════════════════════════════════════
+   MEMO FILTER
+   ═══════════════════════════════════════════ */
+function updateMemoFilter() {
+  const memos = [...new Set(allTxs.map(t => t.memo).filter(Boolean))].sort();
+  const sel = document.getElementById('filter-memo');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All Memos</option>' + memos.map(m => `<option value="${esc(m)}" ${m===cur?'selected':''}>${esc(m)}</option>`).join('');
+}
+
+/* ═══════════════════════════════════════════
+   RENDER TABLE
+   ═══════════════════════════════════════════ */
+let only24h = false;
+
+function toggle24h() {
+  only24h = !only24h;
+  const btn = document.getElementById('filter-24h');
+  btn.style.background  = only24h ? 'var(--lime)' : 'rgba(255,255,255,.07)';
+  btn.style.color       = only24h ? '#0c1a0e'     : 'rgba(255,255,255,.7)';
+  btn.style.borderColor = only24h ? 'var(--lime)' : 'rgba(255,255,255,.15)';
+  renderTable();
+}
+
+function getFiltered() {
+  const q      = document.getElementById('search').value.toLowerCase().trim();
+  const type   = document.getElementById('filter-type').value;
+  const memo   = document.getElementById('filter-memo').value;
+  const cutoff = Date.now() / 1000 - 24 * 60 * 60;
+
+  return allTxs.filter(tx => {
+    if (only24h && tx.time && tx.time < cutoff * 1000) return false;
+    if (type && tx.type !== type) return false;
+    if (memo && tx.memo !== memo) return false;
+    if (q) {
+      const haystack = [tx.from, tx.to, tx.memo, tx.sig].filter(Boolean).join(' ').toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function renderTable() {
+  const rows = getFiltered();
+  document.getElementById('row-count').textContent = `${rows.length.toLocaleString()} row${rows.length !== 1 ? 's' : ''}`;
+
+  if (!rows.length) {
+    setTableHTML('<div class="table-msg">No transactions match your filters.</div>');
+    return;
+  }
+
+  const html = `<table>
+    <thead><tr>
+      <th>Time</th>
+      <th>Type</th>
+      <th class="col-from">From Wallet</th>
+      <th class="col-to">To Wallet</th>
+      <th>Amount</th>
+      <th>Memo</th>
+      <th class="col-tx">Tx</th>
+    </tr></thead>
+    <tbody>${rows.map(rowHTML).join('')}</tbody>
+  </table>`;
+  setTableHTML(html);
+}
+
+function rowHTML(tx) {
+  const timeStr  = fmtTime(tx.time);
+  const badge    = badgeHTML(tx.type);
+  const fromCell = walletCell(tx.from);
+  const toCell   = walletCell(tx.to);
+  const amt      = tx.amount ? `<span class="amount-cell ${tx.type === 'MINT' ? 'amount-mint' : tx.type === 'BURN' ? 'amount-neg' : ''}">+${tx.amount.toLocaleString()} <span style="font-size:10px;opacity:.7;">TUC</span></span>` : '<span style="color:var(--muted);">—</span>';
+  const source   = getMemoSource(tx);
+  const memoCell = `<div class="memo-cell">
+    ${sourceBadge(source)}
+    ${tx.memo
+      ? `<span class="memo-text" title="${esc(tx.memo)}">${esc(tx.memo)}</span>`
+      : `<span class="memo-empty">no memo</span>`}
+  </div>`;
+  const txLink   = `<a class="tx-link" href="https://solscan.io/tx/${tx.sig}" target="_blank" title="${tx.sig}">${tx.sig.slice(0,8)}…</a>`;
+
+  return `<tr${tx.err ? ' style="opacity:.5;"' : ''}>
+    <td class="time-cell">${timeStr}</td>
+    <td>${badge}${tx.err ? ' <span style="font-size:10px;color:var(--red);">ERR</span>' : ''}</td>
+    <td class="col-from">${fromCell}</td>
+    <td class="col-to">${toCell}</td>
+    <td>${amt}</td>
+    <td>${memoCell}</td>
+    <td class="col-tx">${txLink}</td>
+  </tr>`;
+}
+
+function badgeHTML(type) {
+  const map = { MINT: 'badge-mint', TRANSFER: 'badge-transfer', BURN: 'badge-burn' };
+  return `<span class="badge ${map[type] || 'badge-unknown'}">${type}</span>`;
+}
+
+const VENDOR_PREFIXES = ['DRINKS_','FOOD_','MERCH_','VIP_','GAME_','SPICE_'];
+function getMemoSource(tx) {
+  if (tx.type === 'MINT')     return 'staff';
+  if (tx.type === 'TRANSFER') {
+    if (tx.memo && VENDOR_PREFIXES.some(p => tx.memo.startsWith(p))) return 'vendor';
+    return 'wallet';
+  }
+  return null;
+}
+const SOURCE_LABELS = { staff: 'Staff', vendor: 'Vendor', wallet: 'Wallet' };
+function sourceBadge(source) {
+  if (!source) return '';
+  return `<span class="memo-source source-${source}">${SOURCE_LABELS[source]}</span>`;
+}
+
+function walletCell(addr) {
+  if (!addr) return `<span style="color:var(--muted);">—</span>`;
+  const short = addr.slice(0,4) + '…' + addr.slice(-4);
+  return `<div class="wallet-cell">
+    <a class="wallet-addr" href="https://solscan.io/account/${addr}" target="_blank" title="${addr}">${short}</a>
+    <button class="copy-btn" onclick="copyAddr('${addr}')" title="Copy address">⎘</button>
+  </div>`;
+}
+
+function fmtTime(ms) {
+  const d = new Date(ms);
+  const now = Date.now();
+  const diff = now - ms;
+  if (diff < 60000)   return `${Math.floor(diff/1000)}s ago`;
+  if (diff < 3600000) return `${Math.floor(diff/60000)}m ago`;
+  if (diff < 86400000) return `${Math.floor(diff/3600000)}h ago`;
+  return d.toLocaleDateString('en-MY', { day:'2-digit', month:'short' }) + ' ' +
+         d.toLocaleTimeString('en-MY', { hour:'2-digit', minute:'2-digit' });
+}
+
+function setTableHTML(html) {
+  document.getElementById('table-container').innerHTML = html;
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ═══════════════════════════════════════════
+   COPY / TOAST
+   ═══════════════════════════════════════════ */
+let _toastT;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  clearTimeout(_toastT);
+  _toastT = setTimeout(() => el.classList.add('hidden'), 2000);
+}
+function copyAddr(addr) {
+  navigator.clipboard.writeText(addr).then(() => toast('✓ Address copied'));
+}
+
+/* ═══════════════════════════════════════════
+   EXPORT CSV
+   ═══════════════════════════════════════════ */
+function exportCSV() {
+  const rows = getFiltered();
+  const headers = ['Time','Type','From Wallet','To Wallet','Amount (TUC)','Memo','Signature','Error'];
+  const lines = [headers.join(','), ...rows.map(tx => [
+    new Date(tx.time).toISOString(),
+    tx.type,
+    tx.from || '',
+    tx.to   || '',
+    tx.amount,
+    `"${(tx.memo || '').replace(/"/g,'""')}"`,
+    tx.sig,
+    tx.err ? 'yes' : 'no',
+  ].join(','))];
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `tuc-transactions-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast('✓ CSV downloaded');
+}
+
+/* ═══════════════════════════════════════════
+   AUTO REFRESH
+   ═══════════════════════════════════════════ */
+let _countdown = AUTO_REFRESH_SEC;
+function updateRefreshLabel() {
+  _countdown = AUTO_REFRESH_SEC;
+  document.getElementById('refresh-label').textContent = 'Live';
+}
+function startAutoRefresh() {
+  clearInterval(autoTimer);
+  autoTimer = setInterval(() => {
+    _countdown--;
+    if (_countdown <= 0) {
+      // Only refresh new page (don't paginate further, just check top)
+      refreshTop();
+    } else {
+      document.getElementById('refresh-label').textContent = `${_countdown}s`;
+    }
+  }, 1000);
+}
+async function refreshTop() {
+  try {
+    const raw = await fetchPage(null); // always fetch from top
+    if (!raw.length) return;
+    const parsed = raw.flatMap(parseTx);
+    // Merge new txs (avoid duplicates)
+    const existingSigs = new Set(allTxs.map(t => t.sig));
+    const newTxs = parsed.filter(t => !existingSigs.has(t.sig));
+    if (newTxs.length) {
+      allTxs = [...newTxs, ...allTxs];
+      updateStats();
+      updateMemoFilter();
+      renderTable();
+      toast(`↑ ${newTxs.length} new transaction${newTxs.length > 1 ? 's' : ''}`);
+    }
+  } catch(e) {}
+  _countdown = AUTO_REFRESH_SEC;
+  document.getElementById('refresh-label').textContent = 'Live';
+}
+
+/* ═══════════════════════════════════════════
+   EVENT LISTENERS
+   ═══════════════════════════════════════════ */
+document.getElementById('btn-refresh').addEventListener('click', () => {
+  loadTxs(true);
+  _countdown = AUTO_REFRESH_SEC;
+});
+
+document.getElementById('btn-load-more').addEventListener('click', () => {
+  document.getElementById('btn-load-more').disabled = true;
+  loadTxs(false);
+});
+
+document.getElementById('btn-export').addEventListener('click', exportCSV);
+
+document.getElementById('search').addEventListener('input', renderTable);
+document.getElementById('filter-type').addEventListener('change', renderTable);
+document.getElementById('filter-memo').addEventListener('change', renderTable);
+
+document.getElementById('nav-ca').addEventListener('click', () => {
+  navigator.clipboard.writeText(MINT).then(() => toast('✓ CA copied to clipboard'));
+});
+
+/* ═══════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════ */
+loadTxs(true);
+startAutoRefresh();
+</script>
+</body>
+</html>
