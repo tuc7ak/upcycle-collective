@@ -863,7 +863,7 @@ async function refresh() {
 
 /* ── Dashboard ── */
 let dashFeedAll = [];
-let dash24hOnly = false;
+const dash24hOnly = true;
 
 async function loadDashboard() {
   dashLoaded = true;
@@ -902,23 +902,10 @@ async function loadDashboard() {
   }
 }
 
-function toggleDash24h() {
-  dash24hOnly = !dash24hOnly;
-  const btn = document.getElementById('filter-24h');
-  if (btn) {
-    btn.style.background    = dash24hOnly ? '#a3e635' : 'rgba(255,255,255,.07)';
-    btn.style.color         = dash24hOnly ? '#0c1a0e' : 'rgba(255,255,255,.7)';
-    btn.style.borderColor   = dash24hOnly ? '#a3e635' : 'rgba(255,255,255,.15)';
-  }
-  renderDashboard();
-}
-
 function renderDashboard() {
   const content = document.getElementById('dash-content');
   const cutoff  = Date.now() - 24 * 60 * 60 * 1000;
-  const feed    = dash24hOnly
-    ? dashFeedAll.filter(f => f.ts && f.ts.getTime() >= cutoff)
-    : dashFeedAll;
+  const feed    = dashFeedAll.filter(f => f.ts && f.ts.getTime() >= cutoff);
 
   const feedHtml = feed.length ? feed.map(f => {
     const short = f.owner ? f.owner.slice(0,6)+'…'+f.owner.slice(-4) : '—';
@@ -929,15 +916,11 @@ function renderDashboard() {
       <div class="feed-text">${short} · ${isIn ? '+' : ''}${f.delta} TUC</div>
       <div class="feed-time">${time}</div>
     </div>`;
-  }).join('') : '<div style="opacity:.4;font-size:13px;padding:12px 0">No activity in this period</div>';
+  }).join('') : '<div style="opacity:.4;font-size:13px;padding:12px 0">No activity in the last 24 hours</div>';
 
   content.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-      <div class="feed-title" style="margin-bottom:0">Recent activity</div>
-      <button id="filter-24h" onclick="toggleDash24h()"
-        style="font-size:11px;font-weight:700;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:rgba(255,255,255,.7);cursor:pointer;transition:all .15s;${dash24hOnly ? 'background:#a3e635;color:#0c1a0e;border-color:#a3e635;' : ''}">
-        Last 24h
-      </button>
+      <div class="feed-title" style="margin-bottom:0">Last 24h activity</div>
     </div>
     <div class="activity-feed" style="padding-top:0">
       ${feedHtml}
