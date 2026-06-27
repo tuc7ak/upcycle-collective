@@ -58,6 +58,9 @@
 
     /* Action buttons */
     .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
+    .scan-icon-btn{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;cursor:pointer;padding:5px 8px;line-height:1;transition:background .15s;display:flex;align-items:center;}
+    .scan-icon-btn:hover{background:rgba(255,255,255,0.14);}
+    .scan-icon-btn img{width:26px;height:26px;display:block;}
     .action-btn{display:flex;flex-direction:column;align-items:center;gap:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:18px 12px;cursor:pointer;transition:background .15s;color:#fff;font-size:13px;font-weight:600;}
     .action-btn:hover{background:rgba(255,255,255,0.09);}
     .action-btn .action-icon{font-size:26px;}
@@ -77,6 +80,7 @@
     .tx-list{display:flex;flex-direction:column;gap:8px;}
     .tx-item{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:12px 14px;text-decoration:none;color:inherit;transition:background .15s;}
     .tx-item:hover{background:rgba(255,255,255,0.07);}
+    .tx-memo{font-size:10px;font-family:monospace;color:rgba(255,255,255,0.4);background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:2px 6px;display:inline-block;margin-top:2px;}
     .tx-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
     .tx-icon.mint{background:rgba(76,175,80,.2);}
     .tx-icon.payment{background:rgba(255,152,0,.2);}
@@ -190,7 +194,6 @@
 <body>
 
 <header>
-  <img src="/tuc-logo.png" alt="" onerror="this.style.display='none'" />
   <div>
     <h1>The Upcycle Collective</h1>
     <small>Event Wallet</small>
@@ -207,7 +210,7 @@
 
       <!-- Connect -->
       <div class="connect-screen" id="connect-screen">
-        <div class="icon">♻️</div>
+        <img src="/tuc-logo.png" alt="TUC" style="width:90px;height:90px;border-radius:50%;object-fit:cover;" onerror="this.outerHTML='<div class=\'icon\'>♻️</div>'" />
         <h2>Connect your wallet</h2>
         <p>View your TUC balance, send tokens, and see your full activity.</p>
         <button class="btn btn-green" onclick="connectWithEmail()" style="max-width:260px;margin-bottom:10px">
@@ -225,7 +228,10 @@
             <h2>💳 My Wallet</h2>
             <button class="btn-outline" id="btn-dashboard" onclick="toggleDashboard()" style="font-size:12px;padding:7px 12px;">Dashboard →</button>
           </div>
-          <button class="btn-outline" onclick="disconnect()">Disconnect</button>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button class="btn-outline" onclick="openQrScan()" style="padding:5px 8px;display:flex;align-items:center;"><img src="/scan-logo.png" alt="Scan" style="width:22px;height:22px;filter:invert(1);opacity:.7;" /></button>
+            <button class="btn-outline" onclick="disconnect()">Disconnect</button>
+          </div>
         </div>
 
         <div class="balance-card">
@@ -290,6 +296,17 @@
   <div class="dot" id="dot-1" onclick="goToPage(1)"></div>
 </div>
 
+<!-- ── Scan Sheet ── -->
+<div class="sheet-bg" id="scan-sheet" onclick="closeSheet('scan-sheet')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <button class="sheet-close" onclick="closeSheet('scan-sheet')">✕</button>
+    <h3 class="sheet-title">Scan QR Code</h3>
+    <p style="font-size:13px;opacity:.5;margin-bottom:16px;text-align:center">Check-in terminal · Vendor payment · Wallet address</p>
+    <div id="scan-status"></div>
+    <div id="scan-reader-wrap" style="border-radius:14px;overflow:hidden;margin-bottom:12px;"></div>
+  </div>
+</div>
+
 <!-- ── Receive Sheet ── -->
 <div class="sheet-bg" id="receive-sheet" onclick="closeSheet('receive-sheet')">
   <div class="sheet" onclick="event.stopPropagation()">
@@ -322,7 +339,7 @@
 <div class="sheet-bg" id="wallet-picker" onclick="closeSheet('wallet-picker')">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
-    <h2>Connect Wallet</h2>
+    <h2>Connect Solana Wallet</h2>
     <p style="font-size:13px;opacity:.55;margin-bottom:20px;">Choose your Solana wallet to continue.</p>
     <div class="wallet-list" id="wallet-list"></div>
   </div>
@@ -465,18 +482,23 @@ async function loadTransactions() {
       return;
     }
     const ataAddr = accs[0].pubkey;
-    const sigs    = await rpc('getSignaturesForAddress',[ataAddr,{limit:25}]);
+    const sigs = await rpc('getSignaturesForAddress',[ataAddr,{limit:15}]);
     if (!sigs?.length) { list.innerHTML = '<div class="empty">No activity yet.</div>'; return; }
-    const txs = await Promise.all(sigs.map(s =>
-      rpc('getTransaction',[s.signature,{encoding:'jsonParsed',maxSupportedTransactionVersion:0}])
-    ));
+    // Fetch one at a time with delay to avoid Helius rate limits
+    const txs = [];
+    for (const s of sigs) {
+      const tx = await rpc('getTransaction',[s.signature,{encoding:'jsonParsed',maxSupportedTransactionVersion:0}]);
+      txs.push(tx);
+      await new Promise(r => setTimeout(r, 150));
+    }
+    const nullCount = txs.filter(t => t === null).length;
     const items = txs.map((tx,i) => parseTx(tx, sigs[i].signature, ataAddr)).filter(Boolean);
     list.innerHTML = items.length
       ? items.map(renderTx).join('')
-      : '<div class="empty">No TUC activity yet.</div>';
+      : `<div class="empty">No TUC activity yet. (fetched ${txs.length}, null: ${nullCount})</div>`;
   } catch(e) {
     console.error(e);
-    list.innerHTML = '<div class="empty">Could not load activity.</div>';
+    list.innerHTML = `<div class="empty">Error: ${e.message}</div>`;
   }
 }
 
@@ -492,9 +514,21 @@ function parseTx(tx, sig, ataAddr) {
     const postAmt = Number(post?.uiTokenAmount?.uiAmount ?? 0);
     const delta   = postAmt - preAmt;
     if (delta === 0) return null;
-    const logs = meta.logMessages ?? [];
-    const memoLog = logs.find(l => l.includes('Memo (len'));
-    const memo = memoLog ? (memoLog.match(/"([^"]+)"/) ?? [])[1] ?? '' : '';
+    // Extract memo from parsed instructions — works for all tx types
+    const MEMO_PROGRAM = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
+    let memo = '';
+    try {
+      const allIx = [
+        ...(tx.transaction?.message?.instructions ?? []),
+        ...(meta?.innerInstructions ?? []).flatMap(ii => ii?.instructions ?? []),
+      ].filter(Boolean);
+      for (const ix of allIx) {
+        const pid = ix.programId ?? ix.program ?? '';
+        if (pid !== MEMO_PROGRAM) continue;
+        if (ix.parsed && typeof ix.parsed === 'string') { memo = ix.parsed; break; }
+        break;
+      }
+    } catch { /* no memo */ }
 
     let type='transfer', label='';
     if (delta > 0) {
@@ -506,29 +540,32 @@ function parseTx(tx, sig, ataAddr) {
     } else {
       const abs = Math.abs(delta);
       type = 'payment';
-      if      (memo.includes('DRINKS'))       { label=`Drinks (${abs} TUC)`; }
-      else if (memo.includes('FOOD_BOOTH'))   { label=`Food Booth (${abs} TUC)`; }
-      else if (memo.includes('MERCH'))        { label=`Merch (${abs} TUC)`; }
-      else if (memo.includes('VIP_UPGRADE'))  { label=`VIP Upgrade (${abs} TUC)`; }
-      else if (memo.includes('GAME_ZONE'))    { label=`Game Zone (${abs} TUC)`; }
-      else if (memo.includes('SPICE_MARKET')) { label=`Spice Market (${abs} TUC)`; }
-      else                                    { label=`Sent ${abs} TUC`; }
+      const m = memo.toLowerCase();
+      if      (m.includes('drinks'))       { label=`Drinks (${abs} TUC)`; }
+      else if (m.includes('food-booth') || m.includes('food_booth'))   { label=`Food Booth (${abs} TUC)`; }
+      else if (m.includes('merch'))        { label=`Merch (${abs} TUC)`; }
+      else if (m.includes('vip'))          { label=`VIP Upgrade (${abs} TUC)`; }
+      else if (m.includes('game-zone') || m.includes('game_zone'))     { label=`Game Zone (${abs} TUC)`; }
+      else if (m.includes('spice-market') || m.includes('spice_market')) { label=`Spice Market (${abs} TUC)`; }
+      else                                 { label=`Sent ${abs} TUC`; }
     }
-    return {sig,ts,delta,type,label};
+    return {sig,ts,delta,type,label,memo};
   } catch { return null; }
 }
 
-function renderTx({sig,ts,delta,type,label}) {
+function renderTx({sig,ts,delta,type,label,memo}) {
   const icons = {mint:'🎟️',reward:'⭐',payment:'🛍️',transfer:'↗️'};
   const icon  = icons[type] ?? '💸';
   const sign  = delta > 0 ? '+' : '';
   const cls   = delta > 0 ? 'pos' : 'neg';
   const time  = ts ? fmtTime(ts) : '—';
   const shortSig = sig.slice(0,8) + '…' + sig.slice(-6);
+  const memoTag = memo ? `<div class="tx-memo">${memo}</div>` : '';
   return `<a class="tx-item" href="https://solscan.io/tx/${sig}" target="_blank" rel="noopener">
     <div class="tx-icon ${type}">${icon}</div>
     <div class="tx-info">
       <div class="tx-type">${label}</div>
+      ${memoTag}
       <div class="tx-time">${time}</div>
       <div class="tx-solscan">↗ ${shortSig} · Solscan</div>
     </div>
@@ -573,17 +610,87 @@ function copyAddress() {
   navigator.clipboard.writeText(walletPubkey).then(()=>toast('Address copied!'));
 }
 
+/* ── Standalone QR Scanner ── */
+let qrScanner = null, qrRunning = false;
+
+function openQrScan() {
+  document.getElementById('scan-status').innerHTML = '';
+  document.getElementById('scan-reader-wrap').innerHTML = '<div id="scan-reader"></div>';
+  document.getElementById('scan-sheet').classList.add('open');
+  setTimeout(startQrScanner, 200);
+}
+
+async function startQrScanner() {
+  if (qrRunning) return;
+  qrScanner = new Html5Qrcode('scan-reader');
+  try {
+    await qrScanner.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: { width: 240, height: 240 } },
+      async (text) => {
+        await stopQrScanner();
+        await handleScanResult(text.trim());
+      },
+      () => {}
+    );
+    qrRunning = true;
+  } catch (e) {
+    setScanStatus('err', 'Camera access denied');
+  }
+}
+
+async function stopQrScanner() {
+  if (qrScanner && qrRunning) {
+    await qrScanner.stop().catch(() => {});
+    qrRunning = false;
+  }
+}
+
+async function handleScanResult(raw) {
+  let payload = raw;
+  if (payload.startsWith('solana:')) payload = payload.slice('solana:'.length);
+
+  // Transaction Request (check-in or vendor pay endpoint)
+  if (payload.startsWith('http')) {
+    setScanStatus('info', '⏳ Connecting…');
+    await handleVendorPay(payload, 'scan-status');
+    return;
+  }
+
+  // Transfer Request — solana:WALLET?spl-token=...&amount=N&memo=TEXT
+  const [address, queryString] = payload.split('?');
+  const qs     = new URLSearchParams(queryString || '');
+  const amount = qs.get('amount') ? parseInt(qs.get('amount')) : null;
+  const memo   = qs.get('memo') || '';
+
+  closeSheet('scan-sheet');
+  openSend();
+  document.getElementById('send-to').value = address;
+  if (amount) document.getElementById('send-amount').value = amount;
+  scannedMemo = memo;
+  toast('Scanned! Enter amount to send.');
+}
+
+function setScanStatus(type, html) {
+  document.getElementById('scan-status').innerHTML =
+    `<div class="status-row ${type}" style="margin-bottom:12px">${html}</div>`;
+}
+
 /* ── Send ── */
+let scannedMemo = '';
+
 function openSend() {
   document.getElementById('send-to').value     = '';
   document.getElementById('send-amount').value = '';
   document.getElementById('send-status').innerHTML = '';
+  scannedMemo = '';
   document.getElementById('send-sheet').classList.add('open');
 }
 
 function closeSheet(id) {
   document.getElementById(id).classList.remove('open');
-  if(id==='send-sheet') stopScanner();
+  if (id === 'send-sheet') stopScanner();
+  if (id === 'scan-sheet') stopQrScanner();
 }
 
 /* ── Scanner ── */
@@ -596,10 +703,23 @@ async function toggleScanner() {
     await scanner.start(
       {facingMode:'environment'},
       {fps:10, qrbox:{width:220,height:220}},
-      (text) => {
-        document.getElementById('send-to').value = text.trim();
+      async (text) => {
         stopScanner();
-        toast('Address scanned!');
+        let raw = text.trim();
+
+        // Strip solana: prefix if present
+        if (raw.startsWith('solana:')) raw = raw.slice('solana:'.length);
+
+        // Extract wallet address and optional query params
+        const [address, queryString] = raw.split('?');
+        const qs     = new URLSearchParams(queryString || '');
+        const amount = qs.get('amount') ? parseInt(qs.get('amount')) : null;
+        const memo   = qs.get('memo') || '';
+
+        document.getElementById('send-to').value = address;
+        document.getElementById('send-amount').value = '';
+        scannedMemo = memo;
+        toast('Scanned! Enter amount to send.');
       },
       ()=>{}
     );
@@ -619,7 +739,54 @@ function stopScanner() {
 }
 
 /* ── Do Send ── */
-async function doSend() {
+/* ── Vendor Pay (from QR scan) ── */
+async function handleVendorPay(payUrl, statusElId = 'send-status') {
+  const setS = (t, h) => {
+    const el = document.getElementById(statusElId);
+    if (el) el.innerHTML = `<div class="status-row ${t}" style="margin-bottom:12px">${h}</div>`;
+  };
+  if (statusElId === 'send-status') openSheet('send-sheet');
+  setS('info', '⏳ Loading…');
+  try {
+    // POST to the vendor pay endpoint with this wallet as the account
+    const res  = await fetch(payUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ account: walletPubkey }),
+    });
+    const data = await res.json();
+    if (data.error) { setS('err', '❌ ' + data.error); return; }
+
+    setS('info', '⏳ Approve in wallet…');
+    const txBuf  = Uint8Array.from(atob(data.transaction), c => c.charCodeAt(0));
+    const tx     = solanaWeb3.Transaction.from(txBuf);
+    const signed = await walletProvider.signTransaction(tx);
+
+    setS('info', '⏳ Sending…');
+    const signedB64 = btoa(String.fromCharCode(...signed.serialize()));
+    const sendRes = await fetch('/api/transfer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ step: 'send', transaction: signedB64 }),
+    });
+    const sendData = await sendRes.json();
+    if (sendData.error) { setS('err', '❌ ' + sendData.error); return; }
+
+    setS('ok', `✅ Done! <a href="https://solscan.io/tx/${sendData.signature}" target="_blank" style="color:#a5d6a7">View on Solscan ↗</a>`);
+    toast('Success!');
+    await loadBalance();
+    await loadTransactions();
+  } catch (e) {
+    console.error(e);
+    if (e.message?.includes('rejected') || e.code === 4001) {
+      setS('err', '❌ Cancelled.');
+    } else {
+      setS('err', '❌ ' + (e.message ?? 'Failed'));
+    }
+  }
+}
+
+async function doSend(memo = scannedMemo) {
   const to     = document.getElementById('send-to').value.trim();
   const amount = parseInt(document.getElementById('send-amount').value);
   const btn    = document.getElementById('send-btn');
@@ -634,7 +801,7 @@ async function doSend() {
   try {
     const buildRes  = await fetch('/api/transfer', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ step:'build', from:walletPubkey, to, amount }),
+      body: JSON.stringify({ step:'build', from:walletPubkey, to, amount, memo }),
     });
     const buildData = await buildRes.json();
     if (buildData.error) { setStatus('err','❌ '+buildData.error); return; }
