@@ -258,13 +258,12 @@ tbody td { padding: 12px 16px; font-size: 13px; vertical-align: middle; }
 
 <div class="wrap">
 
-  <!-- SUMMARY STATS -->
-  <div class="stats-row" id="stats-row">
-    <div class="stat-card"><div class="stat-label">Total Transactions</div><div class="stat-val" id="s-total">—</div><div class="stat-sub">all time</div></div>
-    <div class="stat-card"><div class="stat-label">Unique Wallets</div><div class="stat-val" id="s-wallets">—</div><div class="stat-sub">distinct addresses</div></div>
-    <div class="stat-card"><div class="stat-label">TUC Minted</div><div class="stat-val" id="s-minted">—</div><div class="stat-sub">tokens created</div></div>
-    <div class="stat-card"><div class="stat-label">TUC Transferred</div><div class="stat-val" id="s-transferred">—</div><div class="stat-sub">vendor payments</div></div>
-    <div class="stat-card"><div class="stat-label">Most Common Memo</div><div class="stat-val" id="s-topmemo" style="font-size:16px;margin-top:4px;">—</div><div class="stat-sub">by frequency</div></div>
+  <!-- VENDOR STATS (last 24h) -->
+  <div id="vendor-stats" style="margin-bottom:24px;">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.4;margin-bottom:12px;">Vendor transactions · last 24h</div>
+    <div id="vendor-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">
+      <div style="opacity:.4;font-size:13px;padding:12px 0">Loading…</div>
+    </div>
   </div>
 
   <!-- FILTER BAR -->
@@ -282,7 +281,6 @@ tbody td { padding: 12px 16px; font-size: 13px; vertical-align: middle; }
     <select class="filter-select" id="filter-memo">
       <option value="">All Memos</option>
     </select>
-    <button id="filter-24h" onclick="toggle24h()" style="font-size:12px;font-weight:700;padding:8px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:rgba(255,255,255,.7);cursor:pointer;transition:all .15s;white-space:nowrap;">Last 24h</button>
   </div>
 
   <!-- TABLE -->
@@ -474,26 +472,51 @@ async function loadTxs(reset = false) {
 /* ═══════════════════════════════════════════
    STATS
    ═══════════════════════════════════════════ */
-function updateStats() {
-  const wallets = new Set();
-  let minted = 0, transferred = 0;
-  const memoCounts = {};
+const VENDOR_LABELS = {
+  'TUC:DRINKS':       { label: 'Drinks',       icon: '🍺' },
+  'TUC:FOOD_BOOTH':   { label: 'Food Booth',   icon: '🍱' },
+  'TUC:MERCH':        { label: 'Merch',         icon: '👕' },
+  'TUC:VIP':          { label: 'VIP Upgrade',   icon: '⭐' },
+  'TUC:GAME_ZONE':    { label: 'Game Zone',     icon: '🎮' },
+  'TUC:SPICE_MARKET': { label: 'Spice Market',  icon: '🌶️' },
+};
 
-  for (const tx of allTxs) {
-    if (tx.from)   wallets.add(tx.from);
-    if (tx.to)     wallets.add(tx.to);
-    if (tx.type === 'MINT')     minted += tx.amount;
-    if (tx.type === 'TRANSFER') transferred += tx.amount;
-    if (tx.memo) memoCounts[tx.memo] = (memoCounts[tx.memo] || 0) + 1;
+function updateStats() {
+  const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+  const recent = allTxs.filter(tx => tx.time >= cutoff && tx.type === 'TRANSFER');
+
+  const counts = {};
+  const tucTotals = {};
+  for (const tx of recent) {
+    const key = tx.memo || 'OTHER';
+    counts[key]    = (counts[key]    || 0) + 1;
+    tucTotals[key] = (tucTotals[key] || 0) + tx.amount;
   }
 
-  document.getElementById('s-total').textContent       = fmt(allTxs.length);
-  document.getElementById('s-wallets').textContent     = fmt(wallets.size);
-  document.getElementById('s-minted').textContent      = fmt(minted);
-  document.getElementById('s-transferred').textContent = fmt(transferred);
+  const grid = document.getElementById('vendor-grid');
+  const keys = Object.keys(VENDOR_LABELS);
 
-  const topMemo = Object.entries(memoCounts).sort((a,b) => b[1]-a[1])[0];
-  document.getElementById('s-topmemo').textContent = topMemo ? topMemo[0] : '—';
+  // Include any memos not in our known list
+  const unknownKeys = Object.keys(counts).filter(k => !keys.includes(k) && k !== 'OTHER');
+  const allKeys = [...keys, ...unknownKeys];
+
+  if (!allKeys.some(k => counts[k])) {
+    grid.innerHTML = '<div style="opacity:.4;font-size:13px;padding:8px 0;grid-column:1/-1">No vendor transactions in the last 24h</div>';
+    return;
+  }
+
+  grid.innerHTML = allKeys.map(key => {
+    const v     = VENDOR_LABELS[key] || { label: key.replace('TUC:', '').replace(/_/g, ' '), icon: '🏪' };
+    const count = counts[key] || 0;
+    const tuc   = tucTotals[key] || 0;
+    const dim   = count === 0;
+    return `<div style="background:${dim ? 'rgba(255,255,255,.03)' : 'rgba(163,230,53,.08)'};border:1px solid ${dim ? 'rgba(255,255,255,.07)' : 'rgba(163,230,53,.2)'};border-radius:16px;padding:16px;">
+      <div style="font-size:22px;margin-bottom:8px;">${v.icon}</div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.5;margin-bottom:6px;">${v.label}</div>
+      <div style="font-size:32px;font-weight:900;color:${dim ? 'rgba(255,255,255,.25)' : 'var(--lime)'};">${count}</div>
+      <div style="font-size:11px;opacity:.4;margin-top:4px;">${tuc} TUC spent</div>
+    </div>`;
+  }).join('');
 }
 
 function fmt(n) {
@@ -515,25 +538,12 @@ function updateMemoFilter() {
 /* ═══════════════════════════════════════════
    RENDER TABLE
    ═══════════════════════════════════════════ */
-let only24h = false;
-
-function toggle24h() {
-  only24h = !only24h;
-  const btn = document.getElementById('filter-24h');
-  btn.style.background  = only24h ? 'var(--lime)' : 'rgba(255,255,255,.07)';
-  btn.style.color       = only24h ? '#0c1a0e'     : 'rgba(255,255,255,.7)';
-  btn.style.borderColor = only24h ? 'var(--lime)' : 'rgba(255,255,255,.15)';
-  renderTable();
-}
-
 function getFiltered() {
-  const q      = document.getElementById('search').value.toLowerCase().trim();
-  const type   = document.getElementById('filter-type').value;
-  const memo   = document.getElementById('filter-memo').value;
-  const cutoff = Date.now() / 1000 - 24 * 60 * 60;
+  const q     = document.getElementById('search').value.toLowerCase().trim();
+  const type  = document.getElementById('filter-type').value;
+  const memo  = document.getElementById('filter-memo').value;
 
   return allTxs.filter(tx => {
-    if (only24h && tx.time && tx.time < cutoff * 1000) return false;
     if (type && tx.type !== type) return false;
     if (memo && tx.memo !== memo) return false;
     if (q) {
