@@ -246,10 +246,11 @@
 
       // Solana Pay Transfer Request — encodes wallet + token + amount + memo
       // Phantom reads this natively and writes the memo on-chain
+      const vendorLabel = vendor.name.replace(/\p{Emoji}/gu, '').trim();
       const transferUrl = `solana:${VENDOR_WALLET}` +
         `?spl-token=${TOKEN_MINT}` +
         `&amount=${vendor.cost}` +
-        `&label=${encodeURIComponent('TUC — ' + vendor.name)}` +
+        `&label=${encodeURIComponent('TUC — ' + vendorLabel)}` +
         `&memo=${encodeURIComponent(vendor.memo)}`;
 
       new QRCode(document.getElementById('qr-canvas'), {
