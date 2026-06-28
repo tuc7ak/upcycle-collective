@@ -39,6 +39,7 @@ html, body {
 }
 .nav-left { display: flex; align-items: center; gap: 14px; }
 .nav-logo  { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; }
+.nav-logo-img { width: 40px; height: 40px; border-radius: 10px; object-fit: contain; }
 .nav-ca    {
   font-size: 11px; font-weight: 600; color: var(--muted);
   background: var(--surface); border: 1px solid var(--border);
@@ -245,7 +246,8 @@ tbody td { padding: 12px 16px; font-size: 13px; vertical-align: middle; }
 <!-- NAV -->
 <nav class="nav">
   <div class="nav-left">
-    <div class="nav-logo">♻️ TUC Dashboard</div>
+    <img class="nav-logo-img" src="../logo/TUC Logo.png" alt="TUC" />
+    <div class="nav-logo">The Upcycle Collective — Dashboard</div>
     <div class="nav-ca" id="nav-ca" title="Click to copy CA">2hgWy…ngRj</div>
   </div>
   <div class="nav-right">
@@ -473,12 +475,12 @@ async function loadTxs(reset = false) {
    STATS
    ═══════════════════════════════════════════ */
 const VENDOR_LABELS = {
-  'TUC:DRINKS':       { label: 'Drinks',       icon: '🍺' },
-  'TUC:FOOD_BOOTH':   { label: 'Food Booth',   icon: '🍱' },
-  'TUC:MERCH':        { label: 'Merch',         icon: '👕' },
-  'TUC:VIP':          { label: 'VIP Upgrade',   icon: '⭐' },
-  'TUC:GAME_ZONE':    { label: 'Game Zone',     icon: '🎮' },
-  'TUC:SPICE_MARKET': { label: 'Spice Market',  icon: '🌶️' },
+  'TUC:drinks':        { label: 'Drinks',       icon: '🍺' },
+  'TUC:food-booth':    { label: 'Food Booth',   icon: '🍱' },
+  'TUC:merch':         { label: 'Merch',        icon: '👕' },
+  'TUC:vip-upgrade':   { label: 'VIP Upgrade',  icon: '⭐' },
+  'TUC:game-zone':     { label: 'Game Zone',    icon: '🎮' },
+  'TUC:spice-market':  { label: 'Spice Market', icon: '🌶️' },
 };
 
 function updateStats() {
