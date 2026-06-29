@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>TUC — City Hunt</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --lime:   #a3e635;
+      --lime-d: #84cc16;
+      --bg:     #0c1a0e;
+      --panel:  rgba(12,26,14,0.95);
+      --border: rgba(163,230,53,0.22);
+      --muted:  rgba(255,255,255,0.45);
+    }
+    html, body { height: 100%; overflow: hidden; background: #0a0a0a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #fff; }
+
+    /* Map */
+    #map { position: fixed; inset: 0; z-index: 1; }
+    .leaflet-tile { filter: brightness(0.85); }
+    .leaflet-container { background: #0a0a0a; }
+    .leaflet-control-zoom a { background: var(--panel) !important; color: var(--lime) !important; border-color: var(--border) !important; }
+    .leaflet-control-attribution { display: none; }
+    .leaflet-popup-content-wrapper { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; color: #fff; box-shadow: 0 4px 24px rgba(0,0,0,.6); }
+    .leaflet-popup-tip { background: var(--panel); }
+    .leaflet-popup-close-button { color: var(--muted) !important; }
+
+    /* Header */
+    .hdr {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background: var(--panel); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .hdr-title { font-size: 15px; font-weight: 800; }
+    .hdr-sub   { font-size: 10px; color: var(--muted); margin-top: 1px; }
+    .live-pill {
+      display: flex; align-items: center; gap: 5px;
+      background: rgba(163,230,53,.1); border: 1px solid var(--border);
+      border-radius: 999px; padding: 3px 10px;
+      font-size: 10px; font-weight: 700; color: var(--lime);
+    }
+    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--lime); animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+    /* Scan button */
+    .btn-scan {
+      background: var(--lime); color: #0c1a0e;
+      border: none; border-radius: 10px;
+      font-size: 12px; font-weight: 800;
+      padding: 9px 16px; cursor: pointer; flex-shrink: 0;
+      transition: background .15s;
+    }
+    .btn-scan:hover { background: var(--lime-d); }
+
+    /* QR overlay — shown when Check In pressed */
+    .overlay {
+      position: fixed; inset: 0; z-index: 2000;
+      background: rgba(0,0,0,.88); backdrop-filter: blur(10px);
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center; gap: 16px; padding: 24px;
+    }
+    .overlay.open { display: flex; }
+
+    .qr-card {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 22px; padding: 24px 22px;
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+      width: 100%; max-width: 320px;
+    }
+    .qr-title { font-size: 15px; font-weight: 800; color: var(--lime); }
+    .qr-sub   { font-size: 11px; color: var(--muted); text-align: center; line-height: 1.5; }
+    #qr-box {
+      background: #fff; border-radius: 14px; padding: 12px;
+      display: inline-flex; justify-content: center;
+    }
+    .qr-status {
+      font-size: 12px; font-weight: 700; text-align: center;
+      padding: 8px 14px; border-radius: 8px; width: 100%;
+    }
+    .qr-status.waiting { background: rgba(163,230,53,.08); border: 1px solid var(--border); color: var(--muted); }
+    .qr-status.detected { background: rgba(163,230,53,.15); border: 1px solid var(--border); color: var(--lime); }
+
+    /* Nickname section — appears after scan detected */
+    .nick-section { display: none; width: 100%; flex-direction: column; gap: 8px; }
+    .nick-section.show { display: flex; }
+    .nick-input {
+      width: 100%; background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.2); border-radius: 10px;
+      color: #fff; font-size: 16px; padding: 11px 14px; outline: none;
+      transition: border .2s;
+    }
+    .nick-input:focus { border-color: var(--lime); }
+    .nick-input::placeholder { opacity: .4; }
+    .btn-add {
+      width: 100%; background: var(--lime); color: #0c1a0e;
+      border: none; border-radius: 10px; font-size: 14px; font-weight: 800;
+      padding: 12px; cursor: pointer; transition: background .15s;
+    }
+    .btn-add:hover { background: var(--lime-d); }
+    .nick-err { font-size: 11px; color: #f87171; display: none; }
+
+    .btn-close {
+      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.15);
+      color: rgba(255,255,255,.6); border-radius: 10px;
+      font-size: 13px; font-weight: 600; padding: 9px 24px; cursor: pointer;
+    }
+
+    /* Count bar */
+    .count-bar {
+      position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+      z-index: 1000;
+      background: var(--panel); backdrop-filter: blur(16px);
+      border: 1px solid var(--border); border-radius: 999px;
+      padding: 8px 20px; font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; gap: 8px; white-space: nowrap;
+    }
+    .count-num { color: var(--lime); font-size: 16px; font-weight: 900; }
+
+    /* Toast */
+    .toast {
+      position: fixed; top: 68px; left: 50%; transform: translateX(-50%) translateY(-10px);
+      z-index: 4000; background: var(--lime); color: #0c1a0e;
+      font-size: 13px; font-weight: 800; padding: 10px 22px;
+      border-radius: 999px; opacity: 0; transition: opacity .25s, transform .25s;
+      white-space: nowrap; pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.warn  { background: #f59e0b; }
+
+    /* Player marker */
+    .pm { display: flex; flex-direction: column; align-items: center; pointer-events: none; }
+    .pm-dot { width: 13px; height: 13px; border-radius: 50%; border: 2px solid rgba(10,10,10,.9); }
+    .pm-label {
+      margin-top: 3px;
+      background: rgba(10,10,10,.88); border: 1px solid rgba(163,230,53,.5);
+      border-radius: 5px; padding: 1px 6px;
+      font-size: 10px; font-weight: 800; color: #fff; white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<!-- Header -->
+<div class="hdr">
+  <div>
+    <div class="hdr-title">♻️ TUC City Hunt</div>
+    <div class="hdr-sub">Kuching · last 24h</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="live-pill"><div class="live-dot"></div>LIVE</div>
+    <button class="btn-scan" onclick="openCheckIn()">Check In</button>
+  </div>
+</div>
+
+<!-- Check-in overlay: shows QR → detects scan → nickname input -->
+<div class="overlay" id="overlay">
+  <div class="qr-card">
+    <div class="qr-title">Scan to Check In</div>
+    <div class="qr-sub">Open Phantom → tap QR icon → scan this code</div>
+    <div id="qr-box"></div>
+    <div class="qr-status waiting" id="qr-status">⏳ Waiting for scan…</div>
+
+    <!-- Nickname input (shown after scan detected) -->
+    <div class="nick-section" id="nick-section">
+      <input class="nick-input" id="nick-input" type="text" maxlength="20"
+        placeholder="Enter your nickname…"
+        onkeydown="if(event.key==='Enter')confirmNick()" />
+      <div class="nick-err" id="nick-err">Please enter a nickname</div>
+      <button class="btn-add" onclick="confirmNick()">Add to Map →</button>
+    </div>
+  </div>
+  <button class="btn-close" onclick="closeCheckIn()">Cancel</button>
+</div>
+
+<!-- Count bar -->
+<div class="count-bar">
+  <span class="count-num" id="count-num">0</span> on map · last 24h
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Config ───────────────────────────────────────────────────────────────────
+const CHECKIN_URL  = 'https://upcycle-collective.vercel.app/api/checkin';
+const HELIUS_RPC   = 'https://mainnet.helius-rpc.com/?api-key=a353da56-f27a-4a7a-9091-bdc6f8d66f27';
+const MINT         = '2hgWyBDWgw4xesu8NpwTAhHgy2gnAo5iBhsBNSasngRj';
+const MEMO_PROGRAM = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
+
+// ── Map ──────────────────────────────────────────────────────────────────────
+const CENTRE = [1.5397, 110.3543];
+const BOUNDS = { latMin:1.5330, latMax:1.5460, lngMin:110.3430, lngMax:110.3640 };
+
+const map = L.map('map', { center: CENTRE, zoom: 15 });
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  maxZoom: 19, subdomains: 'abcd',
+}).addTo(map);
+
+// ── Colours ──────────────────────────────────────────────────────────────────
+const COLOURS = ['#a3e635','#22c55e','#34d399','#86efac','#bef264','#4ade80','#6ee7b7','#d9f99d','#84cc16','#16a34a'];
+let colourIdx = 0;
+const nextColour = () => COLOURS[(colourIdx++) % COLOURS.length];
+
+// ── Storage ──────────────────────────────────────────────────────────────────
+const KEY = 'tuc_hunt_v3';
+const TTL = 24 * 60 * 60 * 1000;
+
+function loadStored() {
+  try { return JSON.parse(localStorage.getItem(KEY) || '[]').filter(p => Date.now() - p.ts < TTL); }
+  catch { return []; }
+}
+function saveStored() {
+  localStorage.setItem(KEY, JSON.stringify(
+    players.map(({ id, name, lat, lng, ts, colour }) => ({ id, name, lat, lng, ts, colour }))
+  ));
+}
+
+// ── Players ──────────────────────────────────────────────────────────────────
+let players = [];
+
+function rndPos() {
+  return {
+    lat: BOUNDS.latMin + Math.random() * (BOUNDS.latMax - BOUNDS.latMin),
+    lng: BOUNDS.lngMin + Math.random() * (BOUNDS.lngMax - BOUNDS.lngMin),
+  };
+}
+
+function makeIcon(p) {
+  return L.divIcon({
+    className: '',
+    html: `<div class="pm"><div class="pm-dot" style="background:${p.colour};box-shadow:0 0 8px ${p.colour}99"></div><div class="pm-label">${p.name}</div></div>`,
+    iconSize: [80, 30], iconAnchor: [40, 7],
+  });
+}
+
+function spawnPlayer(data) {
+  const p = { ...data, marker: null };
+  p.marker = L.marker([p.lat, p.lng], { icon: makeIcon(p) })
+    .addTo(map)
+    .bindPopup(`<b style="color:${p.colour};font-size:14px">${p.name}</b><br><span style="font-size:10px;opacity:.5;font-family:monospace">${p.id.slice(0,8)}…</span>`);
+  players.push(p);
+  updateCount();
+}
+
+// Load saved nicknames from localStorage (wallet → nickname map)
+function getNicknames() {
+  try { return JSON.parse(localStorage.getItem(KEY + '_nicks') || '{}'); }
+  catch { return {}; }
+}
+function saveNickname(wallet, name) {
+  const nicks = getNicknames();
+  nicks[wallet] = name;
+  localStorage.setItem(KEY + '_nicks', JSON.stringify(nicks));
+}
+
+// Fetch all 24h CHECKIN wallets from Helius on load
+async function loadCheckins() {
+  document.getElementById('count-num').textContent = '…';
+  try {
+    const cutoff = Math.floor((Date.now() - TTL) / 1000);
+    const nicks  = getNicknames();
+    const sigs   = await rpc('getSignaturesForAddress', [MINT, { limit: 100 }]);
+    if (!sigs?.length) { updateCount(); return; }
+
+    const recent = sigs.filter(s => s.blockTime && s.blockTime >= cutoff);
+    if (!recent.length) { updateCount(); return; }
+
+    for (const s of recent) {
+      const tx = await rpc('getTransaction', [s.signature, { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 }]);
+      if (!tx) continue;
+
+      // Check CHECKIN memo
+      const allIx = [
+        ...(tx.transaction?.message?.instructions ?? []),
+        ...(tx.meta?.innerInstructions ?? []).flatMap(ii => ii?.instructions ?? []),
+      ].filter(Boolean);
+      let memo = '';
+      for (const ix of allIx) {
+        const pid = ix.programId ?? ix.program ?? '';
+        if (pid === MEMO_PROGRAM && typeof ix.parsed === 'string') { memo = ix.parsed; break; }
+      }
+      if (!memo.includes('CHECKIN')) continue;
+
+      // Get recipient wallet
+      const post = tx.meta?.postTokenBalances ?? [];
+      const pre  = tx.meta?.preTokenBalances  ?? [];
+      const keys = (tx.transaction?.message?.accountKeys ?? []).map(k => k.pubkey ?? k);
+      let wallet = null;
+      for (const p of post) {
+        const preEntry = pre.find(e => e.accountIndex === p.accountIndex);
+        const gained = Number(p.uiTokenAmount?.uiAmount ?? 0) - Number(preEntry?.uiTokenAmount?.uiAmount ?? 0);
+        if (gained > 0) { wallet = keys[p.accountIndex]; break; }
+      }
+      if (!wallet) continue;
+      if (players.find(p => p.id === wallet)) continue; // skip dupes
+
+      const pos  = rndPos();
+      spawnPlayer({
+        id:     wallet,
+        name:   nicks[wallet] || wallet.slice(0, 4).toLowerCase(),
+        lat:    pos.lat,
+        lng:    pos.lng,
+        ts:     s.blockTime * 1000,
+        colour: nextColour(),
+      });
+    }
+  } catch (e) {
+    console.error('[loadCheckins]', e);
+  }
+  updateCount();
+}
+
+loadCheckins();
+
+// ── QR generation ────────────────────────────────────────────────────────────
+let qrGenerated = false;
+
+function generateQR() {
+  if (qrGenerated) return;
+  qrGenerated = true;
+  new QRCode(document.getElementById('qr-box'), {
+    text: `solana:${CHECKIN_URL}`,
+    width: 200, height: 200,
+    colorDark: '#000000', colorLight: '#ffffff',
+  });
+}
+
+// ── Check-in overlay ─────────────────────────────────────────────────────────
+let pollTimer      = null;
+let detectedWallet = null;
+
+async function openCheckIn() {
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('qr-status').className = 'qr-status waiting';
+  document.getElementById('qr-status').textContent = '⏳ Waiting for scan…';
+  document.getElementById('nick-section').classList.remove('show');
+  document.getElementById('nick-input').value = '';
+  document.getElementById('nick-err').style.display = 'none';
+  detectedWallet = null;
+  generateQR();
+  startPolling();
+}
+
+function closeCheckIn() {
+  stopPolling();
+  document.getElementById('overlay').classList.remove('open');
+  detectedWallet = null;
+}
+
+// ── Helius polling ────────────────────────────────────────────────────────────
+async function rpc(method, params) {
+  const r = await fetch(HELIUS_RPC, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
+  });
+  return (await r.json()).result;
+}
+
+function startPolling() {
+  stopPolling();
+  pollTimer = setInterval(pollForNewCheckin, 3000);
+}
+
+function stopPolling() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+
+async function pollForNewCheckin() {
+  if (detectedWallet) return;
+  try {
+    const cutoff = Math.floor((Date.now() - 60_000) / 1000); // last 60 seconds
+    const sigs = await rpc('getSignaturesForAddress', [MINT, { limit: 20 }]);
+    if (!sigs?.length) return;
+
+    for (const s of sigs) {
+      // Skip if older than 60s
+      if (s.blockTime && s.blockTime < cutoff) break;
+
+      const tx = await rpc('getTransaction', [s.signature, { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 }]);
+      if (!tx) continue;
+
+      // Check for CHECKIN memo
+      const allIx = [
+        ...(tx.transaction?.message?.instructions ?? []),
+        ...(tx.meta?.innerInstructions ?? []).flatMap(ii => ii?.instructions ?? []),
+      ].filter(Boolean);
+
+      let memo = '';
+      for (const ix of allIx) {
+        const pid = ix.programId ?? ix.program ?? '';
+        if (pid === MEMO_PROGRAM && typeof ix.parsed === 'string') { memo = ix.parsed; break; }
+      }
+      if (!memo.includes('CHECKIN')) continue;
+
+      // Get the wallet that received tokens
+      const post = tx.meta?.postTokenBalances ?? [];
+      const pre  = tx.meta?.preTokenBalances  ?? [];
+      const keys = (tx.transaction?.message?.accountKeys ?? []).map(k => k.pubkey ?? k);
+      let wallet = null;
+      for (const p of post) {
+        const preEntry = pre.find(e => e.accountIndex === p.accountIndex);
+        const gained = Number(p.uiTokenAmount?.uiAmount ?? 0) - Number(preEntry?.uiTokenAmount?.uiAmount ?? 0);
+        if (gained > 0) { wallet = keys[p.accountIndex]; break; }
+      }
+      if (!wallet) continue;
+
+      // Already on map?
+      if (players.find(p => p.id === wallet)) {
+        stopPolling();
+        document.getElementById('qr-status').className = 'qr-status detected';
+        document.getElementById('qr-status').textContent = '⚠️ Already on the map!';
+        setTimeout(closeCheckIn, 2000);
+        return;
+      }
+
+      // New player — prompt for nickname
+      detectedWallet = wallet;
+      stopPolling();
+      document.getElementById('qr-status').className = 'qr-status detected';
+      document.getElementById('qr-status').textContent = '✅ Scan detected! Enter your nickname:';
+      document.getElementById('nick-section').classList.add('show');
+      setTimeout(() => document.getElementById('nick-input').focus(), 100);
+      return;
+    }
+  } catch { /* silently retry */ }
+}
+
+// ── Confirm nickname ──────────────────────────────────────────────────────────
+function confirmNick() {
+  const name = document.getElementById('nick-input').value.trim();
+  if (!name) { document.getElementById('nick-err').style.display = 'block'; return; }
+
+  const wallet = detectedWallet || ('anon_' + Date.now());
+  saveNickname(wallet, name.toLowerCase());
+
+  // Update name on existing marker if already on map
+  const existing = players.find(p => p.id === wallet);
+  if (existing) {
+    existing.name = name.toLowerCase();
+    existing.marker.setIcon(makeIcon(existing));
+    existing.marker.setPopupContent(`<b style="color:${existing.colour};font-size:14px">${existing.name}</b><br><span style="font-size:10px;opacity:.5;font-family:monospace">${existing.id.slice(0,8)}…</span>`);
+    closeCheckIn();
+    map.flyTo([existing.lat, existing.lng], 16, { duration: 1 });
+    toast(`${existing.name} updated!`);
+    return;
+  }
+
+  const pos = rndPos();
+  const p = {
+    id:     wallet,
+    name:   name.toLowerCase(),
+    lat:    pos.lat,
+    lng:    pos.lng,
+    ts:     Date.now(),
+    colour: nextColour(),
+  };
+
+  spawnPlayer(p);
+  closeCheckIn();
+  map.flyTo([p.lat, p.lng], 16, { duration: 1 });
+  toast(`${p.name} joined the hunt!`);
+}
+
+// ── Random walk ───────────────────────────────────────────────────────────────
+const STEP = 0.0005;
+setInterval(() => {
+  const expired = Date.now() - TTL;
+  players = players.filter(p => {
+    if (p.ts < expired) { map.removeLayer(p.marker); return false; }
+    return true;
+  });
+  players.forEach(p => {
+    p.lat = Math.min(BOUNDS.latMax, Math.max(BOUNDS.latMin, p.lat + (Math.random()-.5)*STEP*2));
+    p.lng = Math.min(BOUNDS.lngMax, Math.max(BOUNDS.lngMin, p.lng + (Math.random()-.5)*STEP*2));
+    p.marker.setLatLng([p.lat, p.lng]);
+  });
+  saveStored();
+  updateCount();
+}, 2000);
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function updateCount() {
+  document.getElementById('count-num').textContent = players.length;
+}
+function toast(msg, warn = false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast' + (warn ? ' warn' : '');
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    const expired = Date.now() - TTL;
+    players = players.filter(p => {
+      if (p.ts < expired) { map.removeLayer(p.marker); return false; }
+      return true;
+    });
+    updateCount();
+  }
+});
+</script>
+</body>
+</html>
