@@ -76,6 +76,15 @@
     /* Section title */
     .section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.45;margin-bottom:10px;}
 
+    /* NFT section */
+    .nft-card{background:rgba(163,230,53,0.06);border:1px solid rgba(163,230,53,0.2);border-radius:16px;overflow:hidden;transition:border-color .15s;}
+    .nft-card:hover{border-color:rgba(163,230,53,0.5);}
+    .nft-card img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:rgba(255,255,255,0.04);}
+    .nft-card-body{padding:10px 12px;}
+    .nft-card-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .nft-card-sub{font-size:10px;opacity:.4;margin-top:2px;}
+    .nft-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(163,230,53,.15);border:1px solid rgba(163,230,53,.3);border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;color:#a3e635;margin-top:6px;}
+
     /* Tx list */
     .tx-list{display:flex;flex-direction:column;gap:8px;}
     .tx-item{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:12px 14px;text-decoration:none;color:inherit;transition:background .15s;}
@@ -251,6 +260,12 @@
           <button class="action-btn" onclick="openReceive()">
             <span class="action-icon">📥</span>Receive
           </button>
+        </div>
+
+        <!-- NFT passes -->
+        <div id="nft-section" style="display:none;margin-bottom:24px;">
+          <div class="section-title">Membership Pass</div>
+          <div id="nft-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;"></div>
         </div>
 
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -455,7 +470,105 @@ async function showWallet() {
   document.getElementById('wallet-screen').style.display  = 'block';
   document.getElementById('wallet-addr').textContent =
     walletPubkey.slice(0,6) + '…' + walletPubkey.slice(-6);
-  await Promise.all([loadBalance(), loadTransactions()]);
+  await Promise.all([loadBalance(), loadTransactions(), loadNFTs()]);
+}
+
+/* ── NFT Membership Passes ── */
+const ORGANISER_B58 = 'CGDLbYHVnoMpw2CCbKMMomm6U3ByVZRFqKuGZfpdsrBK';
+const TOKEN_2022_PROGRAM = 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb';
+
+function bytesEqual(a, b) {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
+}
+
+async function loadNFTs() {
+  const section = document.getElementById('nft-section');
+  const grid    = document.getElementById('nft-grid');
+  const organiserBytes = b58decode(ORGANISER_B58);
+
+  try {
+    // Get all Token-2022 token accounts for this wallet
+    const r = await rpc('getTokenAccountsByOwner', [
+      walletPubkey, { programId: TOKEN_2022_PROGRAM }, { encoding: 'jsonParsed' }
+    ]);
+
+    // Keep only accounts with exactly 1 token and 0 decimals
+    const candidates = (r?.value ?? []).filter(({ account }) => {
+      const amt = account.data.parsed.info.tokenAmount;
+      return amt.uiAmount === 1 && amt.decimals === 0;
+    });
+
+    const nfts = [];
+    for (const { account } of candidates) {
+      const mintAddr = account.data.parsed.info.mint;
+
+      // Fetch raw mint bytes to inspect TLV and verify mintAuthority = organiser
+      const mintInfo = await rpc('getAccountInfo', [mintAddr, { encoding: 'base64' }]);
+      if (!mintInfo?.value) continue;
+
+      const data = Uint8Array.from(atob(mintInfo.value.data[0]), c => c.charCodeAt(0));
+      if (data.length < 170) continue;
+
+      // Mint struct: COption<Pubkey> mintAuthority at bytes 0-35
+      // COption = [1,0,0,0] = Some, followed by 32-byte pubkey
+      const hasAuth = data[0]===1 && data[1]===0 && data[2]===0 && data[3]===0;
+      if (!hasAuth) continue;
+      if (!bytesEqual(data.slice(4, 36), organiserBytes)) continue;
+
+      // Supply u64 LE at bytes 36-43 — must be exactly 1
+      const supply = data[36] | (data[37]<<8) | (data[38]<<16) | (data[39]<<24);
+      if (supply !== 1) continue;
+
+      // Walk TLV from byte 166 to find TokenMetadata (type=19)
+      let uri = null, name = null;
+      let i = 166;
+      while (i + 4 <= data.length) {
+        const type = data[i] | (data[i+1] << 8);
+        const len  = data[i+2] | (data[i+3] << 8);
+        if (type === 0 || len === 0 && type === 0) break;
+        if (type === 19) {
+          const ext = data.slice(i+4, i+4+len);
+          // Layout: updateAuthority(32) + mint(32) + name(4+n) + symbol(4+n) + uri(4+n)
+          const nameLen = ext[64]|(ext[65]<<8)|(ext[66]<<16)|(ext[67]<<24);
+          name = new TextDecoder().decode(ext.slice(68, 68+nameLen));
+          const sOff = 68+nameLen;
+          const sLen = ext[sOff]|(ext[sOff+1]<<8)|(ext[sOff+2]<<16)|(ext[sOff+3]<<24);
+          const uOff = sOff+4+sLen;
+          const uLen = ext[uOff]|(ext[uOff+1]<<8)|(ext[uOff+2]<<16)|(ext[uOff+3]<<24);
+          uri = new TextDecoder().decode(ext.slice(uOff+4, uOff+4+uLen));
+          break;
+        }
+        i += 4 + len;
+      }
+      if (!uri) continue;
+
+      // Fetch Arweave metadata JSON for the image URL
+      const json = await fetch(uri).then(r => r.json()).catch(() => null);
+      if (!json) continue;
+
+      nfts.push({ mint: mintAddr, name: name || json.name || 'Membership Pass', image: json.image || null });
+    }
+
+    if (!nfts.length) { section.style.display = 'none'; return; }
+
+    grid.innerHTML = nfts.map(n => `
+      <div class="nft-card">
+        ${n.image
+          ? `<img src="${n.image}" alt="${n.name}" loading="lazy" />`
+          : `<div style="aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:40px;background:rgba(255,255,255,.03);">🎫</div>`
+        }
+        <div class="nft-card-body">
+          <div class="nft-card-name">${n.name}</div>
+          <div class="nft-badge">🔒 Soulbound</div>
+        </div>
+      </div>`).join('');
+
+    section.style.display = 'block';
+  } catch(e) {
+    console.warn('NFT load error:', e);
+  }
 }
 
 /* ── Balance ── */
@@ -856,7 +969,7 @@ async function refresh() {
   const btn = document.getElementById('refresh-btn');
   btn.textContent = '↻ Refreshing…';
   btn.disabled = true;
-  await Promise.all([loadBalance(), loadTransactions()]);
+  await Promise.all([loadBalance(), loadTransactions(), loadNFTs()]);
   btn.textContent = '↻ Refresh';
   btn.disabled = false;
 }
