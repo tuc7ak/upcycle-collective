@@ -1,2 +1,2 @@
 const { createVendorHandler } = require('../_vendor');
-module.exports = createVendorHandler('food-booth');
+module.exports = createVendorHandler('uitm');

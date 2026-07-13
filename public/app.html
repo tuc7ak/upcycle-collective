@@ -18,16 +18,6 @@
     header h1{font-size:16px;font-weight:700;}
     header small{font-size:11px;opacity:0.45;display:block;}
     .header-page-label{margin-left:auto;font-size:11px;font-weight:700;opacity:.35;text-transform:uppercase;letter-spacing:.08em;}
-    .btn-dashboard{display:flex;align-items:center;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:rgba(255,255,255,.7);font-size:20px;font-weight:700;padding:4px 12px;cursor:pointer;transition:background .15s;white-space:nowrap;}
-    .btn-dashboard:hover{background:rgba(255,255,255,.12);color:#fff;}
-
-    /* ── Pages ── */
-    .pages-wrap-outer{overflow:hidden;width:100vw;}
-    .pages-wrap{display:flex;width:200vw;transition:transform .35s cubic-bezier(.4,0,.2,1);}
-    .page{width:100vw;min-height:calc(100vh - 65px);}
-
-    /* Page dots — hidden */
-    .page-dots{display:none;}
 
     /* Main */
     .page-inner{max-width:480px;margin:0 auto;padding:20px 16px 80px;}
@@ -99,7 +89,7 @@
     .tx-type{font-size:14px;font-weight:600;}
     .tx-time{font-size:11px;opacity:.4;margin-top:2px;}
     .tx-solscan{font-size:10px;color:#4caf50;opacity:.6;margin-top:2px;display:flex;align-items:center;gap:3px;}
-    .tx-amount{font-size:15px;font-weight:700;white-space:nowrap;}
+    .tx-amount{font-size:24px;font-weight:900;white-space:nowrap;}
     .tx-amount.pos{color:#7fff7f;}
     .tx-amount.neg{color:#ff8a65;}
     .empty{text-align:center;padding:36px 0;opacity:.4;font-size:14px;}
@@ -168,36 +158,6 @@
     .wallet-badge{margin-left:auto;background:rgba(255,255,255,.1);border-radius:20px;font-size:11px;font-weight:700;padding:4px 10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.06em;}
     .wallet-badge.installed{background:rgba(76,175,80,.2);color:#81c784;}
 
-    /* ── Dashboard ── */
-    #page-dashboard{background:#0a1a0f;}
-    .dash-inner{max-width:480px;margin:0 auto;padding:20px 16px 80px;}
-    .dash-title{font-size:20px;font-weight:800;margin-bottom:4px;}
-    .dash-sub{font-size:13px;opacity:.4;margin-bottom:24px;}
-
-    .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;}
-    .stat-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:20px 16px;}
-    .stat-card.highlight{background:linear-gradient(135deg,rgba(76,175,80,.15),rgba(76,175,80,.05));border-color:rgba(76,175,80,.25);}
-    .stat-card.full{grid-column:1/-1;}
-    .stat-label{font-size:11px;opacity:.4;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
-    .stat-value{font-size:36px;font-weight:900;color:#7fff7f;line-height:1;}
-    .stat-value.white{color:#fff;}
-    .stat-desc{font-size:12px;opacity:.4;margin-top:6px;}
-
-    .activity-feed{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:16px;}
-    .feed-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.4;margin-bottom:14px;}
-    .feed-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);}
-    .feed-item:last-child{border-bottom:none;}
-    .feed-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-    .feed-dot.in{background:#4caf50;}
-    .feed-dot.out{background:#ff8a65;}
-    .feed-text{flex:1;font-size:13px;opacity:.7;}
-    .feed-time{font-size:11px;opacity:.3;}
-
-    .dash-refresh{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px;width:100%;cursor:pointer;color:rgba(255,255,255,.6);font-size:13px;font-weight:600;margin-bottom:16px;transition:background .15s;}
-    .dash-refresh:hover{background:rgba(255,255,255,.09);}
-
-    .dash-loading{text-align:center;padding:40px;opacity:.4;font-size:14px;}
-    .no-wallet-dash{text-align:center;padding:60px 20px;opacity:.4;font-size:14px;line-height:1.7;}
   </style>
 </head>
 <body>
@@ -209,13 +169,7 @@
   </div>
 </header>
 
-<!-- ── Pages ── -->
-<div class="pages-wrap-outer">
-<div class="pages-wrap" id="pages-wrap">
-
-  <!-- Page 0: Wallet -->
-  <div class="page" id="page-wallet">
-    <div class="page-inner">
+<div class="page-inner">
 
       <!-- Connect -->
       <div class="connect-screen" id="connect-screen">
@@ -235,7 +189,6 @@
         <div class="top-bar">
           <div style="display:flex;align-items:center;gap:10px;">
             <h2>💳 My Wallet</h2>
-            <button class="btn-outline" id="btn-dashboard" onclick="toggleDashboard()" style="font-size:12px;padding:7px 12px;">Dashboard →</button>
           </div>
           <div style="display:flex;align-items:center;gap:8px;">
             <button class="btn-outline" onclick="openQrScan()" style="padding:5px 8px;display:flex;align-items:center;"><img src="/scan-logo.png" alt="Scan" style="width:22px;height:22px;filter:invert(1);opacity:.7;" /></button>
@@ -263,9 +216,11 @@
         </div>
 
         <!-- NFT passes -->
-        <div id="nft-section" style="display:none;margin-bottom:24px;">
-          <div class="section-title">Membership Pass</div>
-          <div id="nft-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;"></div>
+        <div id="nft-section" style="margin-bottom:24px;">
+          <div class="section-title">NFT</div>
+          <div id="nft-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;">
+            <div class="loading" style="grid-column:1/-1">Checking for passes…</div>
+          </div>
         </div>
 
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -278,37 +233,6 @@
 
       </div>
 
-    </div>
-  </div>
-
-  <!-- Page 1: Dashboard -->
-  <div class="page" id="page-dashboard">
-    <div class="dash-inner">
-      <div class="top-bar">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div>
-            <div class="dash-title">📊 Dashboard</div>
-            <div class="dash-sub">Live event activity</div>
-          </div>
-          <button class="btn-outline" onclick="goToPage(0)" style="font-size:12px;padding:7px 12px;">← Wallet</button>
-        </div>
-        <button class="btn-outline" onclick="refreshDashboard()" id="dash-refresh-btn">↻ Refresh</button>
-      </div>
-
-      <div id="dash-content">
-        <div class="dash-loading">Loading event data…</div>
-      </div>
-
-    </div>
-  </div>
-
-</div>
-</div>
-
-<!-- Page dots -->
-<div class="page-dots">
-  <div class="dot active" id="dot-0" onclick="goToPage(0)"></div>
-  <div class="dot" id="dot-1" onclick="goToPage(1)"></div>
 </div>
 
 <!-- ── Scan Sheet ── -->
@@ -360,6 +284,14 @@
   </div>
 </div>
 
+<!-- ── NFT Detail Sheet ── -->
+<div class="sheet-bg" id="nft-detail-sheet" onclick="closeSheet('nft-detail-sheet')">
+  <div class="sheet" onclick="event.stopPropagation()" style="padding-bottom:48px;">
+    <button class="sheet-close" onclick="closeSheet('nft-detail-sheet')">✕</button>
+    <div id="nft-detail-content"></div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -370,36 +302,6 @@ let walletPubkey   = null;
 let walletProvider = null;
 let scanner        = null;
 let scannerRunning = false;
-let currentPage    = 0;
-let dashLoaded     = false;
-
-/* ── Swipe / Page navigation ── */
-let touchStartX = 0;
-let touchStartY = 0;
-
-document.addEventListener('touchstart', e => {
-  touchStartX = e.touches[0].clientX;
-  touchStartY = e.touches[0].clientY;
-}, {passive: true});
-
-document.addEventListener('touchend', e => {
-  const dx = e.changedTouches[0].clientX - touchStartX;
-  const dy = e.changedTouches[0].clientY - touchStartY;
-  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
-    if (dx < 0 && currentPage === 0) goToPage(1);
-    if (dx > 0 && currentPage === 1) goToPage(0);
-  }
-}, {passive: true});
-
-function goToPage(n) {
-  currentPage = n;
-  document.getElementById('pages-wrap').style.transform = `translateX(${-n * 100}vw)`;
-  if (n === 1 && !dashLoaded) loadDashboard();
-}
-
-function toggleDashboard() {
-  goToPage(currentPage === 0 ? 1 : 0);
-}
 
 /* ── Supported wallets ── */
 const WALLETS = [
@@ -474,27 +376,23 @@ async function showWallet() {
 }
 
 /* ── NFT Membership Passes ── */
-const ORGANISER_B58 = 'CGDLbYHVnoMpw2CCbKMMomm6U3ByVZRFqKuGZfpdsrBK';
 const TOKEN_2022_PROGRAM = 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb';
+const nftCache = {}; // mint → {mint, name, image}
 
-function bytesEqual(a, b) {
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
-  return true;
+// Irys uploads to arweave.net but files only serve reliably from gateway.irys.xyz
+function toIrysUrl(url) {
+  return url?.replace('https://arweave.net/', 'https://gateway.irys.xyz/') ?? url;
 }
 
 async function loadNFTs() {
-  const section = document.getElementById('nft-section');
-  const grid    = document.getElementById('nft-grid');
-  const organiserBytes = b58decode(ORGANISER_B58);
+  const grid = document.getElementById('nft-grid');
 
   try {
-    // Get all Token-2022 token accounts for this wallet
     const r = await rpc('getTokenAccountsByOwner', [
       walletPubkey, { programId: TOKEN_2022_PROGRAM }, { encoding: 'jsonParsed' }
     ]);
 
-    // Keep only accounts with exactly 1 token and 0 decimals
+    // Any Token-2022 token with exactly 1 unit and 0 decimals = NFT
     const candidates = (r?.value ?? []).filter(({ account }) => {
       const amt = account.data.parsed.info.tokenAmount;
       return amt.uiAmount === 1 && amt.decimals === 0;
@@ -504,33 +402,23 @@ async function loadNFTs() {
     for (const { account } of candidates) {
       const mintAddr = account.data.parsed.info.mint;
 
-      // Fetch raw mint bytes to inspect TLV and verify mintAuthority = organiser
       const mintInfo = await rpc('getAccountInfo', [mintAddr, { encoding: 'base64' }]);
       if (!mintInfo?.value) continue;
 
       const data = Uint8Array.from(atob(mintInfo.value.data[0]), c => c.charCodeAt(0));
       if (data.length < 170) continue;
 
-      // Mint struct: COption<Pubkey> mintAuthority at bytes 0-35
-      // COption = [1,0,0,0] = Some, followed by 32-byte pubkey
-      const hasAuth = data[0]===1 && data[1]===0 && data[2]===0 && data[3]===0;
-      if (!hasAuth) continue;
-      if (!bytesEqual(data.slice(4, 36), organiserBytes)) continue;
-
-      // Supply u64 LE at bytes 36-43 — must be exactly 1
-      const supply = data[36] | (data[37]<<8) | (data[38]<<16) | (data[39]<<24);
-      if (supply !== 1) continue;
-
-      // Walk TLV from byte 166 to find TokenMetadata (type=19)
+      // Walk TLV from byte 166 to find TokenMetadata (type 19)
+      // Layout per extension: type(2 LE) + len(2 LE) + data(len)
       let uri = null, name = null;
       let i = 166;
       while (i + 4 <= data.length) {
         const type = data[i] | (data[i+1] << 8);
         const len  = data[i+2] | (data[i+3] << 8);
-        if (type === 0 || len === 0 && type === 0) break;
-        if (type === 19) {
+        if (type === 0 && len === 0) break;
+        if (type === 19 && len > 0) {
           const ext = data.slice(i+4, i+4+len);
-          // Layout: updateAuthority(32) + mint(32) + name(4+n) + symbol(4+n) + uri(4+n)
+          // updateAuthority(32) + mint(32) = 64 bytes skipped, then name, symbol, uri
           const nameLen = ext[64]|(ext[65]<<8)|(ext[66]<<16)|(ext[67]<<24);
           name = new TextDecoder().decode(ext.slice(68, 68+nameLen));
           const sOff = 68+nameLen;
@@ -544,31 +432,78 @@ async function loadNFTs() {
       }
       if (!uri) continue;
 
-      // Fetch Arweave metadata JSON for the image URL
-      const json = await fetch(uri).then(r => r.json()).catch(() => null);
-      if (!json) continue;
+      // Fetch metadata JSON — rewrite arweave.net → gateway.irys.xyz so uploads resolve
+      const json = await fetch(toIrysUrl(uri)).then(r => r.json()).catch(() => null);
+      const image = json?.image ? toIrysUrl(json.image) : null;
 
-      nfts.push({ mint: mintAddr, name: name || json.name || 'Membership Pass', image: json.image || null });
+      nfts.push({ mint: mintAddr, name: name || json?.name || 'Membership Pass', image });
     }
 
-    if (!nfts.length) { section.style.display = 'none'; return; }
+    if (!nfts.length) {
+      grid.innerHTML = `<div class="empty" style="grid-column:1/-1;padding:20px 0;font-size:13px;">No membership pass yet</div>`;
+      return;
+    }
 
+    nfts.forEach(n => { nftCache[n.mint] = n; });
     grid.innerHTML = nfts.map(n => `
-      <div class="nft-card">
+      <div class="nft-card" onclick="openNFTDetail('${n.mint}')" style="cursor:pointer;">
         ${n.image
           ? `<img src="${n.image}" alt="${n.name}" loading="lazy" />`
           : `<div style="aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:40px;background:rgba(255,255,255,.03);">🎫</div>`
         }
         <div class="nft-card-body">
           <div class="nft-card-name">${n.name}</div>
-          <div class="nft-badge">🔒 Soulbound</div>
+          <div class="nft-badge">🔒 Non-transferable</div>
         </div>
       </div>`).join('');
-
-    section.style.display = 'block';
   } catch(e) {
     console.warn('NFT load error:', e);
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;padding:20px 0;font-size:13px;">Could not load passes</div>`;
   }
+}
+
+function openNFTDetail(mint) {
+  const n = nftCache[mint];
+  if (!n) return;
+  const short = mint.slice(0,6) + '…' + mint.slice(-6);
+  document.getElementById('nft-detail-content').innerHTML = `
+    ${n.image
+      ? `<img src="${n.image}" alt="${n.name}" style="width:100%;border-radius:16px;margin-bottom:20px;display:block;" />`
+      : `<div style="aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:80px;background:rgba(255,255,255,.03);border-radius:16px;margin-bottom:20px;">🎫</div>`
+    }
+    <div style="font-size:20px;font-weight:800;margin-bottom:6px;">${n.name}</div>
+    <div style="margin-bottom:20px;"><span class="nft-badge">🔒 Non-transferable</span></div>
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 16px;margin-bottom:10px;">
+      <div class="section-title" style="margin-bottom:4px;">Minted</div>
+      <div id="nft-detail-time" style="font-size:14px;opacity:.8;">Loading…</div>
+    </div>
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 16px;margin-bottom:16px;">
+      <div class="section-title" style="margin-bottom:4px;">Mint Address</div>
+      <div style="font-size:12px;font-family:monospace;opacity:.7;word-break:break-all;">${mint}</div>
+    </div>
+    <a href="https://solscan.io/token/${mint}" target="_blank" rel="noopener"
+       style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;background:#4caf50;color:#fff;font-size:15px;font-weight:700;border-radius:14px;text-decoration:none;">
+      ↗ View on Solscan
+    </a>`;
+  document.getElementById('nft-detail-sheet').classList.add('open');
+  fetchMintTime(mint);
+}
+
+async function fetchMintTime(mint) {
+  try {
+    // getSignaturesForAddress returns newest-first; take the last one = mint tx
+    const sigs = await rpc('getSignaturesForAddress', [mint, { limit: 20 }]);
+    const oldest = sigs?.[sigs.length - 1];
+    const el = document.getElementById('nft-detail-time');
+    if (!el) return;
+    if (oldest?.blockTime) {
+      const d = new Date(oldest.blockTime * 1000);
+      el.textContent = d.toLocaleDateString('en-MY', { day:'numeric', month:'long', year:'numeric' })
+        + ' · ' + d.toLocaleTimeString('en-MY', { hour:'2-digit', minute:'2-digit' });
+    } else {
+      el.textContent = '—';
+    }
+  } catch { document.getElementById('nft-detail-time').textContent = '—'; }
 }
 
 /* ── Balance ── */
@@ -654,12 +589,11 @@ function parseTx(tx, sig, ataAddr) {
       const abs = Math.abs(delta);
       type = 'payment';
       const m = memo.toLowerCase();
-      if      (m.includes('drinks'))       { label=`Drinks (${abs} TUC)`; }
-      else if (m.includes('food-booth') || m.includes('food_booth'))   { label=`Food Booth (${abs} TUC)`; }
-      else if (m.includes('merch'))        { label=`Merch (${abs} TUC)`; }
-      else if (m.includes('vip'))          { label=`VIP Upgrade (${abs} TUC)`; }
-      else if (m.includes('game-zone') || m.includes('game_zone'))     { label=`Game Zone (${abs} TUC)`; }
-      else if (m.includes('spice-market') || m.includes('spice_market')) { label=`Spice Market (${abs} TUC)`; }
+      if      (m.includes('landik'))       { label=`Landik (${abs} TUC)`; }
+      else if (m.includes('uitm'))         { label=`UiTM (${abs} TUC)`; }
+      else if (m.includes('beer'))         { label=`Beer (${abs} TUC)`; }
+      else if (m.includes('clothes-swap') || m.includes('clothes_swap')) { label=`Clothes Swap (${abs} TUC)`; }
+      else if (m.includes('creative'))     { label=`Creative (${abs} TUC)`; }
       else                                 { label=`Sent ${abs} TUC`; }
     }
     return {sig,ts,delta,type,label,memo};
@@ -669,7 +603,7 @@ function parseTx(tx, sig, ataAddr) {
 function renderTx({sig,ts,delta,type,label,memo}) {
   const icons = {mint:'🎟️',reward:'⭐',payment:'🛍️',transfer:'↗️'};
   const icon  = icons[type] ?? '💸';
-  const sign  = delta > 0 ? '+' : '';
+  const sign  = delta > 0 ? '+' : '-';
   const cls   = delta > 0 ? 'pos' : 'neg';
   const time  = ts ? fmtTime(ts) : '—';
   const shortSig = sig.slice(0,8) + '…' + sig.slice(-6);
@@ -970,83 +904,6 @@ async function refresh() {
   btn.textContent = '↻ Refreshing…';
   btn.disabled = true;
   await Promise.all([loadBalance(), loadTransactions(), loadNFTs()]);
-  btn.textContent = '↻ Refresh';
-  btn.disabled = false;
-}
-
-/* ── Dashboard ── */
-let dashFeedAll = [];
-const dash24hOnly = true;
-
-async function loadDashboard() {
-  dashLoaded = true;
-  const content = document.getElementById('dash-content');
-  content.innerHTML = '<div class="dash-loading">Fetching event data…</div>';
-
-  try {
-    const sigs = await rpc('getSignaturesForAddress', [MINT, {limit: 100}]);
-    if (!sigs?.length) { dashFeedAll = []; renderDashboard(); return; }
-
-    const txs = await Promise.all(
-      sigs.slice(0, 30).map(s =>
-        rpc('getTransaction', [s.signature, {encoding:'jsonParsed', maxSupportedTransactionVersion:0}])
-      )
-    );
-
-    dashFeedAll = [];
-    txs.forEach((tx, i) => {
-      if (!tx) return;
-      const meta = tx.meta;
-      const pre  = meta?.preTokenBalances?.[0];
-      const post = meta?.postTokenBalances?.[0];
-      if (!pre || !post) return;
-      const delta = Number(post.uiTokenAmount?.uiAmount ?? 0) - Number(pre.uiTokenAmount?.uiAmount ?? 0);
-      if (delta === 0) return;
-      const owner = post.owner ?? pre.owner ?? '';
-      const ts    = tx.blockTime ? new Date(tx.blockTime * 1000) : null;
-      dashFeedAll.push({ delta, owner, ts, sig: sigs[i].signature });
-    });
-
-    renderDashboard();
-  } catch(e) {
-    console.error(e);
-    document.getElementById('dash-content').innerHTML =
-      '<div class="dash-loading">Could not load data.</div>';
-  }
-}
-
-function renderDashboard() {
-  const content = document.getElementById('dash-content');
-  const cutoff  = Date.now() - 24 * 60 * 60 * 1000;
-  const feed    = dashFeedAll.filter(f => f.ts && f.ts.getTime() >= cutoff);
-
-  const feedHtml = feed.length ? feed.map(f => {
-    const short = f.owner ? f.owner.slice(0,6)+'…'+f.owner.slice(-4) : '—';
-    const time  = f.ts ? fmtTime(f.ts) : '—';
-    const isIn  = f.delta > 0;
-    return `<div class="feed-item">
-      <div class="feed-dot ${isIn ? 'in' : 'out'}"></div>
-      <div class="feed-text">${short} · ${isIn ? '+' : ''}${f.delta} TUC</div>
-      <div class="feed-time">${time}</div>
-    </div>`;
-  }).join('') : '<div style="opacity:.4;font-size:13px;padding:12px 0">No activity in the last 24 hours</div>';
-
-  content.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-      <div class="feed-title" style="margin-bottom:0">Last 24h activity</div>
-    </div>
-    <div class="activity-feed" style="padding-top:0">
-      ${feedHtml}
-    </div>
-  `;
-}
-
-async function refreshDashboard() {
-  const btn = document.getElementById('dash-refresh-btn');
-  btn.textContent = '↻ Refreshing…';
-  btn.disabled = true;
-  dashLoaded = false;
-  await loadDashboard();
   btn.textContent = '↻ Refresh';
   btn.disabled = false;
 }

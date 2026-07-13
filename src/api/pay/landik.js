@@ -1,2 +1,2 @@
 const { createVendorHandler } = require('../_vendor');
-module.exports = createVendorHandler('merch');
+module.exports = createVendorHandler('landik');

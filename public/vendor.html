@@ -222,20 +222,19 @@
     const VENDOR_WALLET = 'HGPiNcN1kUUbAbpWg15hvgzNaa5b931DmC8q4YDqw1GC';
 
     const VENDORS = {
-      'drinks':       { name: 'Drinks 🍺',       cost: 5,  memo: 'TUC:drinks' },
-      'food-booth':   { name: 'Food Booth 🍛',   cost: 8,  memo: 'TUC:food-booth' },
-      'merch':        { name: 'Merch 👕',         cost: 15, memo: 'TUC:merch' },
-      'vip':          { name: 'VIP Upgrade ⭐',  cost: 30, memo: 'TUC:vip-upgrade' },
-      'game-zone':    { name: 'Game Zone 🎮',    cost: 3,  memo: 'TUC:game-zone' },
-      'spice-market': { name: 'Spice Market 🌶', cost: 10, memo: 'TUC:spice-market' },
+      'landik':       { name: 'Landik 🛍️',      cost: 20, memo: 'TUC:landik' },
+      'uitm':         { name: 'UiTM 🎓',         cost: 20, memo: 'TUC:uitm' },
+      'beer':         { name: 'Beer 🍺',         cost: 5,  memo: 'TUC:beer' },
+      'clothes-swap': { name: 'Clothes Swap 👕', cost: 5,  memo: 'TUC:clothes-swap' },
+      'creative':     { name: 'Creative 🎨',     cost: 5,  memo: 'TUC:creative' },
     };
 
     const params   = new URLSearchParams(window.location.search);
-    const vendorId = params.get('id') || 'drinks';
+    const vendorId = params.get('id') || 'landik';
     const vendor   = VENDORS[vendorId];
 
     if (!vendor) {
-      document.body.innerHTML = '<p style="color:#f44;padding:40px;text-align:center">Unknown vendor ID.<br>Use <b>?id=drinks</b> in the URL.</p>';
+      document.body.innerHTML = '<p style="color:#f44;padding:40px;text-align:center">Unknown vendor ID.<br>Use <b>?id=landik</b> in the URL.</p>';
     } else {
       document.getElementById('vendor-name').textContent = vendor.name;
       document.title = `${vendor.name} — TUC`;

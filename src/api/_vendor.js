@@ -12,12 +12,11 @@ const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = requi
 const TOKEN_DECIMALS = 0;
 
 const VENDORS = {
-  'drinks':        { label: 'Drinks',        memo: 'drinks',        envKey: 'VENDOR_DRINKS',        defaultCost: 5  },
-  'food-booth':    { label: 'Food Booth',    memo: 'food-booth',    envKey: 'VENDOR_FOOD_BOOTH',    defaultCost: 8  },
-  'merch':         { label: 'Merch',         memo: 'merch',         envKey: 'VENDOR_MERCH',         defaultCost: 15 },
-  'vip':           { label: 'VIP Upgrade',   memo: 'vip-upgrade',   envKey: 'VENDOR_VIP',           defaultCost: 30 },
-  'game-zone':     { label: 'Game Zone',     memo: 'game-zone',     envKey: 'VENDOR_GAME_ZONE',     defaultCost: 3  },
-  'spice-market':  { label: 'Spice Market',  memo: 'spice-market',  envKey: 'VENDOR_SPICE_MARKET',  defaultCost: 10 },
+  'landik':        { label: 'Landik',        memo: 'landik',        envKey: 'VENDOR_LANDIK',        defaultCost: 20 },
+  'uitm':          { label: 'UiTM',          memo: 'uitm',          envKey: 'VENDOR_UITM',          defaultCost: 20 },
+  'beer':          { label: 'Beer',          memo: 'beer',          envKey: 'VENDOR_BEER',          defaultCost: 5  },
+  'clothes-swap':  { label: 'Clothes Swap',  memo: 'clothes-swap',  envKey: 'VENDOR_CLOTHES_SWAP',  defaultCost: 5  },
+  'creative':      { label: 'Creative',      memo: 'creative',      envKey: 'VENDOR_CREATIVE',      defaultCost: 5  },
 };
 
 function createVendorHandler(vendorId) {
