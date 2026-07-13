@@ -97,7 +97,7 @@ module.exports = async function handler(req, res) {
 
     tx.add(createMintToInstruction(mint, attendeeATA, organiser.publicKey, CHECKIN_AMOUNT, [], TOKEN_2022_PROGRAM_ID));
 
-    // Attendee as co-signer on memo so Phantom shows the approval screen
+    // Attendee as co-signer on memo so Solflare shows the approval screen
     tx.add(createMemoInstruction(CHECKIN_MEMO, [organiser.publicKey, attendeePubkey]));
 
     tx.partialSign(organiser);

@@ -19,7 +19,7 @@ module.exports = async function handler(req, res) {
     try { body = JSON.parse(body); } catch { return jsonErr(res, 400, 'invalid JSON'); }
   }
 
-  // ── Step 1: build unsigned tx, return for Phantom to sign ─────────────────
+  // ── Step 1: build unsigned tx, return for Solflare to sign ─────────────────
   if (body.step === 'build') {
     const { from, to, amount, memo } = body;
     if (!from)                     return jsonErr(res, 400, 'from required');
@@ -73,7 +73,7 @@ module.exports = async function handler(req, res) {
         tx.add(createMemoInstruction(memo.trim(), [organiser.publicKey]));
       }
 
-      // Organiser pre-signs as fee payer — Phantom then adds sender signature
+      // Organiser pre-signs as fee payer — Solflare then adds sender signature
       tx.partialSign(organiser);
       const serialised = tx.serialize({ requireAllSignatures: false });
       return jsonOk(res, { transaction: Buffer.from(serialised).toString('base64') });
@@ -83,7 +83,7 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  // ── Step 2: receive Phantom-signed tx, add organiser sig, broadcast ────────
+  // ── Step 2: receive Solflare-signed tx, add organiser sig, broadcast ────────
   if (body.step === 'send') {
     const { transaction } = body;
     if (!transaction) return jsonErr(res, 400, 'transaction required');

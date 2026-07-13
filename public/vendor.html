@@ -190,7 +190,7 @@
   <div class="wallet-card">
     <div class="wallet-card-label">Scan to Pay</div>
     <div id="qr-wrap"><div id="qr-canvas"></div></div>
-    <div class="qr-hint">Scan with Phantom → send TUC tokens</div>
+    <div class="qr-hint">Scan with Solflare → send TUC tokens</div>
     <div class="wallet-card-label" style="margin-top:16px">On-Chain Memo</div>
     <div class="wallet-addr" id="memo-value" style="font-size:15px;font-weight:700;opacity:1;color:#7fff7f;">—</div>
     <div class="wallet-card-label" style="margin-top:16px">Vendor Wallet Address</div>
@@ -244,7 +244,7 @@
       document.getElementById('copy-btn').disabled = false;
 
       // Solana Pay Transfer Request — encodes wallet + token + amount + memo
-      // Phantom reads this natively and writes the memo on-chain
+      // Solflare reads this natively and writes the memo on-chain
       const vendorLabel = vendor.name.replace(/\p{Emoji}/gu, '').trim();
       const transferUrl = `solana:${VENDOR_WALLET}` +
         `?spl-token=${TOKEN_MINT}` +
