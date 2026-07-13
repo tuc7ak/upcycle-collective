@@ -327,8 +327,9 @@ function generateQR() {
   qrGenerated = true;
   new QRCode(document.getElementById('qr-box'), {
     text: `solana:${CHECKIN_URL}`,
-    width: 200, height: 200,
+    width: 260, height: 260,
     colorDark: '#000000', colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.M,
   });
 }
 

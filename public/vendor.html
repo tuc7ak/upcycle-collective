@@ -249,15 +249,16 @@
       const transferUrl = `solana:${VENDOR_WALLET}` +
         `?spl-token=${TOKEN_MINT}` +
         `&amount=${vendor.cost}` +
-        `&label=${encodeURIComponent('TUC — ' + vendorLabel)}` +
+        `&label=${encodeURIComponent(vendorLabel)}` +
         `&memo=${encodeURIComponent(vendor.memo)}`;
 
       new QRCode(document.getElementById('qr-canvas'), {
         text: transferUrl,
-        width: 220,
-        height: 220,
+        width: 260,
+        height: 260,
         colorDark: '#000000',
         colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M,
       });
 
       loadHistory();
