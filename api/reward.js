@@ -44585,18 +44585,15 @@ var {
 } = require_cjs4();
 var { createMemoInstruction } = require_cjs5();
 var { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require_utils4();
-var REWARDS = {
-  recycle_reward_1: 5,
-  recycle_reward_2: 10,
-  recycle_reward_3: 20
-};
+var MAX_MANUAL_REWARD = 200;
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return jsonErr(res, 405, "POST only");
-  const { wallet, reward } = req.body ?? {};
+  const { wallet, amount: rawAmount } = req.body ?? {};
   if (!wallet) return jsonErr(res, 400, "wallet required");
-  if (!reward) return jsonErr(res, 400, "reward type required");
-  const amount = REWARDS[reward];
-  if (!amount) return jsonErr(res, 400, `unknown reward. Valid: ${Object.keys(REWARDS).join(", ")}`);
+  const amount = parseInt(rawAmount, 10);
+  if (!Number.isInteger(amount) || amount < 1 || amount > MAX_MANUAL_REWARD) {
+    return jsonErr(res, 400, `amount must be a whole number between 1 and ${MAX_MANUAL_REWARD}`);
+  }
   let attendeePubkey;
   try {
     attendeePubkey = new PublicKey(wallet);
@@ -44617,9 +44614,9 @@ module.exports = async function handler(req, res) {
       {},
       TOKEN_2022_PROGRAM_ID
     );
-    const tx = new Transaction().add(createMintToInstruction(mint, tokenAccount.address, organiser.publicKey, amount, [], TOKEN_2022_PROGRAM_ID)).add(createMemoInstruction(`TUC:${reward.toUpperCase()}`, [organiser.publicKey]));
+    const tx = new Transaction().add(createMintToInstruction(mint, tokenAccount.address, organiser.publicKey, amount, [], TOKEN_2022_PROGRAM_ID)).add(createMemoInstruction("TUC:CREW_REWARD", [organiser.publicKey]));
     const signature = await sendAndConfirmTransaction(connection, tx, [organiser]);
-    return jsonOk(res, { success: true, wallet, reward, tokensAwarded: amount, signature });
+    return jsonOk(res, { success: true, wallet, tokensAwarded: amount, signature });
   } catch (err) {
     console.error("[reward]", err);
     return jsonErr(res, 500, err.message);

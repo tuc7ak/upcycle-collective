@@ -7,21 +7,18 @@ const {
 const { createMemoInstruction } = require('@solana/spl-memo');
 const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require('./_utils');
 
-const REWARDS = {
-  recycle_reward_1: 5,
-  recycle_reward_2: 10,
-  recycle_reward_3: 20,
-};
+const MAX_MANUAL_REWARD = 200;
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return jsonErr(res, 405, 'POST only');
 
-  const { wallet, reward } = req.body ?? {};
+  const { wallet, amount: rawAmount } = req.body ?? {};
   if (!wallet) return jsonErr(res, 400, 'wallet required');
-  if (!reward) return jsonErr(res, 400, 'reward type required');
 
-  const amount = REWARDS[reward];
-  if (!amount) return jsonErr(res, 400, `unknown reward. Valid: ${Object.keys(REWARDS).join(', ')}`);
+  const amount = parseInt(rawAmount, 10);
+  if (!Number.isInteger(amount) || amount < 1 || amount > MAX_MANUAL_REWARD) {
+    return jsonErr(res, 400, `amount must be a whole number between 1 and ${MAX_MANUAL_REWARD}`);
+  }
 
   let attendeePubkey;
   try {
@@ -41,11 +38,11 @@ module.exports = async function handler(req, res) {
 
     const tx = new Transaction()
       .add(createMintToInstruction(mint, tokenAccount.address, organiser.publicKey, amount, [], TOKEN_2022_PROGRAM_ID))
-      .add(createMemoInstruction(`TUC:${reward.toUpperCase()}`, [organiser.publicKey]));
+      .add(createMemoInstruction('TUC:CREW_REWARD', [organiser.publicKey]));
 
     const signature = await sendAndConfirmTransaction(connection, tx, [organiser]);
 
-    return jsonOk(res, { success: true, wallet, reward, tokensAwarded: amount, signature });
+    return jsonOk(res, { success: true, wallet, tokensAwarded: amount, signature });
   } catch (err) {
     console.error('[reward]', err);
     return jsonErr(res, 500, err.message);
