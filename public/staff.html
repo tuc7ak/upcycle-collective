@@ -142,7 +142,7 @@
   <div style="font-size:36px">🔒</div>
   <div style="font-size:20px;font-weight:800">Staff Access</div>
   <div style="font-size:13px;opacity:0.5;margin-bottom:4px">Enter PIN to continue</div>
-  <input id="pin-input" type="password" inputmode="numeric" maxlength="10" placeholder="PIN" autocomplete="off"
+  <input id="pin-input" type="password" maxlength="10" placeholder="PIN" autocomplete="off"
     style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:12px;color:#fff;font-size:24px;letter-spacing:0.3em;padding:14px 20px;text-align:center;outline:none;width:220px;"
     onkeydown="if(event.key==='Enter')checkPin()" />
   <button onclick="checkPin()" style="background:#4caf50;border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:700;padding:14px 0;cursor:pointer;width:220px;">Unlock</button>
@@ -151,12 +151,12 @@
 
 <script>
   (function(){
-    if (sessionStorage.getItem('tuc_pin') === 'ak90') document.getElementById('pin-gate').style.display = 'none';
+    if (sessionStorage.getItem('tuc_pin') === '1990') document.getElementById('pin-gate').style.display = 'none';
     else setTimeout(() => document.getElementById('pin-input')?.focus(), 100);
   })();
   function checkPin() {
-    if (document.getElementById('pin-input').value === 'ak90') {
-      sessionStorage.setItem('tuc_pin', 'ak90');
+    if (document.getElementById('pin-input').value === '1990') {
+      sessionStorage.setItem('tuc_pin', '1990');
       document.getElementById('pin-gate').style.display = 'none';
     } else {
       document.getElementById('pin-err').style.display = 'block';
