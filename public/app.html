@@ -25,6 +25,7 @@
   .eyebrow-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
   .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold);}
   .preview-tag{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.05em;text-transform:uppercase;color:var(--text-faint);border:1px solid var(--divider);border-radius:999px;padding:2px 8px;}
+  .preview-tag.live{color:var(--gold);border-color:var(--gold-25);}
   .mode-toggle{display:flex;align-items:center;gap:6px;background:var(--bg-surface);border:1px solid var(--divider);border-radius:999px;padding:4px 10px 4px 8px;cursor:pointer;font-family:'IBM Plex Mono';font-size:9.5px;letter-spacing:0.05em;text-transform:uppercase;color:var(--text-faint);transition:border-color .15s,color .15s;}
   .mode-toggle:hover{border-color:var(--moss-dim);}
   .mode-toggle .mode-toggle-dot{width:6px;height:6px;border-radius:50%;background:var(--text-faint);transition:background .15s,box-shadow .15s;}
@@ -211,7 +212,7 @@
 
       <!-- DONATE -->
       <div class="screen" id="screen-donate">
-        <div class="eyebrow-row"><span class="eyebrow">New donation</span><span class="preview-tag">Preview</span></div>
+        <div class="eyebrow-row"><span class="eyebrow">New donation</span><span class="preview-tag live">Live</span></div>
         <h1 class="page-title">What are you giving up?</h1>
         <div class="subtext">Bring it to a drop-off point and staff will log it on-chain for you. Pick a category to see its rate.</div>
 
