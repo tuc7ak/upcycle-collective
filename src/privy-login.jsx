@@ -100,7 +100,6 @@ function PrivyApp() {
         appearance: {
           theme: 'dark',
           accentColor: '#4caf50',
-          logo: 'https://upcycle-collective.vercel.app/tuc-logo.png',
           landingHeader: 'The Upcycle Collective',
           loginMessage: 'Enter your email to get your TUC wallet',
         },
