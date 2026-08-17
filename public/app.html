@@ -56,15 +56,9 @@
   .chip-row{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;}
   .chip{padding:9px 14px;border-radius:999px;font-size:12.5px;border:1px solid var(--divider);color:var(--text-muted);font-weight:500;cursor:pointer;}
   .chip.active{background:var(--moss);border-color:var(--moss);color:var(--bg-page);font-weight:600;}
-  .chip.locked{opacity:0.45;}
-  .chip.locked::after{content:" · soon";font-family:'IBM Plex Mono';font-size:10px;}
-  .photo-box{height:150px;border-radius:16px;border:1.5px dashed var(--divider);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text-faint);margin-bottom:20px;cursor:pointer;overflow:hidden;}
-  .photo-box span{font-size:12.5px;font-family:'IBM Plex Mono';}
   .field{margin-bottom:18px;}
   .field-label{font-size:11.5px;font-family:'IBM Plex Mono';color:var(--text-faint);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:7px;display:block;}
   .field-input{background:var(--bg-surface);border:1px solid var(--divider);border-radius:12px;padding:13px 14px;color:var(--text-primary);font-size:14px;}
-  .weight-input{background:var(--bg-surface);border:1px solid var(--divider);border-radius:12px;padding:13px 14px;color:var(--text-primary);font-size:14px;flex:1;margin-bottom:0;width:auto;font-family:'IBM Plex Sans';}
-  .weight-input:focus{border-color:var(--gold);}
   .batch-select{width:100%;background:var(--bg-surface);border:1px solid var(--divider);border-radius:12px;padding:13px 14px;color:var(--text-primary);font-size:14px;font-family:'IBM Plex Sans';}
   .batch-select:focus{border-color:var(--gold);}
   .map-box{height:110px;border-radius:12px;background:radial-gradient(circle at 30% 40%, rgba(139,155,110,0.18), transparent 55%),repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 22px),repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 22px),var(--bg-surface);border:1px solid var(--divider);position:relative;margin-bottom:10px;}
@@ -74,8 +68,6 @@
   .estimate-row{display:flex;justify-content:space-between;align-items:center;background:var(--bg-surface);border:1px solid var(--divider);border-radius:12px;padding:14px 16px;margin:22px 0 16px;}
   .estimate-label{font-size:12px;color:var(--text-muted);}
   .estimate-value{font-family:'Fraunces',serif;font-size:20px;color:var(--gold);}
-  .primary-btn{width:100%;background:var(--gold);color:var(--bg-page);border:none;padding:15px;border-radius:12px;font-size:14.5px;font-weight:600;cursor:pointer;letter-spacing:0.01em;}
-  .primary-btn:hover{background:#4EE6AC;}
 
   /* ── Track (preview) ── */
   .item-card{background:var(--bg-surface);border:1px solid var(--divider);border-radius:14px;padding:16px;margin:24px 0 16px;}
@@ -217,40 +209,35 @@
   <div class="app-container">
     <div class="screens">
 
-      <!-- DONATE (preview) -->
+      <!-- DONATE -->
       <div class="screen" id="screen-donate">
         <div class="eyebrow-row"><span class="eyebrow">New donation</span><span class="preview-tag">Preview</span></div>
         <h1 class="page-title">What are you giving up?</h1>
-        <div class="subtext">Choose a category, add a photo, and pick where to drop it off. This flow isn't live yet — donations right now happen at staffed drop-off points.</div>
-        <div class="chip-row">
-          <div class="chip active">Clothes</div>
-          <div class="chip locked">Electronics</div>
-          <div class="chip locked">Plastics</div>
-          <div class="chip locked">Paper</div>
+        <div class="subtext">Bring it to a drop-off point and staff will log it on-chain for you. Pick a category to see its rate.</div>
+
+        <div class="chip-row" id="donate-type-chips">
+          <div class="chip active" data-type="CLOTHES" onclick="selectDonateType(this)">Clothes</div>
+          <div class="chip" data-type="ELECTRONICS" onclick="selectDonateType(this)">Electronics</div>
+          <div class="chip" data-type="PLASTICS" onclick="selectDonateType(this)">Plastics</div>
+          <div class="chip" data-type="PAPER" onclick="selectDonateType(this)">Paper</div>
         </div>
-        <input type="file" id="donate-photo-input" accept="image/*" style="display:none" onchange="handleDonatePhoto(event)">
-        <div class="photo-box" id="donate-photo-box" onclick="document.getElementById('donate-photo-input').click()">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#5A6E65" stroke-width="1.6"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6l1.5-2h5L16 6"/><circle cx="12" cy="13" r="3.5"/></svg>
-          <span>Add a photo</span>
+
+        <div class="estimate-row">
+          <div class="estimate-label">Token rate</div>
+          <div class="estimate-value" id="donate-rate-value">1kg = 1 token</div>
         </div>
-        <div class="field">
-          <span class="field-label">Weight</span>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <input type="number" class="weight-input" id="donate-weight" min="0" step="0.1" value="1.2" inputmode="decimal" oninput="updateDonateEstimate()">
-            <span style="color:var(--text-muted);font-size:13px;">kg</span>
-          </div>
-        </div>
+
         <div class="field">
           <span class="field-label">Drop-off point</span>
           <div class="map-box"><div class="map-pin"></div></div>
           <div class="location-name">Padungan Collection Point</div>
           <div class="location-addr">0.8 km away · open until 6:00 PM</div>
         </div>
-        <div class="estimate-row">
-          <div class="estimate-label">You'll earn</div>
-          <div class="estimate-value" id="donate-estimate">≈ 1 token</div>
-        </div>
-        <button class="primary-btn" onclick="previewToast()">Confirm donation</button>
+
+        <div class="section-label">Transactions</div>
+        <div class="loading" id="donate-tx-loading">Checking your donations…</div>
+        <div class="empty" id="donate-tx-empty" style="display:none;">No donations yet — bring your items to the drop-off point above.</div>
+        <div class="tx-list" id="donate-tx-list"></div>
       </div>
 
       <!-- TRACK -->
@@ -523,25 +510,49 @@ function go(name) {
   document.getElementById('screen-' + name).classList.add('active');
   document.getElementById('nav-' + name).classList.add('active');
   window.scrollTo(0, 0);
+  if (name === 'donate' && walletPubkey) loadDonateTransactions();
 }
 function previewToast() { toast("Coming soon — this feature isn't live yet."); }
 
-/* ── Donate preview: photo + weight-based estimate ── */
-function handleDonatePhoto(event) {
-  const file = event.target.files?.[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    document.getElementById('donate-photo-box').innerHTML =
-      `<img src="${reader.result}" alt="Selected photo" style="width:100%;height:100%;object-fit:cover;">`;
-  };
-  reader.readAsDataURL(file);
+/* ── Donate: category rate + real transaction history ── */
+function selectDonateType(el) {
+  document.querySelectorAll('#donate-type-chips .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('donate-rate-value').textContent =
+    el.dataset.type === 'CLOTHES' ? '1kg = 1 token' : 'Coming soon';
 }
 
-function updateDonateEstimate() {
-  const kg = parseFloat(document.getElementById('donate-weight').value) || 0;
-  const tokens = Math.max(0, Math.round(kg));
-  document.getElementById('donate-estimate').textContent = `≈ ${tokens} token${tokens === 1 ? '' : 's'}`;
+async function loadDonateTransactions() {
+  const loading = document.getElementById('donate-tx-loading');
+  const empty   = document.getElementById('donate-tx-empty');
+  const list    = document.getElementById('donate-tx-list');
+
+  list.innerHTML = '';
+  empty.style.display = 'none';
+  loading.style.display = 'block';
+
+  if (!liveDonationsLoaded) {
+    liveDonations = await loadLiveDonations();
+    liveDonationsLoaded = true;
+  }
+  loading.style.display = 'none';
+
+  if (!liveDonations.length) {
+    empty.style.display = 'block';
+    return;
+  }
+
+  list.innerHTML = liveDonations.map(d => {
+    const shortSig = d.sig.slice(0, 6) + '…' + d.sig.slice(-6);
+    return `<a class="tx-item" href="https://solscan.io/tx/${d.sig}" target="_blank" rel="noopener">
+      <div class="tx-info">
+        <div class="tx-type">${titleCase(d.type)} donation</div>
+        <div class="tx-time">${fmtShortDate(d.blockTime)}</div>
+        <div class="tx-solscan">↗ ${shortSig} · Solscan</div>
+      </div>
+      <div class="tx-amount pos">${d.kg}kg</div>
+    </a>`;
+  }).join('');
 }
 
 /* ── Track preview: donation batches ── */
