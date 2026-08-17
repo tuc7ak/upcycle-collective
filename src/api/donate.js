@@ -28,13 +28,13 @@ module.exports = async function handler(req, res) {
     const organiser  = getOrganiser();
 
     // Memo-only — no token movement. Organiser is the sole signer, so this
-    // never needs the donor's wallet to approve anything. The donor's pubkey
-    // is still attached as a non-signing account so the record surfaces in
-    // their own wallet history, not just the organiser's.
-    const memoIx = createMemoInstruction(`TUC:DONATE:${type}:${kg}KG`, [organiser.publicKey]);
-    memoIx.keys.push({ pubkey: donorPubkey, isSigner: false, isWritable: false });
-
-    const tx = new Transaction().add(memoIx);
+    // never needs the donor's wallet to approve anything. The donor's
+    // address goes in the memo text itself rather than as an extra account
+    // key on the instruction — attaching accounts after the instruction is
+    // built trips Solana's signer-bucket compilation.
+    const tx = new Transaction().add(
+      createMemoInstruction(`TUC:DONATE:${type}:${kg}KG:${donorPubkey.toBase58()}`, [organiser.publicKey]),
+    );
     const signature = await sendAndConfirmTransaction(connection, tx, [organiser]);
 
     return jsonOk(res, { success: true, wallet, type, kg, signature });

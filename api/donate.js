@@ -31560,9 +31560,9 @@ module.exports = async function handler(req, res) {
   try {
     const connection = getConnection();
     const organiser = getOrganiser();
-    const memoIx = createMemoInstruction(`TUC:DONATE:${type}:${kg}KG`, [organiser.publicKey]);
-    memoIx.keys.push({ pubkey: donorPubkey, isSigner: false, isWritable: false });
-    const tx = new Transaction().add(memoIx);
+    const tx = new Transaction().add(
+      createMemoInstruction(`TUC:DONATE:${type}:${kg}KG:${donorPubkey.toBase58()}`, [organiser.publicKey])
+    );
     const signature = await sendAndConfirmTransaction(connection, tx, [organiser]);
     return jsonOk(res, { success: true, wallet, type, kg, signature });
   } catch (err) {
