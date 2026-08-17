@@ -312,7 +312,13 @@
 
       <!-- PROFILE -->
       <div class="screen" id="screen-profile">
-        <span class="eyebrow">Account</span>
+        <div class="eyebrow-row">
+          <span class="eyebrow">Account</span>
+          <button class="mode-toggle" id="staff-mode-toggle" onclick="toggleStaffMode()">
+            <span class="mode-toggle-dot"></span>
+            <span id="staff-mode-label">Staff</span>
+          </button>
+        </div>
         <h1 class="page-title" id="profile-title">Your account</h1>
         <div class="subtext" id="profile-sub">The Upcycle Collective</div>
 
@@ -331,9 +337,6 @@
           <div class="badge"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8D9080" stroke-width="1.6" style="margin:0 auto;"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><div class="badge-label">Repeat<br>giver</div></div>
         </div>
         <div class="subtext" style="margin-top:-4px;">Badges are a preview — coming soon.</div>
-
-        <div class="section-label">Staff</div>
-        <button class="btn btn-outline-wide" id="staff-toggle-btn" onclick="openStaffPin()">🔒 Staff mode</button>
 
         <div id="staff-pin-box" style="display:none;margin-top:14px;">
           <input id="staff-pin-input" type="password" maxlength="10" placeholder="Staff PIN" autocomplete="off"
@@ -1295,14 +1298,29 @@ const STAFF_PIN = '1990';
 let staffScanner = null, staffScannerRunning = false;
 let staffDonorWallet = null, staffDonationType = 'CLOTHES';
 
-function openStaffPin() {
-  if (sessionStorage.getItem('tuc_staff_pin') === STAFF_PIN) {
-    document.getElementById('staff-panel').style.display = 'block';
-    document.getElementById('staff-toggle-btn').style.display = 'none';
+function setStaffToggleUI(on) {
+  document.getElementById('staff-mode-toggle').classList.toggle('live', on);
+  document.getElementById('staff-mode-label').textContent = on ? 'Staff on' : 'Staff';
+}
+
+function toggleStaffMode() {
+  const panel = document.getElementById('staff-panel');
+  const isOpen = panel.style.display === 'block';
+
+  if (isOpen) {
+    panel.style.display = 'none';
+    document.getElementById('staff-pin-box').style.display = 'none';
+    setStaffToggleUI(false);
     return;
   }
+
+  if (sessionStorage.getItem('tuc_staff_pin') === STAFF_PIN) {
+    panel.style.display = 'block';
+    setStaffToggleUI(true);
+    return;
+  }
+
   document.getElementById('staff-pin-box').style.display = 'block';
-  document.getElementById('staff-toggle-btn').style.display = 'none';
   setTimeout(() => document.getElementById('staff-pin-input')?.focus(), 100);
 }
 
@@ -1310,8 +1328,10 @@ function checkStaffPin() {
   const val = document.getElementById('staff-pin-input').value;
   if (val === STAFF_PIN) {
     sessionStorage.setItem('tuc_staff_pin', STAFF_PIN);
+    document.getElementById('staff-pin-input').value = '';
     document.getElementById('staff-pin-box').style.display = 'none';
     document.getElementById('staff-panel').style.display = 'block';
+    setStaffToggleUI(true);
   } else {
     document.getElementById('staff-pin-err').style.display = 'block';
     document.getElementById('staff-pin-input').value = '';
