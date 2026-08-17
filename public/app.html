@@ -22,9 +22,14 @@
   body{background:var(--bg-page);color:var(--text-primary);font-family:'IBM Plex Sans',-apple-system,sans-serif;min-height:100vh;overflow-x:hidden;}
 
   h1.page-title{font-family:'Fraunces',serif;font-weight:500;font-size:26px;color:var(--text-primary);letter-spacing:-0.01em;margin-bottom:7px;}
-  .eyebrow-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+  .eyebrow-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
   .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold);}
   .preview-tag{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.05em;text-transform:uppercase;color:var(--text-faint);border:1px solid var(--divider);border-radius:999px;padding:2px 8px;}
+  .mode-toggle{display:flex;align-items:center;gap:6px;background:var(--bg-surface);border:1px solid var(--divider);border-radius:999px;padding:4px 10px 4px 8px;cursor:pointer;font-family:'IBM Plex Mono';font-size:9.5px;letter-spacing:0.05em;text-transform:uppercase;color:var(--text-faint);transition:border-color .15s,color .15s;}
+  .mode-toggle:hover{border-color:var(--moss-dim);}
+  .mode-toggle .mode-toggle-dot{width:6px;height:6px;border-radius:50%;background:var(--text-faint);transition:background .15s,box-shadow .15s;}
+  .mode-toggle.live{color:var(--gold);border-color:var(--gold-25);}
+  .mode-toggle.live .mode-toggle-dot{background:var(--gold);box-shadow:0 0 0 3px var(--gold-15);}
   .subtext{color:var(--text-muted);font-size:13.5px;line-height:1.5;margin-bottom:20px;}
   .section-title,.section-label{font-size:12px;font-family:'IBM Plex Mono';letter-spacing:0.06em;text-transform:uppercase;color:var(--text-faint);margin:20px 0 10px;}
   .empty,.loading{text-align:center;padding:36px 0;color:var(--text-faint);font-size:13.5px;}
@@ -77,7 +82,8 @@
   .item-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
   .item-name{font-size:14px;color:var(--text-primary);font-weight:500;}
   .item-id{font-family:'IBM Plex Mono';font-size:11px;color:var(--text-faint);}
-  .chain-row{display:flex;justify-content:space-between;align-items:center;font-family:'IBM Plex Mono';font-size:11px;color:var(--moss);padding-top:10px;margin-top:10px;border-top:1px solid var(--divider);}
+  .chain-row{display:flex;justify-content:space-between;align-items:center;font-family:'IBM Plex Mono';font-size:11px;color:var(--moss);padding-top:10px;margin-top:10px;border-top:1px solid var(--divider);text-decoration:none;}
+  .chain-row.inert{pointer-events:none;}
   .timeline{margin-top:6px;}
   .tl-row{display:flex;gap:12px;padding:11px 0;}
   .tl-dot-col{display:flex;flex-direction:column;align-items:center;width:10px;}
@@ -247,27 +253,38 @@
         <button class="primary-btn" onclick="previewToast()">Confirm donation</button>
       </div>
 
-      <!-- TRACK (preview) -->
+      <!-- TRACK -->
       <div class="screen" id="screen-track">
-        <div class="eyebrow-row"><span class="eyebrow">The loop</span><span class="preview-tag">Preview</span></div>
+        <div class="eyebrow-row">
+          <span class="eyebrow">The loop</span>
+          <button class="mode-toggle" id="track-mode-toggle" onclick="toggleTrackMode()">
+            <span class="mode-toggle-dot"></span>
+            <span id="track-mode-label">Preview</span>
+          </button>
+        </div>
         <h1 class="page-title">Track your donations</h1>
-        <div class="subtext">Every stage is written on-chain, so you can see exactly where it went. Item-level loop tracking is coming soon.</div>
+        <div class="subtext" id="track-subtext">Every stage is written on-chain, so you can see exactly where it went. Item-level loop tracking is coming soon.</div>
 
         <div class="field">
           <span class="field-label">Donation batch</span>
-          <select class="batch-select" id="track-batch-select" onchange="renderTrackBatch(this.value)">
+          <select class="batch-select" id="track-batch-select" onchange="onTrackSelectChange(this.value)">
             <option value="0142">Donation #0142 — Aug 5</option>
             <option value="0098">Donation #0098 — Aug 3</option>
           </select>
         </div>
 
-        <div class="item-card">
-          <div class="item-card-top"><div class="item-name" id="track-item-name">—</div><div class="item-id" id="track-item-id">—</div></div>
-          <div class="subtext" style="margin-bottom:0;" id="track-item-desc"></div>
-          <div class="chain-row"><span id="track-item-sig">—</span><span>View on-chain →</span></div>
+        <div class="loading" id="track-live-loading" style="display:none;">Checking your donations…</div>
+        <div class="empty" id="track-live-empty" style="display:none;">No donations recorded yet.<br>Ask staff to log one at a drop-off point.</div>
+
+        <div id="track-card-wrap">
+          <div class="item-card">
+            <div class="item-card-top"><div class="item-name" id="track-item-name">—</div><div class="item-id" id="track-item-id">—</div></div>
+            <div class="subtext" style="margin-bottom:0;" id="track-item-desc"></div>
+            <a class="chain-row inert" id="track-chain-link" href="#" target="_blank" rel="noopener"><span id="track-item-sig">—</span><span>View on-chain →</span></a>
+          </div>
+          <div class="section-label">Timeline</div>
+          <div class="timeline" id="track-timeline"></div>
         </div>
-        <div class="section-label">Timeline</div>
-        <div class="timeline" id="track-timeline"></div>
       </div>
 
       <!-- REDEEM (preview) -->
@@ -486,8 +503,10 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const MINT  = '2hgWyBDWgw4xesu8NpwTAhHgy2gnAo5iBhsBNSasngRj';
-const RPC   = 'https://mainnet.helius-rpc.com/?api-key=a353da56-f27a-4a7a-9091-bdc6f8d66f27';
+const MINT         = '2hgWyBDWgw4xesu8NpwTAhHgy2gnAo5iBhsBNSasngRj';
+const RPC          = 'https://mainnet.helius-rpc.com/?api-key=a353da56-f27a-4a7a-9091-bdc6f8d66f27';
+const ORGANISER    = 'CGDLbYHVnoMpw2CCbKMMomm6U3ByVZRFqKuGZfpdsrBK';
+const MEMO_PROGRAM = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
 let walletPubkey   = null;
 let walletProvider = null;
 let scanner        = null;
@@ -546,6 +565,16 @@ const DONATION_BATCHES = {
   },
 };
 
+function renderTimeline(steps) {
+  document.getElementById('track-timeline').innerHTML = steps.map((step, i) => {
+    const isLast   = i === steps.length - 1;
+    const dotCls   = step.state === 'done' ? 'tl-dot' : `tl-dot ${step.state}`;
+    const titleCls = step.state === 'done' ? 'tl-title' : `tl-title ${step.state}`;
+    const line     = isLast ? '' : '<div class="tl-line"></div>';
+    return `<div class="tl-row"><div class="tl-dot-col"><div class="${dotCls}"></div>${line}</div><div class="tl-content"><div class="${titleCls}">${step.title}</div><div class="tl-meta">${step.meta}</div></div></div>`;
+  }).join('');
+}
+
 function renderTrackBatch(id) {
   const b = DONATION_BATCHES[id];
   if (!b) return;
@@ -553,15 +582,134 @@ function renderTrackBatch(id) {
   document.getElementById('track-item-id').textContent   = b.category;
   document.getElementById('track-item-desc').textContent = b.description;
   document.getElementById('track-item-sig').textContent  = b.timeline[0].meta.split('·')[1].trim();
-  document.getElementById('track-timeline').innerHTML = b.timeline.map((step, i) => {
-    const isLast   = i === b.timeline.length - 1;
-    const dotCls   = step.state === 'done' ? 'tl-dot' : `tl-dot ${step.state}`;
-    const titleCls = step.state === 'done' ? 'tl-title' : `tl-title ${step.state}`;
-    const line     = isLast ? '' : '<div class="tl-line"></div>';
-    return `<div class="tl-row"><div class="tl-dot-col"><div class="${dotCls}"></div>${line}</div><div class="tl-content"><div class="${titleCls}">${step.title}</div><div class="tl-meta">${step.meta}</div></div></div>`;
-  }).join('');
+  const link = document.getElementById('track-chain-link');
+  link.href = '#';
+  link.classList.add('inert');
+  renderTimeline(b.timeline);
 }
-renderTrackBatch('0142');
+
+/* ── Track: preview vs live toggle ── */
+let trackMode = 'preview';
+let liveDonations = [];
+let liveDonationsLoaded = false;
+
+function toggleTrackMode() {
+  trackMode = trackMode === 'preview' ? 'live' : 'preview';
+  document.getElementById('track-mode-toggle').classList.toggle('live', trackMode === 'live');
+  document.getElementById('track-mode-label').textContent = trackMode === 'live' ? 'Live' : 'Preview';
+  document.getElementById('track-subtext').textContent = trackMode === 'live'
+    ? 'Your real donations, pulled live from the chain.'
+    : 'Every stage is written on-chain, so you can see exactly where it went. Item-level loop tracking is coming soon.';
+  renderTrackMode();
+}
+
+async function renderTrackMode() {
+  const select = document.getElementById('track-batch-select');
+  const loading = document.getElementById('track-live-loading');
+  const empty   = document.getElementById('track-live-empty');
+  const card    = document.getElementById('track-card-wrap');
+
+  if (trackMode === 'preview') {
+    loading.style.display = 'none';
+    empty.style.display   = 'none';
+    select.style.display  = 'block';
+    card.style.display    = 'block';
+    select.innerHTML = `<option value="0142">Donation #0142 — Aug 5</option><option value="0098">Donation #0098 — Aug 3</option>`;
+    renderTrackBatch(select.value);
+    return;
+  }
+
+  // live
+  select.style.display = 'none';
+  card.style.display   = 'none';
+  empty.style.display  = 'none';
+  loading.style.display = 'block';
+
+  if (!liveDonationsLoaded) {
+    liveDonations = await loadLiveDonations();
+    liveDonationsLoaded = true;
+  }
+  loading.style.display = 'none';
+
+  if (!liveDonations.length) {
+    empty.style.display = 'block';
+    return;
+  }
+
+  select.style.display = 'block';
+  card.style.display   = 'block';
+  select.innerHTML = liveDonations.map((d, i) =>
+    `<option value="${i}">${titleCase(d.type)} — ${d.kg}kg — ${fmtShortDate(d.blockTime)}</option>`
+  ).join('');
+  renderLiveItem(0);
+}
+
+function onTrackSelectChange(val) {
+  if (trackMode === 'preview') renderTrackBatch(val);
+  else renderLiveItem(parseInt(val, 10));
+}
+
+function renderLiveItem(idx) {
+  const d = liveDonations[idx];
+  if (!d) return;
+  const shortSig = d.sig.slice(0, 6) + '…' + d.sig.slice(-6);
+  document.getElementById('track-item-name').textContent = `${titleCase(d.type)} donation`;
+  document.getElementById('track-item-id').textContent   = d.type;
+  document.getElementById('track-item-desc').textContent = `${d.kg}kg logged at a staffed drop-off point.`;
+  document.getElementById('track-item-sig').textContent  = `${fmtShortDate(d.blockTime)} · ${shortSig}`;
+  const link = document.getElementById('track-chain-link');
+  link.href = `https://solscan.io/tx/${d.sig}`;
+  link.classList.remove('inert');
+
+  renderTimeline([
+    { title: 'Donated',        meta: `${fmtShortDate(d.blockTime)} · ${shortSig}`, state: 'current' },
+    { title: 'Collected',      meta: 'Pending', state: 'pending' },
+    { title: 'Given new life', meta: 'Pending', state: 'pending' },
+  ]);
+}
+
+function titleCase(s) { return s ? s.charAt(0) + s.slice(1).toLowerCase() : ''; }
+function fmtShortDate(blockTime) {
+  if (!blockTime) return '—';
+  return new Date(blockTime * 1000).toLocaleDateString('en-MY', { day: 'numeric', month: 'short' });
+}
+
+async function loadLiveDonations() {
+  if (!walletPubkey) return [];
+  try {
+    const sigs = await rpc('getSignaturesForAddress', [ORGANISER, { limit: 40 }]);
+    const found = [];
+    for (const s of (sigs ?? [])) {
+      const tx = await rpc('getTransaction', [s.signature, { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 }]);
+      await new Promise(r => setTimeout(r, 150));
+      if (!tx) continue;
+      const allIx = [
+        ...(tx.transaction?.message?.instructions ?? []),
+        ...(tx.meta?.innerInstructions ?? []).flatMap(ii => ii?.instructions ?? []),
+      ].filter(Boolean);
+      for (const ix of allIx) {
+        const pid = ix.programId ?? ix.program ?? '';
+        if (pid !== MEMO_PROGRAM) continue;
+        const memo = (ix.parsed && typeof ix.parsed === 'string') ? ix.parsed : '';
+        if (!memo.startsWith('TUC:DONATE:')) continue;
+        if (!memo.endsWith(walletPubkey)) continue;
+        const parts = memo.split(':'); // TUC, DONATE, TYPE, "1KG", wallet
+        found.push({
+          sig: s.signature,
+          blockTime: tx.blockTime,
+          type: parts[2] || 'ITEM',
+          kg: (parts[3] || '').replace('KG', ''),
+        });
+      }
+    }
+    return found;
+  } catch (e) {
+    console.error('[loadLiveDonations]', e);
+    return [];
+  }
+}
+
+renderTrackMode();
 
 /* ── Supported wallets ── */
 const WALLETS = [
@@ -618,6 +766,8 @@ function disconnect() {
   walletPubkey   = null;
   walletProvider = null;
   currentIdentity = '';
+  liveDonations = [];
+  liveDonationsLoaded = false;
   document.getElementById('app-shell').style.display = 'none';
   document.getElementById('login-gate').style.display = 'flex';
   go('wallet');
@@ -625,6 +775,8 @@ function disconnect() {
 
 /* ── Login gate → app ── */
 async function enterApp() {
+  liveDonations = [];
+  liveDonationsLoaded = false;
   document.getElementById('login-gate').style.display = 'none';
   document.getElementById('app-shell').style.display   = 'block';
   const short = walletPubkey.slice(0,6) + '…' + walletPubkey.slice(-6);
