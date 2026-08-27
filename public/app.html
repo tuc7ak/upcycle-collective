@@ -69,6 +69,16 @@
   .estimate-row{display:flex;justify-content:space-between;align-items:center;background:var(--bg-surface);border:1px solid var(--divider);border-radius:12px;padding:14px 16px;margin:22px 0 16px;}
   .estimate-label{font-size:12px;color:var(--text-muted);}
   .estimate-value{font-family:'Fraunces',serif;font-size:20px;color:var(--gold);}
+  .photo-box{height:150px;border-radius:16px;border:1.5px dashed var(--divider);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text-faint);cursor:pointer;overflow:hidden;}
+  .photo-box span{font-size:12.5px;font-family:'IBM Plex Mono';}
+  .code-card{background:var(--bg-surface);border:1px solid var(--gold-25);border-radius:16px;padding:20px;margin:16px 0 24px;text-align:center;}
+  .code-card-label{font-size:11px;font-family:'IBM Plex Mono';letter-spacing:0.06em;text-transform:uppercase;color:var(--text-faint);margin-bottom:8px;}
+  .code-value{font-family:'IBM Plex Mono';font-size:32px;font-weight:600;letter-spacing:0.08em;color:var(--gold);margin-bottom:14px;}
+  .code-steps{text-align:left;font-size:13px;color:var(--text-muted);line-height:1.7;padding-left:20px;margin-top:14px;}
+  .code-steps li{margin-bottom:2px;}
+  .tx-status{font-size:10px;font-family:'IBM Plex Mono';text-transform:uppercase;letter-spacing:0.04em;padding:2px 8px;border-radius:999px;margin-top:4px;display:inline-block;}
+  .tx-status.pending{color:var(--text-faint);border:1px solid var(--divider);}
+  .tx-status.validated{color:var(--gold);border:1px solid var(--gold-25);}
 
   /* ── Track (preview) ── */
   .item-card{background:var(--bg-surface);border:1px solid var(--divider);border-radius:14px;padding:16px;margin:24px 0 16px;}
@@ -214,7 +224,7 @@
       <div class="screen" id="screen-donate">
         <div class="eyebrow-row"><span class="eyebrow">New donation</span><span class="preview-tag live">Live</span></div>
         <h1 class="page-title">What are you giving up?</h1>
-        <div class="subtext">Bring it to a drop-off point and staff will log it on-chain for you. Pick a category to see its rate.</div>
+        <div class="subtext">Pick a category, generate a code, then seal and label your bag. Staff checks it at the drop-off point and your tokens land automatically.</div>
 
         <div class="chip-row" id="donate-type-chips">
           <div class="chip active" data-type="CLOTHES" onclick="selectDonateType(this)">Clothes</div>
@@ -228,6 +238,15 @@
           <div class="estimate-value" id="donate-rate-value">1kg = 1 token</div>
         </div>
 
+        <input type="file" id="donate-photo-input" accept="image/*" capture="environment" style="display:none" onchange="handleDonatePhoto(event)">
+        <div class="field">
+          <span class="field-label">Photo (optional)</span>
+          <div class="photo-box" id="donate-photo-box" onclick="document.getElementById('donate-photo-input').click()">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#5A6E65" stroke-width="1.6"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6l1.5-2h5L16 6"/><circle cx="12" cy="13" r="3.5"/></svg>
+            <span>Add a photo of what you're giving</span>
+          </div>
+        </div>
+
         <div class="field">
           <span class="field-label">Drop-off point</span>
           <div class="map-box"><div class="map-pin"></div></div>
@@ -235,9 +254,22 @@
           <div class="location-addr">0.8 km away · open until 6:00 PM</div>
         </div>
 
+        <button class="btn btn-gold" id="donate-generate-btn" onclick="generateDonateCode()">Generate my donation code</button>
+
+        <div class="code-card" id="donate-code-card" style="display:none;">
+          <div class="code-card-label">Your donation code</div>
+          <div class="code-value" id="donate-code-value">—</div>
+          <button class="copy-btn" onclick="copyDonateCode()">⎘ Copy code</button>
+          <ol class="code-steps">
+            <li>Seal your items in a bag.</li>
+            <li>Write this code clearly on the bag.</li>
+            <li>Drop it at the collection point above — staff checks it and your tokens land automatically.</li>
+          </ol>
+        </div>
+
         <div class="section-label">Transactions</div>
         <div class="loading" id="donate-tx-loading">Checking your donations…</div>
-        <div class="empty" id="donate-tx-empty" style="display:none;">No donations yet — bring your items to the drop-off point above.</div>
+        <div class="empty" id="donate-tx-empty" style="display:none;">No donations yet — generate a code above to get started.</div>
         <div class="tx-list" id="donate-tx-list"></div>
       </div>
 
@@ -358,6 +390,16 @@
           </div>
 
           <div id="staff-status"></div>
+
+          <div class="section-label" style="margin-top:24px;">Validate sealed donation</div>
+          <label>Code from the sealed bag</label>
+          <input id="validate-code-input" type="text" maxlength="10" placeholder="e.g. 7F3K9Q" autocapitalize="characters" style="text-transform:uppercase;">
+
+          <label>Weight (kg)</label>
+          <input id="validate-kg-input" type="number" min="0.1" step="0.1" inputmode="decimal" placeholder="e.g. 1">
+
+          <button class="btn btn-gold" id="validate-submit-btn" onclick="submitValidateDonation()">Validate &amp; send tokens</button>
+          <div id="validate-status"></div>
         </div>
 
         <button class="btn btn-outline-wide" onclick="disconnect()" style="margin-top:24px;">Disconnect</button>
@@ -515,12 +557,68 @@ function go(name) {
 }
 function previewToast() { toast("Coming soon — this feature isn't live yet."); }
 
-/* ── Donate: category rate + real transaction history ── */
+/* ── Donate: category selection + real transaction history ── */
 function selectDonateType(el) {
   document.querySelectorAll('#donate-type-chips .chip').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById('donate-rate-value').textContent =
-    el.dataset.type === 'CLOTHES' ? '1kg = 1 token' : 'Coming soon';
+}
+
+/* ── Donate: photo capture (on-device only, no upload) ── */
+let donatePhotoDataUrl = null;
+function handleDonatePhoto(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    donatePhotoDataUrl = reader.result;
+    document.getElementById('donate-photo-box').innerHTML =
+      `<img src="${reader.result}" alt="Selected photo" style="width:100%;height:100%;object-fit:cover;">`;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ── Donate: generate a sealed-bag code ── */
+function getDonateCodes() {
+  try { return JSON.parse(localStorage.getItem('tuc_donate_codes') || '[]'); } catch { return []; }
+}
+function saveDonateCode(entry) {
+  const codes = getDonateCodes();
+  codes.unshift(entry);
+  localStorage.setItem('tuc_donate_codes', JSON.stringify(codes.slice(0, 50)));
+}
+
+async function generateDonateCode() {
+  if (!walletPubkey) { toast('Connect your wallet first.', true); return; }
+  const type = document.querySelector('#donate-type-chips .chip.active')?.dataset.type || 'CLOTHES';
+  const btn = document.getElementById('donate-generate-btn');
+  btn.disabled = true;
+  btn.textContent = 'Generating…';
+  try {
+    const res = await fetch('/api/donate-code', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ wallet: walletPubkey, type }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Failed to generate code');
+
+    saveDonateCode({ code: data.code, type, photo: donatePhotoDataUrl, ts: Date.now() });
+    document.getElementById('donate-code-value').textContent = data.code;
+    document.getElementById('donate-code-card').style.display = 'block';
+    document.getElementById('donate-code-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    toast('Code generated — write it on your sealed bag.');
+    liveDonationsLoaded = false; // force a re-fetch so it shows up below and in Track
+    loadDonateTransactions();
+  } catch (e) {
+    toast('❌ ' + e.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Generate my donation code';
+  }
+}
+
+function copyDonateCode() {
+  const code = document.getElementById('donate-code-value').textContent;
+  navigator.clipboard.writeText(code).then(() => toast('Code copied!'));
 }
 
 async function loadDonateTransactions() {
@@ -544,14 +642,21 @@ async function loadDonateTransactions() {
   }
 
   list.innerHTML = liveDonations.map(d => {
-    const shortSig = d.sig.slice(0, 6) + '…' + d.sig.slice(-6);
-    return `<a class="tx-item" href="https://solscan.io/tx/${d.sig}" target="_blank" rel="noopener">
+    const shortSig = (d.sig || '').slice(0, 6) + '…' + (d.sig || '').slice(-6);
+    const statusTag = d.status === 'pending'
+      ? '<div class="tx-status pending">Awaiting drop-off</div>'
+      : d.status === 'validated'
+        ? '<div class="tx-status validated">Tokens received</div>'
+        : '';
+    const amount = d.status === 'pending' ? '—' : `${d.kg}kg`;
+    return `<a class="tx-item" href="${d.sig ? 'https://solscan.io/tx/' + d.sig : '#'}" target="_blank" rel="noopener">
       <div class="tx-info">
-        <div class="tx-type">${titleCase(d.type)} donation</div>
+        <div class="tx-type">${titleCase(d.type)} donation${d.code ? ' · ' + d.code : ''}</div>
         <div class="tx-time">${fmtShortDate(d.blockTime)}</div>
         <div class="tx-solscan">↗ ${shortSig} · Solscan</div>
+        ${statusTag}
       </div>
-      <div class="tx-amount pos">${d.kg}kg</div>
+      <div class="tx-amount pos">${amount}</div>
     </a>`;
   }).join('');
 }
@@ -653,9 +758,11 @@ async function renderTrackMode() {
 
   select.style.display = 'block';
   card.style.display   = 'block';
-  select.innerHTML = liveDonations.map((d, i) =>
-    `<option value="${i}">${titleCase(d.type)} — ${d.kg}kg — ${fmtShortDate(d.blockTime)}</option>`
-  ).join('');
+  select.innerHTML = liveDonations.map((d, i) => {
+    const amount = d.status === 'pending' ? 'Pending' : `${d.kg}kg`;
+    const label  = d.code ? `${d.code} — ${titleCase(d.type)} — ${amount}` : `${titleCase(d.type)} — ${amount} — ${fmtShortDate(d.blockTime)}`;
+    return `<option value="${i}">${label}</option>`;
+  }).join('');
   renderLiveItem(0);
 }
 
@@ -667,12 +774,37 @@ function onTrackSelectChange(val) {
 function renderLiveItem(idx) {
   const d = liveDonations[idx];
   if (!d) return;
-  const shortSig = d.sig.slice(0, 6) + '…' + d.sig.slice(-6);
-  document.getElementById('track-item-name').textContent = `${titleCase(d.type)} donation`;
+  document.getElementById('track-item-name').textContent = `${titleCase(d.type)} donation${d.code ? ' · ' + d.code : ''}`;
   document.getElementById('track-item-id').textContent   = d.type;
+  const link = document.getElementById('track-chain-link');
+
+  if (d.code) {
+    const codeShort = d.codeSig ? d.codeSig.slice(0, 6) + '…' + d.codeSig.slice(-6) : '—';
+    const steps = [
+      { title: 'Code generated', meta: `${fmtShortDate(d.codeBlockTime)} · ${codeShort}`, state: 'done' },
+    ];
+    if (d.status === 'validated') {
+      const vShort = d.validatedSig.slice(0, 6) + '…' + d.validatedSig.slice(-6);
+      document.getElementById('track-item-desc').textContent = `${d.kg}kg validated — tokens sent to your wallet.`;
+      document.getElementById('track-item-sig').textContent  = `${fmtShortDate(d.validatedBlockTime)} · ${vShort}`;
+      link.href = `https://solscan.io/tx/${d.validatedSig}`;
+      link.classList.remove('inert');
+      steps.push({ title: 'Validated · tokens received', meta: `${fmtShortDate(d.validatedBlockTime)} · ${vShort}`, state: 'current' });
+    } else {
+      document.getElementById('track-item-desc').textContent = `Seal your bag, label it ${d.code}, and drop it off — staff will validate it.`;
+      document.getElementById('track-item-sig').textContent  = `${fmtShortDate(d.codeBlockTime)} · ${codeShort}`;
+      link.href = '#';
+      link.classList.add('inert');
+      steps.push({ title: 'Awaiting drop-off & check', meta: 'Pending', state: 'pending' });
+    }
+    renderTimeline(steps);
+    return;
+  }
+
+  // legacy: staff scanned the donor's wallet directly, no code involved
+  const shortSig = d.sig.slice(0, 6) + '…' + d.sig.slice(-6);
   document.getElementById('track-item-desc').textContent = `${d.kg}kg logged at a staffed drop-off point.`;
   document.getElementById('track-item-sig').textContent  = `${fmtShortDate(d.blockTime)} · ${shortSig}`;
-  const link = document.getElementById('track-chain-link');
   link.href = `https://solscan.io/tx/${d.sig}`;
   link.classList.remove('inert');
 
@@ -692,8 +824,9 @@ function fmtShortDate(blockTime) {
 async function loadLiveDonations() {
   if (!walletPubkey) return [];
   try {
-    const sigs = await rpc('getSignaturesForAddress', [ORGANISER, { limit: 40 }]);
-    const found = [];
+    const sigs = await rpc('getSignaturesForAddress', [ORGANISER, { limit: 60 }]);
+    const legacy  = [];
+    const codeMap = new Map();
     for (const s of (sigs ?? [])) {
       const tx = await rpc('getTransaction', [s.signature, { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 }]);
       await new Promise(r => setTimeout(r, 150));
@@ -708,16 +841,43 @@ async function loadLiveDonations() {
         const memo = (ix.parsed && typeof ix.parsed === 'string') ? ix.parsed : '';
         if (!memo.startsWith('TUC:DONATE:')) continue;
         if (!memo.endsWith(walletPubkey)) continue;
-        const parts = memo.split(':'); // TUC, DONATE, TYPE, "1KG", wallet
-        found.push({
-          sig: s.signature,
-          blockTime: tx.blockTime,
-          type: parts[2] || 'ITEM',
-          kg: (parts[3] || '').replace('KG', ''),
-        });
+
+        const parts = memo.split(':');
+        if (parts[2] === 'CODE') {
+          // TUC DONATE CODE <code> <type> <wallet>
+          const code  = parts[3];
+          const entry = codeMap.get(code) || { code, type: parts[4], status: 'pending' };
+          entry.codeSig = s.signature;
+          entry.codeBlockTime = tx.blockTime;
+          codeMap.set(code, entry);
+        } else if (parts[2] === 'VALIDATED') {
+          // TUC DONATE VALIDATED <code> <type> <kg>KG <wallet>
+          const code  = parts[3];
+          const entry = codeMap.get(code) || { code, type: parts[4] };
+          entry.status = 'validated';
+          entry.type   = parts[4] || entry.type;
+          entry.kg     = (parts[5] || '').replace('KG', '');
+          entry.validatedSig = s.signature;
+          entry.validatedBlockTime = tx.blockTime;
+          codeMap.set(code, entry);
+        } else {
+          // legacy: TUC DONATE <type> <kg>KG <wallet> — staff scanned the donor's wallet directly
+          legacy.push({
+            sig: s.signature, blockTime: tx.blockTime,
+            type: parts[2] || 'ITEM', kg: (parts[3] || '').replace('KG', ''),
+            status: 'legacy', code: null,
+          });
+        }
       }
     }
-    return found;
+    const codeEntries = Array.from(codeMap.values()).map(e => ({
+      sig: e.validatedSig || e.codeSig,
+      blockTime: e.validatedBlockTime || e.codeBlockTime,
+      type: e.type, kg: e.kg, status: e.status, code: e.code,
+      codeSig: e.codeSig, codeBlockTime: e.codeBlockTime,
+      validatedSig: e.validatedSig, validatedBlockTime: e.validatedBlockTime,
+    }));
+    return [...codeEntries, ...legacy].sort((a, b) => (b.blockTime || 0) - (a.blockTime || 0));
   } catch (e) {
     console.error('[loadLiveDonations]', e);
     return [];
@@ -1436,6 +1596,40 @@ async function submitStaffDonation() {
 
 function setStaffStatus(type, html) {
   document.getElementById('staff-status').innerHTML =
+    `<div class="status-row ${type}" style="margin-top:14px">${html}</div>`;
+}
+
+/* ── Staff: validate a sealed donation by its code ── */
+async function submitValidateDonation() {
+  const code = document.getElementById('validate-code-input').value.trim().toUpperCase();
+  const kg   = parseFloat(document.getElementById('validate-kg-input').value);
+  if (!code) { setValidateStatus('err', 'Enter the code from the bag.'); return; }
+  if (!Number.isFinite(kg) || kg <= 0) { setValidateStatus('err', 'Enter a weight in kg.'); return; }
+
+  const btn = document.getElementById('validate-submit-btn');
+  btn.disabled = true;
+  setValidateStatus('info', '⏳ Checking code and writing to chain…');
+  try {
+    const res = await fetch('/api/donate-validate', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, kg }),
+    });
+    const data = await res.json();
+    if (!data.success) { setValidateStatus('err', '❌ ' + (data.error ?? 'Failed')); return; }
+
+    setValidateStatus('ok', `✅ +${data.tokensAwarded} TUC → ${data.wallet.slice(0, 6)}…${data.wallet.slice(-4)} — <a href="https://solscan.io/tx/${data.signature}" target="_blank" style="color:var(--moss)">View on Solscan ↗</a>`);
+    toast('Donation validated — tokens sent!');
+    document.getElementById('validate-code-input').value = '';
+    document.getElementById('validate-kg-input').value = '';
+  } catch (e) {
+    setValidateStatus('err', '❌ ' + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function setValidateStatus(type, html) {
+  document.getElementById('validate-status').innerHTML =
     `<div class="status-row ${type}" style="margin-top:14px">${html}</div>`;
 }
 
