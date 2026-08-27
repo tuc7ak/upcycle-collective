@@ -14,7 +14,7 @@ const bs58 = require('bs58');
 // and this project is already close to that with checkin/reward/transfer/
 // tokenomics/vendor-history/vendor-pay endpoints.
 
-const TYPES = ['CLOTHES', 'ELECTRONICS', 'PLASTICS', 'PAPER'];
+const TYPES = ['GENERAL', 'CLOTHES', 'ELECTRONICS', 'PLASTICS', 'PAPER'];
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I — clear to hand-write on a bag
 const CODE_LENGTH   = 6;
 const CODE_RE       = /^[A-Z2-9]{4,10}$/;

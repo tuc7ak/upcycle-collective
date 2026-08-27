@@ -224,14 +224,7 @@
       <div class="screen" id="screen-donate">
         <div class="eyebrow-row"><span class="eyebrow">New donation</span><span class="preview-tag live">Live</span></div>
         <h1 class="page-title">What are you giving up?</h1>
-        <div class="subtext">Pick a category, generate a code, then seal and label your bag. Staff checks it at the drop-off point and your tokens land automatically.</div>
-
-        <div class="chip-row" id="donate-type-chips">
-          <div class="chip active" data-type="CLOTHES" onclick="selectDonateType(this)">Clothes</div>
-          <div class="chip" data-type="ELECTRONICS" onclick="selectDonateType(this)">Electronics</div>
-          <div class="chip" data-type="PLASTICS" onclick="selectDonateType(this)">Plastics</div>
-          <div class="chip" data-type="PAPER" onclick="selectDonateType(this)">Paper</div>
-        </div>
+        <div class="subtext">Generate a code, then seal and label your bag. Staff checks it at the drop-off point and your tokens land automatically.</div>
 
         <div class="field">
           <span class="field-label">Drop-off point</span>
@@ -576,19 +569,13 @@ function go(name) {
 }
 function previewToast() { toast("Coming soon — this feature isn't live yet."); }
 
-/* ── Donate: category selection + real transaction history ── */
-function selectDonateType(el) {
-  document.querySelectorAll('#donate-type-chips .chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-}
-
 /* ── Donate: generate a sealed-bag code, then attach a photo to it ── */
 let currentDonateCode = null;
-let currentDonateType = null;
+const DONATE_TYPE = 'GENERAL'; // no upfront categorization — one generic donation type
 
 async function generateDonateCode() {
   if (!walletPubkey) { toast('Connect your wallet first.', true); return; }
-  const type = document.querySelector('#donate-type-chips .chip.active')?.dataset.type || 'CLOTHES';
+  const type = DONATE_TYPE;
   const btn = document.getElementById('donate-generate-btn');
   btn.disabled = true;
   btn.textContent = 'Generating…';
@@ -601,7 +588,6 @@ async function generateDonateCode() {
     if (!data.success) throw new Error(data.error || 'Failed to generate code');
 
     currentDonateCode = data.code;
-    currentDonateType = type;
     document.getElementById('donate-code-value').textContent = data.code;
     document.getElementById('donate-photo-status').textContent = '';
     document.getElementById('donate-photo-box').innerHTML =
@@ -644,7 +630,7 @@ async function uploadDonatePhoto(dataUrl) {
   try {
     const res = await fetch('/api/donate', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'photo', code: currentDonateCode, wallet: walletPubkey, type: currentDonateType, photo: dataUrl }),
+      body: JSON.stringify({ action: 'photo', code: currentDonateCode, wallet: walletPubkey, type: DONATE_TYPE, photo: dataUrl }),
     });
     const data = await res.json();
     if (!data.success) throw new Error(data.error || 'Upload failed');
