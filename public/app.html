@@ -301,6 +301,10 @@
           <div class="item-card">
             <div class="item-card-top"><div class="item-name" id="track-item-name">—</div><div class="item-id" id="track-item-id">—</div></div>
             <div class="subtext" style="margin-bottom:0;" id="track-item-desc"></div>
+            <div id="track-item-photo-wrap" style="display:none;margin:12px 0;">
+              <img id="track-item-photo" src="" alt="Your donation photo" style="width:100%;max-height:180px;border-radius:12px;object-fit:cover;display:block;">
+              <div id="track-item-batch" style="font-size:11px;font-family:'IBM Plex Mono';color:var(--text-faint);margin-top:6px;"></div>
+            </div>
             <a class="chain-row inert" id="track-chain-link" href="#" target="_blank" rel="noopener"><span id="track-item-sig">—</span><span>View on-chain →</span></a>
           </div>
           <div class="section-label">Timeline</div>
@@ -730,6 +734,7 @@ function renderTrackBatch(id) {
   document.getElementById('track-item-id').textContent   = b.category;
   document.getElementById('track-item-desc').textContent = b.description;
   document.getElementById('track-item-sig').textContent  = b.timeline[0].meta.split('·')[1].trim();
+  document.getElementById('track-item-photo-wrap').style.display = 'none';
   const link = document.getElementById('track-chain-link');
   link.href = '#';
   link.classList.add('inert');
@@ -799,14 +804,38 @@ function onTrackSelectChange(val) {
   else renderLiveItem(parseInt(val, 10));
 }
 
+let trackPhotoRequestToken = 0;
+async function loadTrackItemPhoto(code) {
+  const myToken = ++trackPhotoRequestToken;
+  const wrap  = document.getElementById('track-item-photo-wrap');
+  const img   = document.getElementById('track-item-photo');
+  const batch = document.getElementById('track-item-batch');
+  wrap.style.display = 'none';
+  if (!code) return;
+  try {
+    const res = await fetch('/api/donate', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'lookup', code }),
+    });
+    const data = await res.json();
+    if (myToken !== trackPhotoRequestToken) return; // user moved on to a different item
+    if (!data.success || !data.photoLink) return;
+    img.src = data.photoLink;
+    batch.textContent = data.batch ? `Batch #${data.batch}` : '';
+    wrap.style.display = 'block';
+  } catch { /* photo is a nice-to-have here — fail quietly */ }
+}
+
 function renderLiveItem(idx) {
   const d = liveDonations[idx];
   if (!d) return;
   document.getElementById('track-item-name').textContent = `${titleCase(d.type)} donation${d.code ? ' · ' + d.code : ''}`;
   document.getElementById('track-item-id').textContent   = d.type;
+  document.getElementById('track-item-photo-wrap').style.display = 'none';
   const link = document.getElementById('track-chain-link');
 
   if (d.code) {
+    loadTrackItemPhoto(d.code);
     const codeShort = d.codeSig ? d.codeSig.slice(0, 6) + '…' + d.codeSig.slice(-6) : '—';
     const steps = [
       { title: 'Code generated', meta: `${fmtShortDate(d.codeBlockTime)} · ${codeShort}`, state: 'done' },
