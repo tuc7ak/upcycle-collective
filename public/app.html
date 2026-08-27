@@ -898,9 +898,18 @@ async function loadLiveDonations() {
     const sigs = await rpc('getSignaturesForAddress', [ORGANISER, { limit: 60 }]);
     const legacy  = [];
     const codeMap = new Map();
-    for (const s of (sigs ?? [])) {
-      const tx = await rpc('getTransaction', [s.signature, { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 }]);
-      await new Promise(r => setTimeout(r, 150));
+
+    // One batched round-trip for every transaction instead of one request
+    // (plus an artificial delay) per signature — was the actual bottleneck,
+    // not the RPC's own latency.
+    const txs = await rpcBatch((sigs ?? []).map(s => ({
+      method: 'getTransaction',
+      params: [s.signature, { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 }],
+    })));
+
+    for (let i = 0; i < (sigs ?? []).length; i++) {
+      const s  = sigs[i];
+      const tx = txs[i];
       if (!tx) continue;
       const allIx = [
         ...(tx.transaction?.message?.instructions ?? []),
@@ -992,6 +1001,29 @@ async function rpc(method, params) {
     body: JSON.stringify({jsonrpc:'2.0',id:1,method,params}),
   });
   return (await r.json()).result;
+}
+
+// Standard JSON-RPC batching — one HTTP round-trip for a chunk of calls
+// instead of one round-trip per call. Chunked to 25 and sent sequentially
+// (not in parallel) because Helius rate-limits by processing load within a
+// batch, not just request count — a single batch of 60 gets a flat 429, and
+// so does firing multiple chunks at once; 25 sequential is the largest size
+// that's held up reliably in testing.
+const RPC_BATCH_CHUNK = 25;
+async function rpcBatch(calls) {
+  const out = [];
+  for (let i = 0; i < calls.length; i += RPC_BATCH_CHUNK) {
+    const chunk = calls.slice(i, i + RPC_BATCH_CHUNK);
+    const body = chunk.map((c, j) => ({ jsonrpc: '2.0', id: j, method: c.method, params: c.params }));
+    const r = await fetch(RPC, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body),
+    });
+    const results = await r.json();
+    const byId = new Map(results.map(x => [x.id, x.result]));
+    for (let j = 0; j < chunk.length; j++) out.push(byId.get(j));
+  }
+  return out;
 }
 
 /* ── Wallet Picker ── */
