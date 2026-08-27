@@ -849,25 +849,23 @@ function renderLiveItem(idx) {
 
     const codeShort = d.codeSig ? d.codeSig.slice(0, 6) + '…' + d.codeSig.slice(-6) : '—';
     const steps = [
-      { title: 'Code generated', meta: `${fmtShortDate(d.codeBlockTime)} · ${codeShort}`, state: 'done' },
+      { title: 'Donated', meta: `${fmtShortDate(d.codeBlockTime)} · ${codeShort}`, state: 'done' },
     ];
-    if (d.photoLink) {
-      const pShort = d.photoSig.slice(0, 6) + '…' + d.photoSig.slice(-6);
-      steps.push({ title: 'Photo added' + (d.batch ? ` · batch #${d.batch}` : ''), meta: `${fmtShortDate(d.photoBlockTime)} · ${pShort}`, state: 'done' });
-    }
     if (d.status === 'validated') {
       const vShort = d.validatedSig.slice(0, 6) + '…' + d.validatedSig.slice(-6);
-      document.getElementById('track-item-desc').textContent = `${d.kg}kg validated — tokens sent to your wallet.`;
+      document.getElementById('track-item-desc').textContent = `${d.kg}kg collected — tokens sent to your wallet.`;
       document.getElementById('track-item-sig').textContent  = `${fmtShortDate(d.validatedBlockTime)} · ${vShort}`;
       link.href = `https://solscan.io/tx/${d.validatedSig}`;
       link.classList.remove('inert');
-      steps.push({ title: 'Validated · tokens received', meta: `${fmtShortDate(d.validatedBlockTime)} · ${vShort}`, state: 'current' });
+      steps.push({ title: 'Collected', meta: `${fmtShortDate(d.validatedBlockTime)} · ${vShort}`, state: 'current' });
+      steps.push({ title: 'Given new life', meta: 'Pending', state: 'pending' });
     } else {
-      document.getElementById('track-item-desc').textContent = `Seal your bag, label it ${d.code}, and drop it off — staff will validate it.`;
+      document.getElementById('track-item-desc').textContent = `Seal your bag, label it ${d.code}, and drop it off — staff will collect it.`;
       document.getElementById('track-item-sig').textContent  = `${fmtShortDate(d.codeBlockTime)} · ${codeShort}`;
       link.href = '#';
       link.classList.add('inert');
-      steps.push({ title: 'Awaiting drop-off & check', meta: 'Pending', state: 'pending' });
+      steps.push({ title: 'Collected', meta: 'Pending', state: 'pending' });
+      steps.push({ title: 'Given new life', meta: 'Pending', state: 'pending' });
     }
     renderTimeline(steps);
     return;
