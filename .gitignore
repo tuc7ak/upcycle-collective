@@ -1,4 +1,6 @@
 .env
+*.json.key
+tuc-app-*.json
 node_modules/
 .vercel/
 .vercel
@@ -10,3 +12,4 @@ logo/
 screenshot ideas/
 solana grant milestone.png
 public/privy-login.js
+.env*

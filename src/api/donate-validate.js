@@ -6,6 +6,7 @@ const {
 } = require('@solana/spl-token');
 const { createMemoInstruction } = require('@solana/spl-memo');
 const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require('./_utils');
+const { sheetsGetValues, sheetsUpdateRange } = require('./_google');
 const bs58 = require('bs58');
 
 const MEMO_PROGRAM = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
@@ -87,6 +88,22 @@ module.exports = async function handler(req, res) {
       .add(createMemoInstruction(`TUC:DONATE:VALIDATED:${code}:${issued.type}:${kg}KG:${issued.wallet}`, [organiser.publicKey]));
 
     const signature = await sendAndConfirmTransaction(connection, tx, [organiser]);
+
+    // Best-effort — the on-chain memo above is the real record of payment;
+    // the Sheet is just a convenience log, so a failure here shouldn't
+    // block a donor who already got their tokens.
+    if (process.env.GOOGLE_SHEET_ID) {
+      try {
+        const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+        const rows = await sheetsGetValues({ spreadsheetId, range: 'A2:A' });
+        const idx = rows.findIndex(r => (r[0] || '').toUpperCase() === code);
+        if (idx !== -1) {
+          await sheetsUpdateRange({ spreadsheetId, range: `F${idx + 2}`, values: ['validated'] });
+        }
+      } catch (sheetErr) {
+        console.error('[donate-validate] sheet update failed', sheetErr);
+      }
+    }
 
     return jsonOk(res, {
       success: true, code, wallet: issued.wallet, type: issued.type, kg, tokensAwarded: tokens, signature,

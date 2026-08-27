@@ -8,6 +8,8 @@ build({
     'src/api/donate.js',
     'src/api/donate-code.js',
     'src/api/donate-validate.js',
+    'src/api/donate-photo.js',
+    'src/api/donate-lookup.js',
     'src/api/transfer.js',
     'src/api/vendor-history.js',
     'src/api/tokenomics.js',
