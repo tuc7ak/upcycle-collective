@@ -588,9 +588,9 @@ async function generateDonateCode() {
   btn.disabled = true;
   btn.textContent = 'Generating…';
   try {
-    const res = await fetch('/api/donate-code', {
+    const res = await fetch('/api/donate', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ wallet: walletPubkey, type }),
+      body: JSON.stringify({ action: 'code', wallet: walletPubkey, type }),
     });
     const data = await res.json();
     if (!data.success) throw new Error(data.error || 'Failed to generate code');
@@ -637,9 +637,9 @@ async function uploadDonatePhoto(dataUrl) {
   const statusEl = document.getElementById('donate-photo-status');
   statusEl.textContent = 'Uploading…';
   try {
-    const res = await fetch('/api/donate-photo', {
+    const res = await fetch('/api/donate', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: currentDonateCode, wallet: walletPubkey, type: currentDonateType, photo: dataUrl }),
+      body: JSON.stringify({ action: 'photo', code: currentDonateCode, wallet: walletPubkey, type: currentDonateType, photo: dataUrl }),
     });
     const data = await res.json();
     if (!data.success) throw new Error(data.error || 'Upload failed');
@@ -1606,7 +1606,7 @@ async function submitStaffDonation() {
   try {
     const res  = await fetch('/api/donate', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ wallet: staffDonorWallet, type: staffDonationType, kg }),
+      body: JSON.stringify({ action: 'log', wallet: staffDonorWallet, type: staffDonationType, kg }),
     });
     const data = await res.json();
     if (!data.success) { setStaffStatus('err', '❌ ' + (data.error ?? 'Failed')); return; }
@@ -1637,9 +1637,9 @@ async function submitLookupDonation() {
   document.getElementById('lookup-result').style.display = 'none';
   setValidateStatus('info', '⏳ Looking up code…');
   try {
-    const res = await fetch('/api/donate-lookup', {
+    const res = await fetch('/api/donate', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code }),
+      body: JSON.stringify({ action: 'lookup', code }),
     });
     const data = await res.json();
     if (!data.success) { setValidateStatus('err', '❌ ' + (data.error ?? 'Failed')); return; }
@@ -1671,9 +1671,9 @@ async function submitValidateDonation() {
   btn.disabled = true;
   setValidateStatus('info', '⏳ Checking code and writing to chain…');
   try {
-    const res = await fetch('/api/donate-validate', {
+    const res = await fetch('/api/donate', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code, kg }),
+      body: JSON.stringify({ action: 'validate', code, kg }),
     });
     const data = await res.json();
     if (!data.success) { setValidateStatus('err', '❌ ' + (data.error ?? 'Failed')); return; }
