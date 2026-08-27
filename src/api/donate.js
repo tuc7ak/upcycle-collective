@@ -119,7 +119,20 @@ async function actionPhoto(req, res) {
       spreadsheetId, range: 'A:G',
       values: [code, wallet, type, batch, photoLink, 'pending', new Date().toISOString()],
     });
-    return jsonOk(res, { success: true, batch, photoLink });
+
+    // Also on-chain — wallet sits before the URL (not last) since readers
+    // filter memos by "does this end with my wallet", and a URL always
+    // would've won that comparison. The URL itself keeps any colons it has
+    // (e.g. "https:") — readers take everything after the wallet field as
+    // the link rather than treating ':' as a hard delimiter there.
+    const connection = getConnection();
+    const organiser  = getOrganiser();
+    const tx = new Transaction().add(
+      createMemoInstruction(`TUC:DONATE:PHOTO:${code}:${batch}:${donorPubkey.toBase58()}:${photoLink}`, [organiser.publicKey]),
+    );
+    const photoSig = await sendAndConfirmTransaction(connection, tx, [organiser]);
+
+    return jsonOk(res, { success: true, batch, photoLink, signature: photoSig });
   } catch (err) {
     console.error('[donate:photo]', err);
     return jsonErr(res, 500, err.message);

@@ -107120,7 +107120,13 @@ async function actionPhoto(req, res) {
       range: "A:G",
       values: [code, wallet, type, batch, photoLink, "pending", (/* @__PURE__ */ new Date()).toISOString()]
     });
-    return jsonOk(res, { success: true, batch, photoLink });
+    const connection = getConnection();
+    const organiser = getOrganiser();
+    const tx = new Transaction().add(
+      createMemoInstruction(`TUC:DONATE:PHOTO:${code}:${batch}:${donorPubkey.toBase58()}:${photoLink}`, [organiser.publicKey])
+    );
+    const photoSig = await sendAndConfirmTransaction(connection, tx, [organiser]);
+    return jsonOk(res, { success: true, batch, photoLink, signature: photoSig });
   } catch (err) {
     console.error("[donate:photo]", err);
     return jsonErr(res, 500, err.message);

@@ -681,9 +681,13 @@ async function loadDonateTransactions() {
         ? '<div class="tx-status validated">Tokens received</div>'
         : '';
     const amount = d.status === 'pending' ? '—' : `${d.kg}kg`;
+    const thumb = d.photoLink
+      ? `<img src="${d.photoLink}" alt="" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;">`
+      : '';
     return `<a class="tx-item" href="${d.sig ? 'https://solscan.io/tx/' + d.sig : '#'}" target="_blank" rel="noopener">
+      ${thumb}
       <div class="tx-info">
-        <div class="tx-type">${titleCase(d.type)} donation${d.code ? ' · ' + d.code : ''}</div>
+        <div class="tx-type">${titleCase(d.type)} donation${d.code ? ' · ' + d.code : ''}${d.batch ? ' · batch #' + d.batch : ''}</div>
         <div class="tx-time">${fmtShortDate(d.blockTime)}</div>
         <div class="tx-solscan">↗ ${shortSig} · Solscan</div>
         ${statusTag}
@@ -835,11 +839,22 @@ function renderLiveItem(idx) {
   const link = document.getElementById('track-chain-link');
 
   if (d.code) {
-    loadTrackItemPhoto(d.code);
+    if (d.photoLink) {
+      document.getElementById('track-item-photo').src = d.photoLink;
+      document.getElementById('track-item-batch').textContent = d.batch ? `Batch #${d.batch}` : '';
+      document.getElementById('track-item-photo-wrap').style.display = 'block';
+    } else {
+      loadTrackItemPhoto(d.code); // fallback for donations made before the photo memo existed
+    }
+
     const codeShort = d.codeSig ? d.codeSig.slice(0, 6) + '…' + d.codeSig.slice(-6) : '—';
     const steps = [
       { title: 'Code generated', meta: `${fmtShortDate(d.codeBlockTime)} · ${codeShort}`, state: 'done' },
     ];
+    if (d.photoLink) {
+      const pShort = d.photoSig.slice(0, 6) + '…' + d.photoSig.slice(-6);
+      steps.push({ title: 'Photo added' + (d.batch ? ` · batch #${d.batch}` : ''), meta: `${fmtShortDate(d.photoBlockTime)} · ${pShort}`, state: 'done' });
+    }
     if (d.status === 'validated') {
       const vShort = d.validatedSig.slice(0, 6) + '…' + d.validatedSig.slice(-6);
       document.getElementById('track-item-desc').textContent = `${d.kg}kg validated — tokens sent to your wallet.`;
@@ -897,11 +912,14 @@ async function loadLiveDonations() {
         if (pid !== MEMO_PROGRAM) continue;
         const memo = (ix.parsed && typeof ix.parsed === 'string') ? ix.parsed : '';
         if (!memo.startsWith('TUC:DONATE:')) continue;
-        if (!memo.endsWith(walletPubkey)) continue;
 
+        // Ownership check is per-type below (not a blanket endsWith), since
+        // a PHOTO memo ends in a URL, not the wallet — the wallet sits
+        // earlier in that one.
         const parts = memo.split(':');
         if (parts[2] === 'CODE') {
           // TUC DONATE CODE <code> <type> <wallet>
+          if (parts[5] !== walletPubkey) continue;
           const code  = parts[3];
           const entry = codeMap.get(code) || { code, type: parts[4], status: 'pending' };
           entry.codeSig = s.signature;
@@ -909,6 +927,7 @@ async function loadLiveDonations() {
           codeMap.set(code, entry);
         } else if (parts[2] === 'VALIDATED') {
           // TUC DONATE VALIDATED <code> <type> <kg>KG <wallet>
+          if (parts[6] !== walletPubkey) continue;
           const code  = parts[3];
           const entry = codeMap.get(code) || { code, type: parts[4] };
           entry.status = 'validated';
@@ -917,8 +936,21 @@ async function loadLiveDonations() {
           entry.validatedSig = s.signature;
           entry.validatedBlockTime = tx.blockTime;
           codeMap.set(code, entry);
+        } else if (parts[2] === 'PHOTO') {
+          // TUC DONATE PHOTO <code> <batch> <wallet> <url> — url may itself
+          // contain colons (e.g. "https:"), so it's everything after the
+          // wallet field, rejoined rather than taken as one split part.
+          if (parts[5] !== walletPubkey) continue;
+          const code  = parts[3];
+          const entry = codeMap.get(code) || { code };
+          entry.batch = parts[4];
+          entry.photoLink = parts.slice(6).join(':');
+          entry.photoSig = s.signature;
+          entry.photoBlockTime = tx.blockTime;
+          codeMap.set(code, entry);
         } else {
           // legacy: TUC DONATE <type> <kg>KG <wallet> — staff scanned the donor's wallet directly
+          if (parts[4] !== walletPubkey) continue;
           legacy.push({
             sig: s.signature, blockTime: tx.blockTime,
             type: parts[2] || 'ITEM', kg: (parts[3] || '').replace('KG', ''),
@@ -928,11 +960,13 @@ async function loadLiveDonations() {
       }
     }
     const codeEntries = Array.from(codeMap.values()).map(e => ({
-      sig: e.validatedSig || e.codeSig,
-      blockTime: e.validatedBlockTime || e.codeBlockTime,
-      type: e.type, kg: e.kg, status: e.status, code: e.code,
+      sig: e.validatedSig || e.photoSig || e.codeSig,
+      blockTime: e.validatedBlockTime || e.photoBlockTime || e.codeBlockTime,
+      type: e.type, kg: e.kg, status: e.status || 'pending', code: e.code,
       codeSig: e.codeSig, codeBlockTime: e.codeBlockTime,
       validatedSig: e.validatedSig, validatedBlockTime: e.validatedBlockTime,
+      photoLink: e.photoLink, batch: e.batch,
+      photoSig: e.photoSig, photoBlockTime: e.photoBlockTime,
     }));
     return [...codeEntries, ...legacy].sort((a, b) => (b.blockTime || 0) - (a.blockTime || 0));
   } catch (e) {
