@@ -233,11 +233,6 @@
           <div class="chip" data-type="PAPER" onclick="selectDonateType(this)">Paper</div>
         </div>
 
-        <div class="estimate-row">
-          <div class="estimate-label">Token rate</div>
-          <div class="estimate-value" id="donate-rate-value">1kg = 1 token</div>
-        </div>
-
         <div class="field">
           <span class="field-label">Drop-off point</span>
           <div class="map-box"><div class="map-pin"></div></div>
@@ -862,8 +857,8 @@ function renderLiveItem(idx) {
     } else {
       document.getElementById('track-item-desc').textContent = `Seal your bag, label it ${d.code}, and drop it off — staff will collect it.`;
       document.getElementById('track-item-sig').textContent  = `${fmtShortDate(d.codeBlockTime)} · ${codeShort}`;
-      link.href = '#';
-      link.classList.add('inert');
+      link.href = d.codeSig ? `https://solscan.io/tx/${d.codeSig}` : '#';
+      link.classList.toggle('inert', !d.codeSig);
       steps.push({ title: 'Collected', meta: 'Pending', state: 'pending' });
       steps.push({ title: 'Given new life', meta: 'Pending', state: 'pending' });
     }
