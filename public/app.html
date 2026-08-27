@@ -981,12 +981,30 @@ const WALLETS = [
 ];
 
 /* ── RPC ── */
+// Every RPC call goes through this — without a timeout, a stalled mobile
+// connection or a slow provider response leaves the caller's promise
+// pending forever, which is exactly what "stuck loading" looks like from
+// the UI's point of view. Aborting after 15s turns that into a normal
+// error that loadLiveDonations()'s try/catch can actually handle.
+async function fetchRpcRaw(body, timeoutMs = 15000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const r = await fetch(RPC, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    if (!r.ok) throw new Error('RPC HTTP ' + r.status);
+    return await r.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function rpc(method, params) {
-  const r = await fetch(RPC, {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({jsonrpc:'2.0',id:1,method,params}),
-  });
-  return (await r.json()).result;
+  const data = await fetchRpcRaw({jsonrpc:'2.0',id:1,method,params});
+  return data.result;
 }
 
 // Standard JSON-RPC batching — one HTTP round-trip for a chunk of calls
@@ -1001,11 +1019,8 @@ async function rpcBatch(calls) {
   for (let i = 0; i < calls.length; i += RPC_BATCH_CHUNK) {
     const chunk = calls.slice(i, i + RPC_BATCH_CHUNK);
     const body = chunk.map((c, j) => ({ jsonrpc: '2.0', id: j, method: c.method, params: c.params }));
-    const r = await fetch(RPC, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(body),
-    });
-    const results = await r.json();
+    const results = await fetchRpcRaw(body);
+    if (!Array.isArray(results)) throw new Error('RPC batch returned an unexpected response');
     const byId = new Map(results.map(x => [x.id, x.result]));
     for (let j = 0; j < chunk.length; j++) out.push(byId.get(j));
   }
