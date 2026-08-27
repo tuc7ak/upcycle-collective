@@ -559,6 +559,12 @@ let scanner        = null;
 let scannerRunning = false;
 let currentIdentity = '';
 
+// Pre-launch test donations — the memos themselves can't be edited on-chain,
+// so this just relabels how they display. Not a general feature; remove
+// once these codes have aged out of anyone's Track view.
+const TEST_DONATION_CODES = new Set(['EYVTG4', 'PP89D3']);
+function testLabel(code) { return TEST_DONATION_CODES.has(code) ? ' (test)' : ''; }
+
 /* ── Tab navigation ── */
 function go(name) {
   document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
@@ -682,7 +688,7 @@ async function loadDonateTransactions() {
     return `<a class="tx-item" href="${d.sig ? 'https://solscan.io/tx/' + d.sig : '#'}" target="_blank" rel="noopener">
       ${thumb}
       <div class="tx-info">
-        <div class="tx-type">${titleCase(d.type)} donation${d.code ? ' · ' + d.code : ''}${d.batch ? ' · batch #' + d.batch : ''}</div>
+        <div class="tx-type">${titleCase(d.type)} donation${d.code ? ' · ' + d.code : ''}${d.batch ? ' · batch #' + d.batch : ''}${testLabel(d.code)}</div>
         <div class="tx-time">${fmtShortDate(d.blockTime)}</div>
         <div class="tx-solscan">↗ ${shortSig} · Solscan</div>
         ${statusTag}
@@ -792,7 +798,7 @@ async function renderTrackMode() {
   card.style.display   = 'block';
   select.innerHTML = liveDonations.map((d, i) => {
     const amount = d.status === 'pending' ? 'Pending' : `${d.kg}kg`;
-    const label  = d.code ? `${d.code} — ${titleCase(d.type)} — ${amount}` : `${titleCase(d.type)} — ${amount} — ${fmtShortDate(d.blockTime)}`;
+    const label  = d.code ? `${d.code} — ${titleCase(d.type)} — ${amount}${testLabel(d.code)}` : `${titleCase(d.type)} — ${amount} — ${fmtShortDate(d.blockTime)}`;
     return `<option value="${i}">${label}</option>`;
   }).join('');
   renderLiveItem(0);
@@ -828,7 +834,7 @@ async function loadTrackItemPhoto(code) {
 function renderLiveItem(idx) {
   const d = liveDonations[idx];
   if (!d) return;
-  document.getElementById('track-item-name').textContent = `${titleCase(d.type)} donation${d.code ? ' · ' + d.code : ''}`;
+  document.getElementById('track-item-name').textContent = `${titleCase(d.type)} donation${d.code ? ' · ' + d.code : ''}${testLabel(d.code)}`;
   document.getElementById('track-item-id').textContent   = d.type;
   document.getElementById('track-item-photo-wrap').style.display = 'none';
   const link = document.getElementById('track-chain-link');
