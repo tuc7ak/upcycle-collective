@@ -570,6 +570,18 @@ function testLabel(code) { return TEST_DONATION_CODES.has(code) ? ' (test)' : ''
 
 /* ── Tab navigation ── */
 function go(name) {
+  // Leaving Profile while Staff mode is unlocked locks it again — otherwise
+  // it stays open in the background (this function never touched it before),
+  // so coming back to Profile later looked like "no password needed" when
+  // really it was just never closed, only navigated away from.
+  const leavingProfile = document.querySelector('.screen.active')?.id === 'screen-profile' && name !== 'profile';
+  if (leavingProfile && document.getElementById('staff-panel')?.style.display === 'block') {
+    document.getElementById('staff-panel').style.display = 'none';
+    document.getElementById('staff-pin-box').style.display = 'none';
+    setStaffToggleUI(false);
+    sessionStorage.removeItem('tuc_staff_pin');
+  }
+
   document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
