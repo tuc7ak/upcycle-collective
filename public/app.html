@@ -571,7 +571,7 @@ let currentIdentity = '';
 // once these codes have aged out of anyone's Track view.
 const TEST_DONATION_CODES = new Set([
   'KLYYTF', '469LBM', 'SJKAT4', 'XESHPM', 'LJWV45', '8ZTEYQ', 'W5Z25X',
-  '3DG5B4', 'EJPGY4', '5EFZ2N', 'L2537R', 'PP89D3', 'EYVTG4', 'XLC9CH',
+  '3DG5B4', 'EJPGY4', '5EFZ2N', 'L2537R', 'PP89D3', 'EYVTG4', 'XLC9CH', 'VYKJTC',
 ]);
 function testLabel(code) { return TEST_DONATION_CODES.has(code) ? ' (test)' : ''; }
 
@@ -695,8 +695,9 @@ async function generateDonateCode() {
     document.getElementById('donate-code-card').style.display = 'block';
     document.getElementById('donate-code-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     toast('Code generated — now add a photo of your sealed bag.');
-    liveDonationsLoaded = false; // force a re-fetch so it shows up below and in Track
-    loadDonateTransactions();
+    // Not written on-chain yet — that happens once the photo upload
+    // succeeds, so there's nothing new to refresh Transactions/Track for
+    // until then.
   } catch (e) {
     toast('❌ ' + e.message, true);
   } finally {
@@ -746,6 +747,8 @@ async function uploadDonatePhoto(dataUrl) {
     const data = await res.json();
     if (!data.success) throw new Error(data.error || 'Upload failed');
     statusEl.textContent = `✅ Uploaded — batch #${data.batch}`;
+    liveDonationsLoaded = false; // this is the point the donation actually lands on-chain
+    loadDonateTransactions();
   } catch (e) {
     statusEl.textContent = '❌ ' + e.message;
   }

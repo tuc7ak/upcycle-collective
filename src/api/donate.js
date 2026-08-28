@@ -81,19 +81,11 @@ async function actionCode(req, res) {
   const donorPubkey = requireWallet(wallet, res);
   if (!donorPubkey) return;
 
+  // Not written to chain here — only the photo step commits anything
+  // on-chain (it writes this same CODE memo alongside the PHOTO memo), so a
+  // donor who generates a code and never follows through leaves no trace.
   const code = generateCode();
-  try {
-    const connection = getConnection();
-    const organiser  = getOrganiser();
-    const tx = new Transaction().add(
-      createMemoInstruction(`TUC:DONATE:CODE:${code}:${type}:${donorPubkey.toBase58()}`, [organiser.publicKey]),
-    );
-    const signature = await sendAndConfirmTransaction(connection, tx, [organiser]);
-    return jsonOk(res, { success: true, code, wallet, type, signature });
-  } catch (err) {
-    console.error('[donate:code]', err);
-    return jsonErr(res, 500, err.message);
-  }
+  return jsonOk(res, { success: true, code, wallet, type });
 }
 
 // ── action: photo — upload a photo for a code, log it in the Sheet ──
@@ -120,16 +112,22 @@ async function actionPhoto(req, res) {
       values: [code, wallet, type, batch, photoLink, 'pending', new Date().toISOString()],
     });
 
-    // Also on-chain — wallet sits before the URL (not last) since readers
+    // Both memos land in this one transaction — the CODE memo is written
+    // here for the first time (actionCode no longer touches the chain), so
+    // an abandoned code never appears on-chain at all, only ones that made
+    // it all the way to a photo. Staff's validate lookup still works
+    // unchanged since it just scans for a CODE memo, wherever it landed.
+    //
+    // Wallet sits before the URL (not last) in the PHOTO memo since readers
     // filter memos by "does this end with my wallet", and a URL always
     // would've won that comparison. The URL itself keeps any colons it has
     // (e.g. "https:") — readers take everything after the wallet field as
     // the link rather than treating ':' as a hard delimiter there.
     const connection = getConnection();
     const organiser  = getOrganiser();
-    const tx = new Transaction().add(
-      createMemoInstruction(`TUC:DONATE:PHOTO:${code}:${batch}:${donorPubkey.toBase58()}:${photoLink}`, [organiser.publicKey]),
-    );
+    const tx = new Transaction()
+      .add(createMemoInstruction(`TUC:DONATE:CODE:${code}:${type}:${donorPubkey.toBase58()}`, [organiser.publicKey]))
+      .add(createMemoInstruction(`TUC:DONATE:PHOTO:${code}:${batch}:${donorPubkey.toBase58()}:${photoLink}`, [organiser.publicKey]));
     const photoSig = await sendAndConfirmTransaction(connection, tx, [organiser]);
 
     return jsonOk(res, { success: true, batch, photoLink, signature: photoSig });

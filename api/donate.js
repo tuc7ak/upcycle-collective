@@ -107086,18 +107086,7 @@ async function actionCode(req, res) {
   const donorPubkey = requireWallet(wallet, res);
   if (!donorPubkey) return;
   const code = generateCode();
-  try {
-    const connection = getConnection();
-    const organiser = getOrganiser();
-    const tx = new Transaction().add(
-      createMemoInstruction(`TUC:DONATE:CODE:${code}:${type}:${donorPubkey.toBase58()}`, [organiser.publicKey])
-    );
-    const signature = await sendAndConfirmTransaction(connection, tx, [organiser]);
-    return jsonOk(res, { success: true, code, wallet, type, signature });
-  } catch (err) {
-    console.error("[donate:code]", err);
-    return jsonErr(res, 500, err.message);
-  }
+  return jsonOk(res, { success: true, code, wallet, type });
 }
 async function actionPhoto(req, res) {
   const { blobUploadPhoto, sheetsGetValues, sheetsAppendRow } = require_google();
@@ -107122,9 +107111,7 @@ async function actionPhoto(req, res) {
     });
     const connection = getConnection();
     const organiser = getOrganiser();
-    const tx = new Transaction().add(
-      createMemoInstruction(`TUC:DONATE:PHOTO:${code}:${batch}:${donorPubkey.toBase58()}:${photoLink}`, [organiser.publicKey])
-    );
+    const tx = new Transaction().add(createMemoInstruction(`TUC:DONATE:CODE:${code}:${type}:${donorPubkey.toBase58()}`, [organiser.publicKey])).add(createMemoInstruction(`TUC:DONATE:PHOTO:${code}:${batch}:${donorPubkey.toBase58()}:${photoLink}`, [organiser.publicKey]));
     const photoSig = await sendAndConfirmTransaction(connection, tx, [organiser]);
     return jsonOk(res, { success: true, batch, photoLink, signature: photoSig });
   } catch (err) {
