@@ -5,23 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 <title>The Upcycle Collective — My Wallet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.0/lib/index.iife.min.js"></script>
 <script src="/privy-login.js" defer></script>
 <style>
   :root{
-    --bg-base:#0F1B16; --bg-page:#0A140F; --bg-surface:#17251F; --bg-surface-2:#1E3128;
-    --gold:#34D399; --gold-dim:#1F7A5C; --gold-15:rgba(52,211,153,0.15); --gold-25:rgba(52,211,153,0.25);
-    --moss:#5EA88F; --moss-dim:#2C463C; --moss-15:rgba(94,168,143,0.15);
+    --bg-base:#111f13; --bg-page:#0c1a0e; --bg-surface:#172319; --bg-surface-2:#1c2c1f;
+    --gold:#a3e635; --gold-dim:#6b8f24; --gold-15:rgba(163,230,53,0.15); --gold-25:rgba(163,230,53,0.25);
+    --moss:#22c55e; --moss-dim:#166534; --moss-15:rgba(34,197,94,0.15);
     --rust:#E5586E; --rust-15:rgba(229,88,110,0.15);
-    --text-primary:#E7F2EC; --text-muted:#8FA79C; --text-faint:#5A6E65; --divider:#22332B;
+    --text-primary:#f0ebe0; --text-muted:rgba(240,235,224,0.56); --text-faint:rgba(240,235,224,0.32); --divider:rgba(255,255,255,0.08);
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   html{overflow-x:hidden;}
-  body{background:var(--bg-page);color:var(--text-primary);font-family:'IBM Plex Sans',-apple-system,sans-serif;min-height:100vh;overflow-x:hidden;}
+  body{background:var(--bg-page);color:var(--text-primary);font-family:'Inter',-apple-system,sans-serif;min-height:100vh;overflow-x:hidden;}
 
-  h1.page-title{font-family:'Fraunces',serif;font-weight:500;font-size:26px;color:var(--text-primary);letter-spacing:-0.01em;margin-bottom:7px;}
+  h1.page-title{font-family:'Inter',-apple-system,sans-serif;font-weight:800;font-size:26px;color:var(--text-primary);letter-spacing:-0.03em;margin-bottom:7px;}
   .eyebrow-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
   .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold);}
   .preview-tag{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.05em;text-transform:uppercase;color:var(--text-faint);border:1px solid var(--divider);border-radius:999px;padding:2px 8px;}
@@ -39,11 +39,11 @@
 
   /* ── Login gate ── */
   #login-gate{display:flex;flex-direction:column;align-items:center;text-align:center;min-height:100vh;justify-content:center;padding:60px 24px;gap:16px;}
-  #login-gate h2{font-family:'Fraunces',serif;font-weight:500;font-size:24px;color:var(--text-primary);}
+  #login-gate h2{font-family:'Inter';font-weight:800;font-size:24px;letter-spacing:-0.02em;color:var(--text-primary);}
   #login-gate p{font-size:13.5px;color:var(--text-muted);line-height:1.6;max-width:260px;}
-  .btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:none;border-radius:12px;font-size:14.5px;font-weight:700;cursor:pointer;transition:all .2s;width:100%;font-family:'IBM Plex Sans';}
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:none;border-radius:12px;font-size:14.5px;font-weight:700;cursor:pointer;transition:all .2s;width:100%;font-family:'Inter';}
   .btn-gold{background:var(--gold);color:var(--bg-page);box-shadow:0 4px 20px var(--gold-25);}
-  .btn-gold:hover{background:#4EE6AC;}
+  .btn-gold:hover{background:#b8ed3f;}
   .btn-gold:disabled{background:var(--gold-dim);color:rgba(26,20,8,.5);cursor:not-allowed;}
   .btn-outline-wide{background:transparent;border:1px solid var(--divider);color:var(--text-muted);font-size:14px;}
   .btn-outline-wide:hover{border-color:var(--moss-dim);color:var(--text-primary);}
@@ -67,7 +67,7 @@
   .field{margin-bottom:18px;}
   .field-label{font-size:11.5px;font-family:'IBM Plex Mono';color:var(--text-faint);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:7px;display:block;}
   .field-input{background:var(--bg-surface);border:1px solid var(--divider);border-radius:12px;padding:13px 14px;color:var(--text-primary);font-size:14px;}
-  .batch-select{width:100%;background:var(--bg-surface);border:1px solid var(--divider);border-radius:12px;padding:13px 14px;color:var(--text-primary);font-size:14px;font-family:'IBM Plex Sans';}
+  .batch-select{width:100%;background:var(--bg-surface);border:1px solid var(--divider);border-radius:12px;padding:13px 14px;color:var(--text-primary);font-size:14px;font-family:'Inter';}
   .batch-select:focus{border-color:var(--gold);}
   .map-box{height:110px;border-radius:12px;background:radial-gradient(circle at 30% 40%, rgba(139,155,110,0.18), transparent 55%),repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 22px),repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 22px),var(--bg-surface);border:1px solid var(--divider);position:relative;margin-bottom:10px;}
   .map-pin{position:absolute;top:44%;left:38%;width:10px;height:10px;border-radius:50% 50% 50% 0;background:var(--gold);transform:rotate(-45deg);box-shadow:0 0 0 6px var(--gold-15);}
@@ -75,7 +75,7 @@
   .location-addr{font-size:12px;color:var(--text-faint);margin-top:2px;}
   .estimate-row{display:flex;justify-content:space-between;align-items:center;background:var(--bg-surface);border:1px solid var(--divider);border-radius:12px;padding:14px 16px;margin:22px 0 16px;}
   .estimate-label{font-size:12px;color:var(--text-muted);}
-  .estimate-value{font-family:'Fraunces',serif;font-size:20px;color:var(--gold);}
+  .estimate-value{font-family:'Inter';font-weight:800;font-size:20px;letter-spacing:-0.02em;color:var(--gold);}
   .photo-box{height:150px;border-radius:16px;border:1.5px dashed var(--divider);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text-faint);cursor:pointer;overflow:hidden;}
   .photo-box span{font-size:12.5px;font-family:'IBM Plex Mono';}
   .code-card{background:var(--bg-surface);border:1px solid var(--gold-25);border-radius:16px;padding:20px;margin:16px 0 24px;text-align:center;}
@@ -134,7 +134,7 @@
   .icon-btn img{width:20px;height:20px;filter:invert(1) opacity(.7);}
   .ring-wrap{position:relative;display:flex;flex-direction:column;align-items:center;margin:6px 0 8px;}
   .ring-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;}
-  .ring-balance{font-family:'Fraunces',serif;font-size:44px;color:var(--gold);line-height:1;}
+  .ring-balance{font-family:'Inter';font-weight:900;font-size:44px;letter-spacing:-0.03em;line-height:1;background:linear-gradient(135deg, var(--moss) 0%, var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
   .ring-label{font-family:'IBM Plex Mono';font-size:11px;color:var(--text-muted);letter-spacing:0.06em;margin-top:4px;}
   .ring-addr-row{display:inline-flex;align-items:center;gap:6px;margin-top:14px;cursor:pointer;padding:5px 10px;border-radius:20px;transition:background .15s;}
   .ring-addr-row:hover{background:var(--bg-surface);}
@@ -180,13 +180,13 @@
   .sheet{background:var(--bg-base);border:1px solid var(--divider);border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;margin:0 auto;max-height:90vh;overflow-y:auto;position:relative;}
   .sheet-close{position:absolute;top:20px;right:20px;display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:var(--rust-15);border:1.5px solid var(--rust);color:var(--rust);font-size:18px;font-weight:700;cursor:pointer;line-height:1;transition:background .15s;}
   .sheet-close:hover{background:rgba(181,96,60,.3);}
-  .sheet h2,.sheet h3{font-family:'Fraunces',serif;font-weight:500;font-size:18px;margin-bottom:20px;color:var(--text-primary);}
+  .sheet h2,.sheet h3{font-family:'Inter';font-weight:800;font-size:18px;letter-spacing:-0.02em;margin-bottom:20px;color:var(--text-primary);}
   .qr-box{background:#fff;border-radius:16px;padding:16px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
   .addr-box{background:var(--bg-surface);border:1px solid var(--divider);border-radius:12px;padding:12px 14px;font-family:'IBM Plex Mono';font-size:12px;word-break:break-all;opacity:.85;margin-bottom:12px;}
   .copy-btn{background:var(--bg-surface);border:1px solid var(--divider);border-radius:10px;color:var(--text-primary);font-size:13px;font-weight:600;padding:10px;width:100%;cursor:pointer;transition:background .15s;}
   .copy-btn:hover{background:var(--bg-surface-2);}
   label{display:block;font-size:11.5px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;font-family:'IBM Plex Mono';}
-  input{width:100%;background:var(--bg-surface);border:1px solid var(--divider);border-radius:12px;color:var(--text-primary);font-size:15px;padding:12px 14px;outline:none;transition:border .2s;margin-bottom:16px;font-family:'IBM Plex Sans';}
+  input{width:100%;background:var(--bg-surface);border:1px solid var(--divider);border-radius:12px;color:var(--text-primary);font-size:15px;padding:12px 14px;outline:none;transition:border .2s;margin-bottom:16px;font-family:'Inter';}
   input::placeholder{color:var(--text-faint);}
   input:focus{border-color:var(--gold);}
   .scan-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--bg-surface);border:1px solid var(--divider);border-radius:12px;color:var(--text-muted);font-size:14px;font-weight:600;padding:11px;width:100%;cursor:pointer;margin-bottom:16px;}
@@ -215,7 +215,7 @@
 
 <!-- ══ LOGIN GATE — must complete before the app is reachable ══ -->
 <div id="login-gate">
-  <div style="font-family:'Fraunces',serif;font-weight:500;font-size:22px;color:var(--text-primary);letter-spacing:-0.01em;">The Upcycle Collective App</div>
+  <div style="font-family:'Inter';font-weight:800;font-size:22px;color:var(--text-primary);letter-spacing:-0.02em;">The Upcycle Collective App</div>
   <h2>Connect your wallet</h2>
   <p>Log in to view your TUC balance, donate, track loops, redeem rewards, and see your full on-chain activity.</p>
   <button class="btn btn-gold" onclick="connectWithEmail()" style="max-width:260px;margin-top:6px;">Continue with Email</button>
@@ -257,7 +257,7 @@
           <div class="field" style="margin-top:18px;text-align:left;">
             <span class="field-label">Photo of your sealed bag</span>
             <div class="photo-box" id="donate-photo-box" onclick="openPhotoWarning()">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#5A6E65" stroke-width="1.6"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6l1.5-2h5L16 6"/><circle cx="12" cy="13" r="3.5"/></svg>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#8a8a78" stroke-width="1.6"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6l1.5-2h5L16 6"/><circle cx="12" cy="13" r="3.5"/></svg>
               <span>Take or upload a photo — make sure the code is visible</span>
             </div>
             <div id="donate-photo-status" style="font-size:12px;color:var(--text-muted);margin-top:8px;"></div>
@@ -308,7 +308,7 @@
         <div class="subtext">Spend at partner stores across Kuching. This marketplace isn't live yet — redemptions currently happen at event stations.</div>
         <div class="partner-card">
           <div class="partner-top">
-            <div class="partner-thumb"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5EA88F" stroke-width="1.6"><path d="M4 9l1-5h14l1 5"/><path d="M4 9h16v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9z"/><path d="M9 13a3 3 0 0 0 6 0"/></svg></div>
+            <div class="partner-thumb"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.6"><path d="M4 9l1-5h14l1 5"/><path d="M4 9h16v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9z"/><path d="M9 13a3 3 0 0 0 6 0"/></svg></div>
             <div><div class="partner-name">Kertas &amp; Co.</div><div class="partner-meta"><span class="stars">★★★★★</span> 4.9 · Secondhand · 0.8 km</div></div>
           </div>
           <div class="redeem-item"><div class="ri-name">Upcycled tote bag</div><div style="display:flex;align-items:center;gap:10px;"><span class="ri-price">8 tokens</span><button class="redeem-btn" onclick="previewToast()">Redeem</button></div></div>
@@ -316,7 +316,7 @@
         </div>
         <div class="partner-card">
           <div class="partner-top">
-            <div class="partner-thumb"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5EA88F" stroke-width="1.6"><path d="M14.7 6.3a1 1 0 0 1 1.4 0l1.6 1.6a1 1 0 0 1 0 1.4L8.4 18.6 4 20l1.4-4.4L14.7 6.3z"/></svg></div>
+            <div class="partner-thumb"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.6"><path d="M14.7 6.3a1 1 0 0 1 1.4 0l1.6 1.6a1 1 0 0 1 0 1.4L8.4 18.6 4 20l1.4-4.4L14.7 6.3z"/></svg></div>
             <div><div class="partner-name">Simpang Repair Co.</div><div class="partner-meta"><span class="stars">★★★★☆</span> 4.6 · Repair · 1.4 km</div></div>
           </div>
           <div class="redeem-item"><div class="ri-name">Zipper repair</div><div style="display:flex;align-items:center;gap:10px;"><span class="ri-price">5 tokens</span><button class="redeem-btn" onclick="previewToast()">Redeem</button></div></div>
@@ -340,15 +340,15 @@
           <div class="wallet-addr-label">Wallet address</div>
           <div class="wallet-addr" id="profile-addr-row" onclick="copyAddressInline()">
             <span id="profile-addr">—</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8D9080" stroke-width="1.8"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a8a78" stroke-width="1.8"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
           </div>
         </div>
 
         <div class="section-label">Badges</div>
         <div class="badge-row">
-          <div class="badge"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="1.6" style="margin:0 auto;"><path d="M12 2l2.6 6.6L21 9.3l-5 4.6L17.4 21 12 17.3 6.6 21 8 13.9 3 9.3l6.4-.7L12 2z"/></svg><div class="badge-label">First<br>donation</div></div>
-          <div class="badge"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="1.6" style="margin:0 auto;"><path d="M4 12a8 8 0 0 1 14-5"/><path d="M18 3v5h-5"/><path d="M20 12a8 8 0 0 1-14 5"/><path d="M6 21v-5h5"/></svg><div class="badge-label">Loop<br>closer</div></div>
-          <div class="badge"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8D9080" stroke-width="1.6" style="margin:0 auto;"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><div class="badge-label">Repeat<br>giver</div></div>
+          <div class="badge"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a3e635" stroke-width="1.6" style="margin:0 auto;"><path d="M12 2l2.6 6.6L21 9.3l-5 4.6L17.4 21 12 17.3 6.6 21 8 13.9 3 9.3l6.4-.7L12 2z"/></svg><div class="badge-label">First<br>donation</div></div>
+          <div class="badge"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a3e635" stroke-width="1.6" style="margin:0 auto;"><path d="M4 12a8 8 0 0 1 14-5"/><path d="M18 3v5h-5"/><path d="M20 12a8 8 0 0 1-14 5"/><path d="M6 21v-5h5"/></svg><div class="badge-label">Loop<br>closer</div></div>
+          <div class="badge"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8a8a78" stroke-width="1.6" style="margin:0 auto;"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><div class="badge-label">Repeat<br>giver</div></div>
         </div>
         <div class="subtext" style="margin-top:-4px;">Badges are a preview — coming soon.</div>
 
@@ -698,7 +698,7 @@ async function generateDonateCode() {
     document.getElementById('donate-code-value').textContent = data.code;
     document.getElementById('donate-photo-status').textContent = '';
     document.getElementById('donate-photo-box').innerHTML =
-      `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#5A6E65" stroke-width="1.6"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6l1.5-2h5L16 6"/><circle cx="12" cy="13" r="3.5"/></svg><span>Take or upload a photo — make sure the code is visible</span>`;
+      `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#8a8a78" stroke-width="1.6"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6l1.5-2h5L16 6"/><circle cx="12" cy="13" r="3.5"/></svg><span>Take or upload a photo — make sure the code is visible</span>`;
     document.getElementById('donate-code-card').style.display = 'block';
     document.getElementById('donate-code-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     toast('Code generated — now add a photo of your sealed bag.');
