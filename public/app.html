@@ -581,7 +581,7 @@ function go(name) {
     document.getElementById('staff-panel').style.display = 'none';
     document.getElementById('staff-pin-box').style.display = 'none';
     setStaffToggleUI(false);
-    sessionStorage.removeItem('tuc_staff_pin');
+    staffPinUnlocked = false;
   }
 
   document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
@@ -1695,6 +1695,11 @@ function setStatus(type, html) {
 
 /* ── Staff mode: donation logger ── */
 const STAFF_PIN = '1990';
+// Plain in-memory flag, deliberately not sessionStorage/localStorage — either
+// of those survives a page reload, so the very first click after refreshing
+// would silently skip the PIN prompt even though the UI looked freshly
+// loaded. A plain variable resets to false on every load, no exceptions.
+let staffPinUnlocked = false;
 
 function setStaffToggleUI(on) {
   document.getElementById('staff-mode-toggle').classList.toggle('live', on);
@@ -1709,11 +1714,11 @@ function toggleStaffMode() {
     panel.style.display = 'none';
     document.getElementById('staff-pin-box').style.display = 'none';
     setStaffToggleUI(false);
-    sessionStorage.removeItem('tuc_staff_pin'); // require the PIN again next time it's turned on
+    staffPinUnlocked = false; // require the PIN again next time it's turned on
     return;
   }
 
-  if (sessionStorage.getItem('tuc_staff_pin') === STAFF_PIN) {
+  if (staffPinUnlocked) {
     panel.style.display = 'block';
     setStaffToggleUI(true);
     return;
@@ -1726,7 +1731,7 @@ function toggleStaffMode() {
 function checkStaffPin() {
   const val = document.getElementById('staff-pin-input').value;
   if (val === STAFF_PIN) {
-    sessionStorage.setItem('tuc_staff_pin', STAFF_PIN);
+    staffPinUnlocked = true;
     document.getElementById('staff-pin-input').value = '';
     document.getElementById('staff-pin-box').style.display = 'none';
     document.getElementById('staff-panel').style.display = 'block';
