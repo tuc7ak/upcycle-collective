@@ -376,6 +376,8 @@
                 <div><strong>Batch #:</strong> <span id="lookup-batch"></span></div>
                 <div><strong>Status:</strong> <span id="lookup-status"></span></div>
                 <div><strong>Scale photo:</strong> <span id="lookup-scale-status"></span></div>
+                <div><strong>Donated:</strong> <span id="lookup-donated-at"></span></div>
+                <div><strong>Validated:</strong> <span id="lookup-validated-at"></span></div>
               </div>
             </div>
           </div>
@@ -564,7 +566,7 @@ let currentIdentity = '';
 const TEST_DONATION_CODES = new Set([
   'KLYYTF', '469LBM', 'SJKAT4', 'XESHPM', 'LJWV45', '8ZTEYQ', 'W5Z25X',
   '3DG5B4', 'EJPGY4', '5EFZ2N', 'L2537R', 'PP89D3', 'EYVTG4', 'XLC9CH', 'VYKJTC',
-  'D6DXS8', 'TZSH6Y',
+  'D6DXS8', 'TZSH6Y', '8JYW2F',
 ]);
 function testLabel(code) { return TEST_DONATION_CODES.has(code) ? ' (test)' : ''; }
 
@@ -969,6 +971,12 @@ function titleCase(s) { return s ? s.charAt(0) + s.slice(1).toLowerCase() : ''; 
 function fmtShortDate(blockTime) {
   if (!blockTime) return '—';
   return new Date(blockTime * 1000).toLocaleDateString('en-MY', { day: 'numeric', month: 'short' });
+}
+// Same short style, but for the ISO timestamp strings the Sheet stores
+// (donated/validated-at), not the on-chain blockTime (unix seconds).
+function fmtDateTime(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('en-MY', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
 }
 
 async function loadLiveDonations() {
@@ -1754,6 +1762,8 @@ async function submitLookupDonation() {
     document.getElementById('lookup-batch').textContent  = data.batch ?? '—';
     document.getElementById('lookup-status').textContent = data.status;
     document.getElementById('lookup-scale-status').textContent = data.scalePhotoLink ? '✅ Uploaded' : 'Not uploaded yet';
+    document.getElementById('lookup-donated-at').textContent   = fmtDateTime(data.timestamp);
+    document.getElementById('lookup-validated-at').textContent = fmtDateTime(data.validatedAt);
     const photoEl = document.getElementById('lookup-photo');
     if (data.photoLink) { photoEl.src = data.photoLink; photoEl.style.display = 'block'; }
     else { photoEl.style.display = 'none'; }

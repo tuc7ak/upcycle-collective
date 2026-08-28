@@ -143,15 +143,15 @@ async function actionLookup(req, res) {
   if (!spreadsheetId) return jsonErr(res, 500, 'Google Sheet not configured');
 
   try {
-    const rows = await sheetsGetValues({ spreadsheetId, range: 'A2:H' });
+    const rows = await sheetsGetValues({ spreadsheetId, range: 'A2:I' });
     const row = rows.find(r => (r[0] || '').toUpperCase() === code);
     if (!row) return jsonErr(res, 404, 'Code not found. Check the label and try again.');
-    const [, wallet, type, batch, photoLink, status, timestamp, scalePhotoLink] = row;
+    const [, wallet, type, batch, photoLink, status, timestamp, scalePhotoLink, validatedAt] = row;
     return jsonOk(res, {
       success: true, code, wallet, type,
       batch: batch || null, photoLink: photoLink || null,
       status: status || 'pending', timestamp: timestamp || null,
-      scalePhotoLink: scalePhotoLink || null,
+      scalePhotoLink: scalePhotoLink || null, validatedAt: validatedAt || null,
     });
   } catch (err) {
     console.error('[donate:lookup]', err);
@@ -260,7 +260,11 @@ async function actionValidate(req, res) {
         const spreadsheetId = process.env.GOOGLE_SHEET_ID;
         const rows = await sheetsGetValues({ spreadsheetId, range: 'A2:A' });
         const idx = rows.findIndex(r => (r[0] || '').toUpperCase() === code);
-        if (idx !== -1) await sheetsUpdateRange({ spreadsheetId, range: `F${idx + 2}`, values: ['validated'] });
+        if (idx !== -1) {
+          const row = idx + 2;
+          await sheetsUpdateRange({ spreadsheetId, range: `F${row}`, values: ['validated'] });
+          await sheetsUpdateRange({ spreadsheetId, range: `I${row}`, values: [new Date().toISOString()] });
+        }
       } catch (sheetErr) {
         console.error('[donate:validate] sheet update failed', sheetErr);
       }
