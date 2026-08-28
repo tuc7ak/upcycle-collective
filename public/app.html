@@ -786,10 +786,12 @@ async function loadDonateTransactions() {
 
   list.innerHTML = liveDonations.map(d => {
     const shortSig = (d.sig || '').slice(0, 6) + '…' + (d.sig || '').slice(-6);
-    const statusTag = d.status === 'pending'
-      ? '<div class="tx-status pending">Awaiting drop-off</div>'
-      : d.status === 'validated'
-        ? '<div class="tx-status validated">Tokens received</div>'
+    const statusTag = d.status === 'validated'
+      ? '<div class="tx-status validated">Tokens received</div>'
+      : d.status === 'pending'
+        ? (d.photoLink
+            ? '<div class="tx-status pending">Donated</div>'
+            : '<div class="tx-status pending">Awaiting drop-off</div>')
         : '';
     const amount = d.status === 'pending' ? '—' : `${d.kg}kg`;
     const thumb = d.photoLink
