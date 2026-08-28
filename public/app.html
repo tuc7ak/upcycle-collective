@@ -330,10 +330,16 @@
       <div class="screen" id="screen-profile">
         <div class="eyebrow-row">
           <span class="eyebrow">Account</span>
-          <button class="mode-toggle" id="staff-mode-toggle" onclick="toggleStaffMode()">
-            <span class="mode-toggle-dot"></span>
-            <span id="staff-mode-label">Staff</span>
-          </button>
+          <div style="display:flex;gap:8px;">
+            <button class="mode-toggle" id="staff-mode-toggle" onclick="toggleStaffMode()">
+              <span class="mode-toggle-dot"></span>
+              <span id="staff-mode-label">Staff</span>
+            </button>
+            <button class="mode-toggle" id="organiser-mode-toggle" onclick="toggleOrganiserMode()">
+              <span class="mode-toggle-dot"></span>
+              <span id="organiser-mode-label">Organiser</span>
+            </button>
+          </div>
         </div>
         <h1 class="page-title" id="profile-title">Your account</h1>
         <div class="subtext" id="profile-sub">The Upcycle Collective</div>
@@ -395,6 +401,25 @@
 
           <button class="btn btn-gold" id="validate-submit-btn" onclick="submitValidateDonation()">Validate</button>
           <div id="validate-status"></div>
+        </div>
+
+        <div id="organiser-panel" style="display:none;margin-top:20px;">
+          <div class="section-label">Airdrop tokens</div>
+          <label>Code (must already be validated)</label>
+          <input id="airdrop-code-input" type="text" maxlength="10" placeholder="e.g. 7F3K9Q" autocapitalize="characters" style="text-transform:uppercase;">
+          <button class="btn btn-outline-wide" id="airdrop-lookup-btn" style="margin-top:8px;" onclick="submitAirdropLookup()">Look up code</button>
+
+          <div id="airdrop-lookup-result" style="display:none;background:var(--bg-surface);border:1px solid var(--divider);border-radius:12px;padding:14px 16px;margin-top:14px;font-size:13px;line-height:1.7;">
+            <div><strong>Wallet:</strong> <span id="airdrop-wallet"></span></div>
+            <div><strong>Status:</strong> <span id="airdrop-status-val"></span></div>
+            <div><strong>Tokens owed (estimate):</strong> <span id="airdrop-tokens-owed"></span></div>
+          </div>
+
+          <label style="margin-top:16px;display:block;">Tokens to send</label>
+          <input id="airdrop-tokens-input" type="number" min="1" step="1" inputmode="numeric" placeholder="e.g. 2">
+
+          <button class="btn btn-gold" id="airdrop-submit-btn" onclick="submitAirdrop()">Validate and Airdrop</button>
+          <div id="airdrop-status"></div>
         </div>
 
         <button class="btn btn-outline-wide" onclick="disconnect()" style="margin-top:24px;">Disconnect</button>
@@ -566,7 +591,7 @@ let currentIdentity = '';
 const TEST_DONATION_CODES = new Set([
   'KLYYTF', '469LBM', 'SJKAT4', 'XESHPM', 'LJWV45', '8ZTEYQ', 'W5Z25X',
   '3DG5B4', 'EJPGY4', '5EFZ2N', 'L2537R', 'PP89D3', 'EYVTG4', 'XLC9CH', 'VYKJTC',
-  'D6DXS8', 'TZSH6Y', '8JYW2F', 'UYFNLY',
+  'D6DXS8', 'TZSH6Y', '8JYW2F', 'UYFNLY', 'T6XK9J',
 ]);
 function testLabel(code) { return TEST_DONATION_CODES.has(code) ? ' (test)' : ''; }
 
@@ -582,6 +607,11 @@ function go(name) {
     document.getElementById('staff-pin-box').style.display = 'none';
     setStaffToggleUI(false);
     staffPinUnlocked = false;
+  }
+  if (leavingProfile && document.getElementById('organiser-panel')?.style.display === 'block') {
+    document.getElementById('organiser-panel').style.display = 'none';
+    document.getElementById('organiser-mode-toggle').classList.remove('live');
+    document.getElementById('organiser-mode-label').textContent = 'Organiser';
   }
 
   document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
@@ -1740,6 +1770,107 @@ function checkStaffPin() {
     document.getElementById('staff-pin-err').style.display = 'block';
     document.getElementById('staff-pin-input').value = '';
   }
+}
+
+/* ── Organiser mode: the only wallet that can actually send tokens ──
+   Gated on wallet identity, not a shared PIN like Staff — the public key
+   itself is safe to embed here (it's already visible on every transaction
+   this app signs), but this is only a client-side convenience gate. The
+   real enforcement is server-side, in the airdrop action itself. */
+const ORGANISER_WALLET = 'CGDLbYHVnoMpw2CCbKMMomm6U3ByVZRFqKuGZfpdsrBK';
+
+function toggleOrganiserMode() {
+  const panel = document.getElementById('organiser-panel');
+  const isOpen = panel.style.display === 'block';
+
+  if (isOpen) {
+    panel.style.display = 'none';
+    document.getElementById('organiser-mode-toggle').classList.remove('live');
+    document.getElementById('organiser-mode-label').textContent = 'Organiser';
+    return;
+  }
+
+  if (!walletPubkey) { toast('Connect your wallet first.', true); return; }
+  if (walletPubkey !== ORGANISER_WALLET) {
+    toast('Only the organiser wallet can access this.', true);
+    return;
+  }
+
+  panel.style.display = 'block';
+  document.getElementById('organiser-mode-toggle').classList.add('live');
+  document.getElementById('organiser-mode-label').textContent = 'Organiser on';
+}
+
+let currentAirdropCode = null;
+
+async function submitAirdropLookup() {
+  const code = document.getElementById('airdrop-code-input').value.trim().toUpperCase();
+  if (!code) { setAirdropStatus('err', 'Enter the code.'); return; }
+
+  const btn = document.getElementById('airdrop-lookup-btn');
+  btn.disabled = true;
+  document.getElementById('airdrop-lookup-result').style.display = 'none';
+  setAirdropStatus('info', '⏳ Looking up code…');
+  try {
+    const res = await fetch('/api/donate', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'lookup', code }),
+    });
+    const data = await res.json();
+    if (!data.success) { setAirdropStatus('err', '❌ ' + (data.error ?? 'Failed')); return; }
+
+    currentAirdropCode = code;
+    document.getElementById('airdrop-wallet').textContent = data.wallet;
+    document.getElementById('airdrop-status-val').textContent = data.status;
+    document.getElementById('airdrop-tokens-owed').textContent = data.tokensOwed ?? '—';
+    document.getElementById('airdrop-lookup-result').style.display = 'block';
+    document.getElementById('airdrop-tokens-input').value = data.tokensOwed || '';
+    document.getElementById('airdrop-status').innerHTML = '';
+
+    if (data.status === 'paid') setAirdropStatus('err', 'This code has already been paid out.');
+    else if (data.status !== 'validated') setAirdropStatus('err', `Not validated yet (status: ${data.status}).`);
+  } catch (e) {
+    setAirdropStatus('err', '❌ ' + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function submitAirdrop() {
+  if (!currentAirdropCode) { setAirdropStatus('err', 'Look up a code first.'); return; }
+  const tokens = parseInt(document.getElementById('airdrop-tokens-input').value, 10);
+  if (!Number.isFinite(tokens) || tokens <= 0) { setAirdropStatus('err', 'Enter how many tokens to send.'); return; }
+
+  const donorWallet = document.getElementById('airdrop-wallet').textContent;
+  if (!confirm(`Send ${tokens} TUC to ${donorWallet} for code ${currentAirdropCode}? This cannot be undone.`)) return;
+
+  const btn = document.getElementById('airdrop-submit-btn');
+  btn.disabled = true;
+  setAirdropStatus('info', '⏳ Sending tokens…');
+  try {
+    const res = await fetch('/api/donate', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'airdrop', wallet: walletPubkey, code: currentAirdropCode, tokens }),
+    });
+    const data = await res.json();
+    if (!data.success) { setAirdropStatus('err', '❌ ' + (data.error ?? 'Failed')); return; }
+
+    setAirdropStatus('ok', `✅ Sent ${data.tokens} TUC → ${data.wallet.slice(0, 6)}…${data.wallet.slice(-4)} — <a href="https://solscan.io/tx/${data.signature}" target="_blank" style="color:var(--moss)">View on Solscan ↗</a>`);
+    toast('Tokens sent!');
+    document.getElementById('airdrop-code-input').value = '';
+    document.getElementById('airdrop-tokens-input').value = '';
+    document.getElementById('airdrop-lookup-result').style.display = 'none';
+    currentAirdropCode = null;
+  } catch (e) {
+    setAirdropStatus('err', '❌ ' + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function setAirdropStatus(type, html) {
+  document.getElementById('airdrop-status').innerHTML =
+    `<div class="status-row ${type}" style="margin-top:14px">${html}</div>`;
 }
 
 /* ── Staff: look up a code's wallet + photo before validating ── */

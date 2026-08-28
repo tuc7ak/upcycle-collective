@@ -1,6 +1,11 @@
 const { PublicKey, Transaction, sendAndConfirmTransaction } = require('@solana/web3.js');
+const {
+  TOKEN_2022_PROGRAM_ID,
+  getOrCreateAssociatedTokenAccount,
+  createMintToInstruction,
+} = require('@solana/spl-token');
 const { createMemoInstruction } = require('@solana/spl-memo');
-const { getConnection, getOrganiser, jsonOk, jsonErr } = require('./_utils');
+const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require('./_utils');
 const crypto = require('crypto');
 const bs58 = require('bs58');
 
@@ -156,16 +161,20 @@ async function actionLookup(req, res) {
   if (!spreadsheetId) return jsonErr(res, 500, 'Google Sheet not configured');
 
   try {
-    const rows = await sheetsGetValues({ spreadsheetId, range: 'A2:K' });
+    const rows = await sheetsGetValues({ spreadsheetId, range: 'A2:N' });
     const row = rows.find(r => (r[0] || '').toUpperCase() === code);
     if (!row) return jsonErr(res, 404, 'Code not found. Check the label and try again.');
-    const [, wallet, type, batch, photoLink, status, timestamp, scalePhotoLink, validatedAt, donatedTx, validatedTx] = row;
+    const [
+      , wallet, type, batch, photoLink, status, timestamp, scalePhotoLink, validatedAt,
+      donatedTx, validatedTx, tokensOwed, tokensSent, airdropTx,
+    ] = row;
     return jsonOk(res, {
       success: true, code, wallet, type,
       batch: batch || null, photoLink: photoLink || null,
       status: status || 'pending', timestamp: timestamp || null,
       scalePhotoLink: scalePhotoLink || null, validatedAt: validatedAt || null,
       donatedTx: donatedTx || null, validatedTx: validatedTx || null,
+      tokensOwed: tokensOwed || null, tokensSent: tokensSent || null, airdropTx: airdropTx || null,
     });
   } catch (err) {
     console.error('[donate:lookup]', err);
@@ -268,6 +277,11 @@ async function actionValidate(req, res) {
 
     const signature = await sendAndConfirmTransaction(connection, tx, [organiser]);
 
+    // Display-only estimate of what the airdrop step will pay out — no
+    // tokens have actually moved yet. Persisted to the Sheet so that step
+    // can read it later without re-scanning the chain.
+    const tokensOwed = Math.max(1, Math.round(kg));
+
     if (process.env.GOOGLE_SHEET_ID) {
       try {
         const { sheetsGetValues, sheetsUpdateRange } = require('./_google');
@@ -279,15 +293,12 @@ async function actionValidate(req, res) {
           await sheetsUpdateRange({ spreadsheetId, range: `F${row}`, values: ['validated'] });
           await sheetsUpdateRange({ spreadsheetId, range: `I${row}`, values: [new Date().toISOString()] });
           await sheetsUpdateRange({ spreadsheetId, range: `K${row}`, values: [`https://solscan.io/tx/${signature}`] });
+          await sheetsUpdateRange({ spreadsheetId, range: `L${row}`, values: [tokensOwed] });
         }
       } catch (sheetErr) {
         console.error('[donate:validate] sheet update failed', sheetErr);
       }
     }
-
-    // Display-only estimate of what the future send step will pay out —
-    // no tokens have actually moved yet.
-    const tokensOwed = Math.max(1, Math.round(kg));
 
     return jsonOk(res, {
       success: true, code, wallet: issued.wallet, type: issued.type, kg, tokensOwed, signature,
@@ -298,16 +309,94 @@ async function actionValidate(req, res) {
   }
 }
 
+// ── action: airdrop — organiser-wallet-only, actually mints tokens for an
+// already-validated code. This is the deliberately separate, higher-
+// privilege step referenced in actionValidate's comment above: a leaked or
+// shared staff PIN never reaches this, only someone connected with the
+// organiser's own wallet address can call it at all.
+async function actionAirdrop(req, res) {
+  const { wallet: callerWallet, code: rawCode, tokens: rawTokens } = req.body ?? {};
+  const organiser = getOrganiser();
+  if (!callerWallet || callerWallet !== organiser.publicKey.toBase58()) {
+    return jsonErr(res, 403, 'Only the organiser wallet can do this.');
+  }
+
+  const code = String(rawCode || '').trim().toUpperCase();
+  if (!CODE_RE.test(code)) return jsonErr(res, 400, 'invalid code');
+  const tokens = parseInt(rawTokens, 10);
+  if (!Number.isFinite(tokens) || tokens <= 0) return jsonErr(res, 400, 'tokens must be a positive whole number');
+
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+  if (!spreadsheetId) return jsonErr(res, 500, 'Google Sheet not configured');
+
+  try {
+    const { sheetsGetValues, sheetsUpdateRange } = require('./_google');
+    const rows = await sheetsGetValues({ spreadsheetId, range: 'A2:N' });
+    const idx = rows.findIndex(r => (r[0] || '').toUpperCase() === code);
+    if (idx === -1) return jsonErr(res, 404, 'Code not found.');
+    const rowNum = idx + 2;
+    const [, donorWallet, , , , status] = rows[idx];
+
+    if (status !== 'validated') {
+      return jsonErr(res, 400, status === 'paid'
+        ? 'This code has already been paid out.'
+        : `Code must be validated first (currently: ${status || 'pending'}).`);
+    }
+
+    let donorPubkey;
+    try { donorPubkey = new PublicKey(donorWallet); } catch {
+      return jsonErr(res, 500, "This code's wallet address is invalid.");
+    }
+
+    // Claim "paid" before minting — shrinks the double-airdrop window down
+    // to just this one check-then-set round trip. Not a real lock (a Sheets
+    // cell can't be), but this is a manual, low-concurrency action taken by
+    // one organiser, not an automated high-throughput one.
+    await sheetsUpdateRange({ spreadsheetId, range: `F${rowNum}`, values: ['paid'] });
+
+    let signature;
+    try {
+      const connection = getConnection();
+      const mint = getMintPublicKey();
+      const tokenAccount = await getOrCreateAssociatedTokenAccount(
+        connection, organiser, mint, donorPubkey, false, 'confirmed', {}, TOKEN_2022_PROGRAM_ID,
+      );
+      const tx = new Transaction()
+        .add(createMintToInstruction(mint, tokenAccount.address, organiser.publicKey, tokens, [], TOKEN_2022_PROGRAM_ID))
+        .add(createMemoInstruction(`TUC:DONATE:PAID:${code}:${tokens}:${donorWallet}`, [organiser.publicKey]));
+      signature = await sendAndConfirmTransaction(connection, tx, [organiser]);
+    } catch (mintErr) {
+      // Minting didn't happen — revert the claim so this can be retried
+      // instead of looking permanently paid with no tokens actually sent.
+      await sheetsUpdateRange({ spreadsheetId, range: `F${rowNum}`, values: ['validated'] }).catch(() => {});
+      throw mintErr;
+    }
+
+    try {
+      await sheetsUpdateRange({ spreadsheetId, range: `M${rowNum}`, values: [tokens] });
+      await sheetsUpdateRange({ spreadsheetId, range: `N${rowNum}`, values: [`https://solscan.io/tx/${signature}`] });
+    } catch (sheetErr) {
+      console.error('[donate:airdrop] sheet update failed', sheetErr);
+    }
+
+    return jsonOk(res, { success: true, code, wallet: donorWallet, tokens, signature });
+  } catch (err) {
+    console.error('[donate:airdrop]', err);
+    return jsonErr(res, 500, err.message);
+  }
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return jsonErr(res, 405, 'POST only');
   const action = req.body?.action || 'log';
   switch (action) {
-    case 'log':      return actionLog(req, res);
-    case 'code':     return actionCode(req, res);
-    case 'photo':    return actionPhoto(req, res);
+    case 'log':        return actionLog(req, res);
+    case 'code':       return actionCode(req, res);
+    case 'photo':      return actionPhoto(req, res);
     case 'lookup':     return actionLookup(req, res);
     case 'scalePhoto': return actionScalePhoto(req, res);
     case 'validate':   return actionValidate(req, res);
-    default:         return jsonErr(res, 400, `unknown action: ${action}`);
+    case 'airdrop':    return actionAirdrop(req, res);
+    default:           return jsonErr(res, 400, `unknown action: ${action}`);
   }
 };
