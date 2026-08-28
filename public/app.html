@@ -376,8 +376,8 @@
                 <div><strong>Batch #:</strong> <span id="lookup-batch"></span></div>
                 <div><strong>Status:</strong> <span id="lookup-status"></span></div>
                 <div><strong>Scale photo:</strong> <span id="lookup-scale-status"></span></div>
-                <div><strong>Donated:</strong> <span id="lookup-donated-at"></span></div>
-                <div><strong>Validated:</strong> <span id="lookup-validated-at"></span></div>
+                <div><strong>Donated:</strong> <span id="lookup-donated-at"></span> <a id="lookup-donated-tx" href="#" target="_blank" rel="noopener" style="color:var(--moss);display:none;">↗</a></div>
+                <div><strong>Validated:</strong> <span id="lookup-validated-at"></span> <a id="lookup-validated-tx" href="#" target="_blank" rel="noopener" style="color:var(--moss);display:none;">↗</a></div>
               </div>
             </div>
           </div>
@@ -566,7 +566,7 @@ let currentIdentity = '';
 const TEST_DONATION_CODES = new Set([
   'KLYYTF', '469LBM', 'SJKAT4', 'XESHPM', 'LJWV45', '8ZTEYQ', 'W5Z25X',
   '3DG5B4', 'EJPGY4', '5EFZ2N', 'L2537R', 'PP89D3', 'EYVTG4', 'XLC9CH', 'VYKJTC',
-  'D6DXS8', 'TZSH6Y', '8JYW2F',
+  'D6DXS8', 'TZSH6Y', '8JYW2F', 'UYFNLY',
 ]);
 function testLabel(code) { return TEST_DONATION_CODES.has(code) ? ' (test)' : ''; }
 
@@ -939,14 +939,14 @@ function renderLiveItem(idx) {
       document.getElementById('track-item-sig').textContent  = `${fmtShortDate(d.validatedBlockTime)} · ${vShort}`;
       link.href = `https://solscan.io/tx/${d.validatedSig}`;
       link.classList.remove('inert');
-      steps.push({ title: 'Collected', meta: `${fmtShortDate(d.validatedBlockTime)} · ${vShort}`, state: 'current' });
+      steps.push({ title: 'Validated', meta: `${fmtShortDate(d.validatedBlockTime)} · ${vShort}`, state: 'current' });
       steps.push({ title: 'Given new life', meta: 'Pending', state: 'pending' });
     } else {
       document.getElementById('track-item-desc').textContent = `Seal your bag, label it ${d.code}, and drop it off — staff will collect it.`;
       document.getElementById('track-item-sig').textContent  = `${fmtShortDate(d.codeBlockTime)} · ${codeShort}`;
       link.href = d.codeSig ? `https://solscan.io/tx/${d.codeSig}` : '#';
       link.classList.toggle('inert', !d.codeSig);
-      steps.push({ title: 'Collected', meta: 'Pending', state: 'pending' });
+      steps.push({ title: 'Validated', meta: 'Pending', state: 'pending' });
       steps.push({ title: 'Given new life', meta: 'Pending', state: 'pending' });
     }
     renderTimeline(steps);
@@ -962,7 +962,7 @@ function renderLiveItem(idx) {
 
   renderTimeline([
     { title: 'Donated',        meta: `${fmtShortDate(d.blockTime)} · ${shortSig}`, state: 'current' },
-    { title: 'Collected',      meta: 'Pending', state: 'pending' },
+    { title: 'Validated',      meta: 'Pending', state: 'pending' },
     { title: 'Given new life', meta: 'Pending', state: 'pending' },
   ]);
 }
@@ -1764,6 +1764,12 @@ async function submitLookupDonation() {
     document.getElementById('lookup-scale-status').textContent = data.scalePhotoLink ? '✅ Uploaded' : 'Not uploaded yet';
     document.getElementById('lookup-donated-at').textContent   = fmtDateTime(data.timestamp);
     document.getElementById('lookup-validated-at').textContent = fmtDateTime(data.validatedAt);
+    const donatedTxEl = document.getElementById('lookup-donated-tx');
+    if (data.donatedTx) { donatedTxEl.href = data.donatedTx; donatedTxEl.style.display = 'inline'; }
+    else { donatedTxEl.style.display = 'none'; }
+    const validatedTxEl = document.getElementById('lookup-validated-tx');
+    if (data.validatedTx) { validatedTxEl.href = data.validatedTx; validatedTxEl.style.display = 'inline'; }
+    else { validatedTxEl.style.display = 'none'; }
     const photoEl = document.getElementById('lookup-photo');
     if (data.photoLink) { photoEl.src = data.photoLink; photoEl.style.display = 'block'; }
     else { photoEl.style.display = 'none'; }

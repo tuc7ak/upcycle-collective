@@ -102,10 +102,6 @@ async function actionPhoto(req, res) {
     const photoLink = await blobUploadPhoto({ dataUrl: photo, filename: `donations/${code}-${Date.now()}.jpg` });
     const existing = await sheetsGetValues({ spreadsheetId, range: 'A2:A' });
     const batch = existing.length + 1;
-    await sheetsAppendRow({
-      spreadsheetId, range: 'A:G',
-      values: [code, wallet, type, batch, photoLink, 'pending', new Date().toISOString()],
-    });
 
     // Both memos land in this one transaction — the CODE memo is written
     // here for the first time (actionCode no longer touches the chain), so
@@ -125,6 +121,23 @@ async function actionPhoto(req, res) {
       .add(createMemoInstruction(`TUC:DONATE:PHOTO:${code}:${batch}:${donorPubkey.toBase58()}:${photoLink}`, [organiser.publicKey]));
     const photoSig = await sendAndConfirmTransaction(connection, tx, [organiser]);
 
+    // Best-effort — the on-chain memos above are the real record; the
+    // Sheet is a convenience mirror, so a failure here shouldn't fail a
+    // donor who already has their code committed on-chain. Written after
+    // the chain confirms so the Solscan link is ready in the same row,
+    // not bolted on with a second write later.
+    try {
+      await sheetsAppendRow({
+        spreadsheetId, range: 'A:K',
+        values: [
+          code, wallet, type, batch, photoLink, 'pending', new Date().toISOString(),
+          '', '', `https://solscan.io/tx/${photoSig}`, '',
+        ],
+      });
+    } catch (sheetErr) {
+      console.error('[donate:photo] sheet append failed', sheetErr);
+    }
+
     return jsonOk(res, { success: true, batch, photoLink, signature: photoSig });
   } catch (err) {
     console.error('[donate:photo]', err);
@@ -143,15 +156,16 @@ async function actionLookup(req, res) {
   if (!spreadsheetId) return jsonErr(res, 500, 'Google Sheet not configured');
 
   try {
-    const rows = await sheetsGetValues({ spreadsheetId, range: 'A2:I' });
+    const rows = await sheetsGetValues({ spreadsheetId, range: 'A2:K' });
     const row = rows.find(r => (r[0] || '').toUpperCase() === code);
     if (!row) return jsonErr(res, 404, 'Code not found. Check the label and try again.');
-    const [, wallet, type, batch, photoLink, status, timestamp, scalePhotoLink, validatedAt] = row;
+    const [, wallet, type, batch, photoLink, status, timestamp, scalePhotoLink, validatedAt, donatedTx, validatedTx] = row;
     return jsonOk(res, {
       success: true, code, wallet, type,
       batch: batch || null, photoLink: photoLink || null,
       status: status || 'pending', timestamp: timestamp || null,
       scalePhotoLink: scalePhotoLink || null, validatedAt: validatedAt || null,
+      donatedTx: donatedTx || null, validatedTx: validatedTx || null,
     });
   } catch (err) {
     console.error('[donate:lookup]', err);
@@ -264,6 +278,7 @@ async function actionValidate(req, res) {
           const row = idx + 2;
           await sheetsUpdateRange({ spreadsheetId, range: `F${row}`, values: ['validated'] });
           await sheetsUpdateRange({ spreadsheetId, range: `I${row}`, values: [new Date().toISOString()] });
+          await sheetsUpdateRange({ spreadsheetId, range: `K${row}`, values: [`https://solscan.io/tx/${signature}`] });
         }
       } catch (sheetErr) {
         console.error('[donate:validate] sheet update failed', sheetErr);
