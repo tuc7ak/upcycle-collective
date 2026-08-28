@@ -107292,7 +107292,13 @@ async function actionValidate(req, res) {
 }
 async function actionAirdrop(req, res) {
   const { wallet: callerWallet, code: rawCode, tokens: rawTokens } = req.body ?? {};
-  const organiser = getOrganiser();
+  let organiser;
+  try {
+    organiser = getOrganiser();
+  } catch (e2) {
+    console.error("[donate:airdrop]", e2);
+    return jsonErr(res, 500, e2.message || "Server misconfigured.");
+  }
   if (!callerWallet || callerWallet !== organiser.publicKey.toBase58()) {
     return jsonErr(res, 403, "Only the organiser wallet can do this.");
   }
