@@ -569,7 +569,10 @@ let currentIdentity = '';
 // Pre-launch test donations — the memos themselves can't be edited on-chain,
 // so this just relabels how they display. Not a general feature; remove
 // once these codes have aged out of anyone's Track view.
-const TEST_DONATION_CODES = new Set(['EYVTG4', 'PP89D3', 'LJWV45']);
+const TEST_DONATION_CODES = new Set([
+  'KLYYTF', '469LBM', 'SJKAT4', 'XESHPM', 'LJWV45', '8ZTEYQ', 'W5Z25X',
+  '3DG5B4', 'EJPGY4', '5EFZ2N', 'L2537R', 'PP89D3', 'EYVTG4', 'XLC9CH',
+]);
 function testLabel(code) { return TEST_DONATION_CODES.has(code) ? ' (test)' : ''; }
 
 /* ── Tab navigation ── */
