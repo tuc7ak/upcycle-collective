@@ -1682,6 +1682,7 @@ function toggleStaffMode() {
     panel.style.display = 'none';
     document.getElementById('staff-pin-box').style.display = 'none';
     setStaffToggleUI(false);
+    sessionStorage.removeItem('tuc_staff_pin'); // require the PIN again next time it's turned on
     return;
   }
 
