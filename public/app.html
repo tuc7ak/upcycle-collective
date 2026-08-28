@@ -360,32 +360,7 @@
         </div>
 
         <div id="staff-panel" style="display:none;margin-top:20px;">
-          <div class="section-label">Log a donation</div>
-
-          <button class="scan-btn" id="staff-scan-btn" onclick="openStaffScanner()">📷 Scan donor wallet</button>
-          <div id="staff-scanner-wrap" style="border-radius:14px;overflow:hidden;margin-bottom:16px;display:none;"></div>
-
-          <div id="staff-form" style="display:none;">
-            <div class="addr-box" id="staff-donor-chip"></div>
-
-            <label>Type</label>
-            <div class="chip-row" id="staff-type-chips">
-              <div class="chip active" data-type="CLOTHES" onclick="selectStaffType(this)">Clothes</div>
-              <div class="chip" data-type="ELECTRONICS" onclick="selectStaffType(this)">Electronics</div>
-              <div class="chip" data-type="PLASTICS" onclick="selectStaffType(this)">Plastics</div>
-              <div class="chip" data-type="PAPER" onclick="selectStaffType(this)">Paper</div>
-            </div>
-
-            <label style="margin-top:6px;">Weight (kg)</label>
-            <input id="staff-kg-input" type="number" min="0.1" step="0.1" inputmode="decimal" placeholder="e.g. 1">
-
-            <button class="btn btn-gold" id="staff-submit-btn" onclick="submitStaffDonation()">Record on-chain</button>
-            <button class="btn btn-outline-wide" style="margin-top:8px;" onclick="rescanStaffDonor()">Scan a different wallet</button>
-          </div>
-
-          <div id="staff-status"></div>
-
-          <div class="section-label" style="margin-top:24px;">Validate sealed donation</div>
+          <div class="section-label">Validate sealed donation</div>
           <label>Code from the sealed bag</label>
           <input id="validate-code-input" type="text" maxlength="10" placeholder="e.g. 7F3K9Q" autocapitalize="characters" style="text-transform:uppercase;">
           <button class="btn btn-outline-wide" id="lookup-submit-btn" style="margin-top:8px;" onclick="submitLookupDonation()">Look up code</button>
@@ -420,7 +395,6 @@
 
         <div class="wallet-topbar">
           <button class="icon-btn" onclick="openQrScan()"><img src="/scan-logo.png" alt="Scan" /></button>
-          <button class="icon-btn" onclick="refresh()" id="refresh-btn" title="Refresh" style="font-size:18px;">↻</button>
         </div>
 
         <div class="ring-wrap">
@@ -596,8 +570,9 @@ function previewToast() { toast("Coming soon — this feature isn't live yet.");
 
 /* ── Pull-to-refresh (touch) — manual retry for Track/Donate's on-chain load ── */
 async function refreshLiveData() {
-  liveDonationsLoaded = false;
   const active = document.querySelector('.screen.active')?.id;
+  if (active === 'screen-wallet') { await refresh(); return; }
+  liveDonationsLoaded = false;
   if (active === 'screen-donate') await loadDonateTransactions();
   else if (active === 'screen-track') await renderTrackMode();
 }
@@ -1666,8 +1641,6 @@ function setStatus(type, html) {
 
 /* ── Staff mode: donation logger ── */
 const STAFF_PIN = '1990';
-let staffScanner = null, staffScannerRunning = false;
-let staffDonorWallet = null, staffDonationType = 'CLOTHES';
 
 function setStaffToggleUI(on) {
   document.getElementById('staff-mode-toggle').classList.toggle('live', on);
@@ -1708,95 +1681,6 @@ function checkStaffPin() {
     document.getElementById('staff-pin-err').style.display = 'block';
     document.getElementById('staff-pin-input').value = '';
   }
-}
-
-async function openStaffScanner() {
-  document.getElementById('staff-status').innerHTML = '';
-  document.getElementById('staff-form').style.display = 'none';
-  document.getElementById('staff-scan-btn').style.display = 'none';
-  const wrap = document.getElementById('staff-scanner-wrap');
-  wrap.style.display = 'block';
-  wrap.innerHTML = '<div id="staff-scan-reader"></div>';
-  staffScanner = new Html5Qrcode('staff-scan-reader');
-  try {
-    await staffScanner.start(
-      { facingMode: 'environment' },
-      { fps: 10, qrbox: { width: 240, height: 240 } },
-      async (text) => {
-        await stopStaffScanner();
-        onStaffWalletScanned(text.trim());
-      },
-      () => {},
-    );
-    staffScannerRunning = true;
-  } catch {
-    wrap.style.display = 'none';
-    document.getElementById('staff-scan-btn').style.display = 'block';
-    setStaffStatus('err', '❌ Camera access denied');
-  }
-}
-
-async function stopStaffScanner() {
-  if (staffScanner && staffScannerRunning) {
-    await staffScanner.stop().catch(() => {});
-    staffScannerRunning = false;
-  }
-  document.getElementById('staff-scanner-wrap').style.display = 'none';
-}
-
-function onStaffWalletScanned(raw) {
-  let wallet = raw;
-  if (wallet.startsWith('solana:')) wallet = wallet.slice(7).split('?')[0];
-  staffDonorWallet = wallet;
-  document.getElementById('staff-donor-chip').textContent = wallet;
-  document.getElementById('staff-scan-btn').style.display = 'block';
-  document.getElementById('staff-form').style.display = 'block';
-  document.getElementById('staff-kg-input').value = '';
-  document.getElementById('staff-kg-input').focus();
-}
-
-function selectStaffType(el) {
-  document.querySelectorAll('#staff-type-chips .chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  staffDonationType = el.dataset.type;
-}
-
-function rescanStaffDonor() {
-  staffDonorWallet = null;
-  document.getElementById('staff-form').style.display = 'none';
-  openStaffScanner();
-}
-
-async function submitStaffDonation() {
-  if (!staffDonorWallet) { setStaffStatus('err', 'Scan a donor wallet first.'); return; }
-  const kg = parseFloat(document.getElementById('staff-kg-input').value);
-  if (!Number.isFinite(kg) || kg <= 0) { setStaffStatus('err', 'Enter a weight in kg.'); return; }
-
-  const btn = document.getElementById('staff-submit-btn');
-  btn.disabled = true;
-  setStaffStatus('info', '⏳ Writing to chain…');
-  try {
-    const res  = await fetch('/api/donate', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'log', wallet: staffDonorWallet, type: staffDonationType, kg }),
-    });
-    const data = await res.json();
-    if (!data.success) { setStaffStatus('err', '❌ ' + (data.error ?? 'Failed')); return; }
-
-    setStaffStatus('ok', `✅ Logged ${data.kg}kg ${data.type.toLowerCase()} — <a href="https://solscan.io/tx/${data.signature}" target="_blank" style="color:var(--moss)">View on Solscan ↗</a>`);
-    toast('Donation recorded on-chain!');
-    document.getElementById('staff-form').style.display = 'none';
-    staffDonorWallet = null;
-  } catch (e) {
-    setStaffStatus('err', '❌ ' + e.message);
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-function setStaffStatus(type, html) {
-  document.getElementById('staff-status').innerHTML =
-    `<div class="status-row ${type}" style="margin-top:14px">${html}</div>`;
 }
 
 /* ── Staff: look up a code's wallet + photo before validating ── */
@@ -1877,12 +1761,7 @@ function toast(msg, isErr=false) {
 
 /* ── Refresh ── */
 async function refresh() {
-  const btn = document.getElementById('refresh-btn');
-  btn.disabled = true;
-  btn.style.opacity = '0.5';
   await Promise.all([loadBalance(), loadTransactions(), loadNFTs()]);
-  btn.disabled = false;
-  btn.style.opacity = '1';
 }
 
 /* ── Privy email connect ── */
