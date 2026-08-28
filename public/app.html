@@ -272,20 +272,13 @@
       <div class="screen" id="screen-track">
         <div class="eyebrow-row">
           <span class="eyebrow">The loop</span>
-          <button class="mode-toggle" id="track-mode-toggle" onclick="toggleTrackMode()">
-            <span class="mode-toggle-dot"></span>
-            <span id="track-mode-label">Preview</span>
-          </button>
         </div>
         <h1 class="page-title">Track your donations</h1>
-        <div class="subtext" id="track-subtext">Every stage is written on-chain, so you can see exactly where it went. Item-level loop tracking is coming soon.</div>
+        <div class="subtext" id="track-subtext">Your real donations, pulled live from the chain.</div>
 
         <div class="field">
           <span class="field-label">Donation batch</span>
-          <select class="batch-select" id="track-batch-select" onchange="onTrackSelectChange(this.value)">
-            <option value="0142">Donation #0142 — Aug 5</option>
-            <option value="0098">Donation #0098 — Aug 3</option>
-          </select>
+          <select class="batch-select" id="track-batch-select" onchange="onTrackSelectChange(this.value)"></select>
         </div>
 
         <div class="loading" id="track-live-loading" style="display:none;">Checking your donations…</div>
@@ -585,6 +578,7 @@ function go(name) {
   document.getElementById('nav-' + name).classList.add('active');
   window.scrollTo(0, 0);
   if (name === 'donate' && walletPubkey) loadDonateTransactions();
+  if (name === 'track' && walletPubkey) renderTrackMode();
 }
 function previewToast() { toast("Coming soon — this feature isn't live yet."); }
 
@@ -770,30 +764,6 @@ async function loadDonateTransactions() {
   }).join('');
 }
 
-/* ── Track preview: donation batches ── */
-// Each step's on-chain reference is that step's own token transfer — the
-// item-card's top-line reference is always the donation-time transfer.
-const DONATION_BATCHES = {
-  '0142': {
-    name: 'Donation #0142', category: 'CLOTHES',
-    description: 'Example — relisted at Kertas & Co. secondhand store, Padungan.',
-    timeline: [
-      { title: 'Donated',        meta: 'Aug 5, 9:14 AM · 3kR7…mN4q', state: 'done' },
-      { title: 'Collected',      meta: 'Aug 6, 2:40 PM · 9pL2…xT8w', state: 'done' },
-      { title: 'Given new life', meta: 'Aug 7, 5:02 PM · 4kX9…aP2m', state: 'current' },
-    ],
-  },
-  '0098': {
-    name: 'Donation #0098', category: 'ELECTRONICS',
-    description: 'Example — collected and awaiting sorting at the depot.',
-    timeline: [
-      { title: 'Donated',        meta: 'Aug 3, 11:02 AM · 8pT4…vK2n', state: 'done' },
-      { title: 'Collected',      meta: 'Aug 4, 3:15 PM · 6mW9…jH1s', state: 'current' },
-      { title: 'Given new life', meta: 'Pending', state: 'pending' },
-    ],
-  },
-};
-
 function renderTimeline(steps) {
   document.getElementById('track-timeline').innerHTML = steps.map((step, i) => {
     const isLast   = i === steps.length - 1;
@@ -804,34 +774,8 @@ function renderTimeline(steps) {
   }).join('');
 }
 
-function renderTrackBatch(id) {
-  const b = DONATION_BATCHES[id];
-  if (!b) return;
-  document.getElementById('track-item-name').textContent = b.name;
-  document.getElementById('track-item-id').textContent   = b.category;
-  document.getElementById('track-item-desc').textContent = b.description;
-  document.getElementById('track-item-sig').textContent  = b.timeline[0].meta.split('·')[1].trim();
-  document.getElementById('track-item-photo-wrap').style.display = 'none';
-  const link = document.getElementById('track-chain-link');
-  link.href = '#';
-  link.classList.add('inert');
-  renderTimeline(b.timeline);
-}
-
-/* ── Track: preview vs live toggle ── */
-let trackMode = 'preview';
 let liveDonations = [];
 let liveDonationsLoaded = false;
-
-function toggleTrackMode() {
-  trackMode = trackMode === 'preview' ? 'live' : 'preview';
-  document.getElementById('track-mode-toggle').classList.toggle('live', trackMode === 'live');
-  document.getElementById('track-mode-label').textContent = trackMode === 'live' ? 'Live' : 'Preview';
-  document.getElementById('track-subtext').textContent = trackMode === 'live'
-    ? 'Your real donations, pulled live from the chain.'
-    : 'Every stage is written on-chain, so you can see exactly where it went. Item-level loop tracking is coming soon.';
-  renderTrackMode();
-}
 
 async function renderTrackMode() {
   const select = document.getElementById('track-batch-select');
@@ -839,17 +783,6 @@ async function renderTrackMode() {
   const empty   = document.getElementById('track-live-empty');
   const card    = document.getElementById('track-card-wrap');
 
-  if (trackMode === 'preview') {
-    loading.style.display = 'none';
-    empty.style.display   = 'none';
-    select.style.display  = 'block';
-    card.style.display    = 'block';
-    select.innerHTML = `<option value="0142">Donation #0142 — Aug 5</option><option value="0098">Donation #0098 — Aug 3</option>`;
-    renderTrackBatch(select.value);
-    return;
-  }
-
-  // live
   select.style.display = 'none';
   card.style.display   = 'none';
   empty.style.display  = 'none';
@@ -877,8 +810,7 @@ async function renderTrackMode() {
 }
 
 function onTrackSelectChange(val) {
-  if (trackMode === 'preview') renderTrackBatch(val);
-  else renderLiveItem(parseInt(val, 10));
+  renderLiveItem(parseInt(val, 10));
 }
 
 let trackPhotoRequestToken = 0;
