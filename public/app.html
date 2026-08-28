@@ -33,7 +33,9 @@
   .mode-toggle.live .mode-toggle-dot{background:var(--gold);box-shadow:0 0 0 3px var(--gold-15);}
   .subtext{color:var(--text-muted);font-size:13.5px;line-height:1.5;margin-bottom:20px;}
   .section-title,.section-label{font-size:12px;font-family:'IBM Plex Mono';letter-spacing:0.06em;text-transform:uppercase;color:var(--text-faint);margin:20px 0 10px;}
-  .empty,.loading{text-align:center;padding:36px 0;color:var(--text-faint);font-size:13.5px;}
+  .empty{text-align:center;padding:36px 0;color:var(--text-faint);font-size:13.5px;}
+  .loading{text-align:center;padding:36px 0;color:var(--text-faint);font-size:13.5px;display:flex;flex-direction:column;align-items:center;gap:12px;}
+  .loading-spinner{width:22px;height:22px;border-radius:50%;border:2.5px solid var(--divider);border-top-color:var(--gold);animation:ptr-spin .7s linear infinite;}
 
   /* ── Login gate ── */
   #login-gate{display:flex;flex-direction:column;align-items:center;text-align:center;min-height:100vh;justify-content:center;padding:60px 24px;gap:16px;}
@@ -263,7 +265,7 @@
         </div>
 
         <div class="section-label">Transactions</div>
-        <div class="loading" id="donate-tx-loading">Checking your donations…</div>
+        <div class="loading" id="donate-tx-loading"><div class="loading-spinner"></div><span id="donate-tx-loading-label">Searching on-chain records…</span></div>
         <div class="empty" id="donate-tx-empty" style="display:none;">No donations yet — generate a code above to get started.</div>
         <div class="tx-list" id="donate-tx-list"></div>
       </div>
@@ -281,7 +283,7 @@
           <select class="batch-select" id="track-batch-select" onchange="onTrackSelectChange(this.value)"></select>
         </div>
 
-        <div class="loading" id="track-live-loading" style="display:none;">Checking your donations…</div>
+        <div class="loading" id="track-live-loading" style="display:none;"><div class="loading-spinner"></div><span id="track-live-loading-label">Searching on-chain records…</span></div>
         <div class="empty" id="track-live-empty" style="display:none;">No donations recorded yet.<br>Ask staff to log one at a drop-off point.</div>
 
         <div id="track-card-wrap">
@@ -720,6 +722,17 @@ async function uploadDonatePhoto(dataUrl) {
   }
 }
 
+// Cycles the loading label's text so a ~13s on-chain scan reads as active
+// progress rather than a frozen screen.
+const LOADING_MESSAGES = ['Searching on-chain records…', 'Scanning recent transactions…', 'Matching your wallet…', 'Almost there…'];
+function startLoadingCycle(labelId) {
+  const el = document.getElementById(labelId);
+  if (!el) return null;
+  let i = 0;
+  el.textContent = LOADING_MESSAGES[0];
+  return setInterval(() => { i = (i + 1) % LOADING_MESSAGES.length; el.textContent = LOADING_MESSAGES[i]; }, 3000);
+}
+
 async function loadDonateTransactions() {
   const loading = document.getElementById('donate-tx-loading');
   const empty   = document.getElementById('donate-tx-empty');
@@ -728,11 +741,13 @@ async function loadDonateTransactions() {
   list.innerHTML = '';
   empty.style.display = 'none';
   loading.style.display = 'block';
+  const cycle = startLoadingCycle('donate-tx-loading-label');
 
   if (!liveDonationsLoaded) {
     liveDonations = await loadLiveDonations();
     liveDonationsLoaded = true;
   }
+  clearInterval(cycle);
   loading.style.display = 'none';
 
   if (!liveDonations.length) {
@@ -787,11 +802,13 @@ async function renderTrackMode() {
   card.style.display   = 'none';
   empty.style.display  = 'none';
   loading.style.display = 'block';
+  const cycle = startLoadingCycle('track-live-loading-label');
 
   if (!liveDonationsLoaded) {
     liveDonations = await loadLiveDonations();
     liveDonationsLoaded = true;
   }
+  clearInterval(cycle);
   loading.style.display = 'none';
 
   if (!liveDonations.length) {
