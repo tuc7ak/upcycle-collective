@@ -267,6 +267,7 @@
         <div class="section-label">Transactions</div>
         <div class="loading" id="donate-tx-loading"><div class="loading-spinner"></div><span id="donate-tx-loading-label">Searching on-chain records…</span></div>
         <div class="empty" id="donate-tx-empty" style="display:none;">No donations yet — generate a code above to get started.</div>
+        <div class="empty" id="donate-tx-error" style="display:none;color:var(--rust);">Couldn't load your donations — the connection may be slow or rate-limited. Pull down to try again.</div>
         <div class="tx-list" id="donate-tx-list"></div>
       </div>
 
@@ -285,6 +286,7 @@
 
         <div class="loading" id="track-live-loading" style="display:none;"><div class="loading-spinner"></div><span id="track-live-loading-label">Searching on-chain records…</span></div>
         <div class="empty" id="track-live-empty" style="display:none;">No donations recorded yet.<br>Ask staff to log one at a drop-off point.</div>
+        <div class="empty" id="track-live-error" style="display:none;color:var(--rust);">Couldn't load your donations — the connection may be slow or rate-limited. Pull down to try again.</div>
 
         <div id="track-card-wrap">
           <div class="item-card">
@@ -760,16 +762,25 @@ function startLoadingCycle(labelId) {
 async function loadDonateTransactions() {
   const loading = document.getElementById('donate-tx-loading');
   const empty   = document.getElementById('donate-tx-empty');
+  const errorEl = document.getElementById('donate-tx-error');
   const list    = document.getElementById('donate-tx-list');
 
   list.innerHTML = '';
   empty.style.display = 'none';
+  errorEl.style.display = 'none';
   loading.style.display = 'block';
   const cycle = startLoadingCycle('donate-tx-loading-label');
 
-  if (!liveDonationsLoaded) {
-    liveDonations = await loadLiveDonations();
-    liveDonationsLoaded = true;
+  try {
+    if (!liveDonationsLoaded) {
+      liveDonations = await loadLiveDonations();
+      liveDonationsLoaded = true;
+    }
+  } catch (e) {
+    clearInterval(cycle);
+    loading.style.display = 'none';
+    errorEl.style.display = 'block';
+    return;
   }
   clearInterval(cycle);
   loading.style.display = 'none';
@@ -822,17 +833,26 @@ async function renderTrackMode() {
   const select = document.getElementById('track-batch-select');
   const loading = document.getElementById('track-live-loading');
   const empty   = document.getElementById('track-live-empty');
+  const errorEl = document.getElementById('track-live-error');
   const card    = document.getElementById('track-card-wrap');
 
   select.style.display = 'none';
   card.style.display   = 'none';
   empty.style.display  = 'none';
+  errorEl.style.display = 'none';
   loading.style.display = 'block';
   const cycle = startLoadingCycle('track-live-loading-label');
 
-  if (!liveDonationsLoaded) {
-    liveDonations = await loadLiveDonations();
-    liveDonationsLoaded = true;
+  try {
+    if (!liveDonationsLoaded) {
+      liveDonations = await loadLiveDonations();
+      liveDonationsLoaded = true;
+    }
+  } catch (e) {
+    clearInterval(cycle);
+    loading.style.display = 'none';
+    errorEl.style.display = 'block';
+    return;
   }
   clearInterval(cycle);
   loading.style.display = 'none';
@@ -1026,7 +1046,11 @@ async function loadLiveDonations() {
     return [...codeEntries, ...legacy].sort((a, b) => (b.blockTime || 0) - (a.blockTime || 0));
   } catch (e) {
     console.error('[loadLiveDonations]', e);
-    return [];
+    // Re-thrown rather than swallowed to [] — a failed fetch (rate limit,
+    // timeout, network) must not look identical to "you have zero
+    // donations" to the caller, or the UI shows the same empty state for
+    // both and there's no way to tell a real problem happened.
+    throw e;
   }
 }
 
