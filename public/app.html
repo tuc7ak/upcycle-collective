@@ -600,7 +600,7 @@ async function refreshLiveData() {
   const label = document.getElementById('ptr-label');
   const THRESHOLD = 64;
   const MAX_PULL  = 90;
-  let startY = null, pulling = false, refreshing = false;
+  let startY = null, pulling = false, refreshing = false, mouseDown = false;
 
   function setPull(dist) {
     indicator.classList.add('visible');
@@ -612,23 +612,22 @@ async function refreshLiveData() {
     indicator.style.transform = 'translate(-50%,-100%)';
   }
 
-  document.addEventListener('touchstart', (e) => {
-    startY = (!refreshing && window.scrollY <= 0) ? e.touches[0].clientY : null;
+  function start(y) {
+    startY = (!refreshing && window.scrollY <= 0) ? y : null;
     pulling = false;
-  }, { passive: true });
-
-  document.addEventListener('touchmove', (e) => {
-    if (startY === null || refreshing) return;
-    const dy = e.touches[0].clientY - startY;
-    if (dy <= 0 || window.scrollY > 0) { pulling = false; hide(); return; }
+  }
+  function move(y) {
+    if (startY === null || refreshing) return false;
+    const dy = y - startY;
+    if (dy <= 0 || window.scrollY > 0) { pulling = false; hide(); return false; }
     pulling = true;
     setPull(Math.min(dy * 0.5, MAX_PULL));
-  }, { passive: true });
-
-  document.addEventListener('touchend', async () => {
-    if (!pulling || startY === null) { startY = null; return; }
-    const releasedPastThreshold = label.textContent === 'Release to refresh';
+    return true;
+  }
+  async function end() {
     startY = null;
+    if (!pulling) return;
+    const releasedPastThreshold = label.textContent === 'Release to refresh';
     pulling = false;
     if (releasedPastThreshold) {
       refreshing = true;
@@ -640,6 +639,33 @@ async function refreshLiveData() {
       indicator.classList.remove('refreshing');
     }
     hide();
+  }
+
+  // Touch — mobile.
+  document.addEventListener('touchstart', (e) => start(e.touches[0].clientY), { passive: true });
+  document.addEventListener('touchmove',  (e) => move(e.touches[0].clientY), { passive: true });
+  document.addEventListener('touchend', end, { passive: true });
+
+  // Mouse drag — desktop equivalent of the touch pull gesture. Only takes
+  // over once a real downward drag from the top is detected, so ordinary
+  // clicks (buttons, links) never trigger it.
+  document.addEventListener('mousedown', (e) => { mouseDown = true; start(e.clientY); });
+  document.addEventListener('mousemove', (e) => {
+    if (!mouseDown) return;
+    if (move(e.clientY)) e.preventDefault(); // stop text selection once an actual pull is underway
+  });
+  document.addEventListener('mouseup', () => { mouseDown = false; end(); });
+
+  // Wheel — lets a trackpad/mouse-wheel "scroll up past the top" also
+  // refresh, without needing a click-drag.
+  let wheelPull = 0, wheelTimer = null;
+  document.addEventListener('wheel', (e) => {
+    if (refreshing || window.scrollY > 0 || e.deltaY >= 0) { wheelPull = 0; hide(); return; }
+    wheelPull = Math.min(wheelPull + -e.deltaY, MAX_PULL * 2);
+    pulling = true;
+    setPull(Math.min(wheelPull * 0.5, MAX_PULL));
+    clearTimeout(wheelTimer);
+    wheelTimer = setTimeout(async () => { await end(); wheelPull = 0; }, 400);
   }, { passive: true });
 })();
 
