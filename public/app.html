@@ -373,6 +373,7 @@
                 <div><strong>Type:</strong> <span id="lookup-type"></span></div>
                 <div><strong>Batch #:</strong> <span id="lookup-batch"></span></div>
                 <div><strong>Status:</strong> <span id="lookup-status"></span></div>
+                <div><strong>Scale photo:</strong> <span id="lookup-scale-status"></span></div>
               </div>
             </div>
           </div>
@@ -380,7 +381,15 @@
           <label style="margin-top:16px;display:block;">Weight (kg)</label>
           <input id="validate-kg-input" type="number" min="0.1" step="0.1" inputmode="decimal" placeholder="e.g. 1">
 
-          <button class="btn btn-gold" id="validate-submit-btn" onclick="submitValidateDonation()">Validate &amp; send tokens</button>
+          <label style="display:block;">Photo of the weight scale</label>
+          <input type="file" id="scale-photo-input" accept="image/*" capture="environment" style="display:none" onchange="handleScalePhoto(event)">
+          <div class="photo-box" id="scale-photo-box" onclick="document.getElementById('scale-photo-input').click()">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#8a8a78" stroke-width="1.6"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6l1.5-2h5L16 6"/><circle cx="12" cy="13" r="3.5"/></svg>
+            <span>Take a photo showing the scale's reading</span>
+          </div>
+          <div id="scale-photo-status" style="font-size:12px;color:var(--text-muted);margin-top:8px;margin-bottom:16px;"></div>
+
+          <button class="btn btn-gold" id="validate-submit-btn" onclick="submitValidateDonation()">Validate</button>
           <div id="validate-status"></div>
         </div>
 
@@ -553,6 +562,7 @@ let currentIdentity = '';
 const TEST_DONATION_CODES = new Set([
   'KLYYTF', '469LBM', 'SJKAT4', 'XESHPM', 'LJWV45', '8ZTEYQ', 'W5Z25X',
   '3DG5B4', 'EJPGY4', '5EFZ2N', 'L2537R', 'PP89D3', 'EYVTG4', 'XLC9CH', 'VYKJTC',
+  'D6DXS8', 'TZSH6Y',
 ]);
 function testLabel(code) { return TEST_DONATION_CODES.has(code) ? ' (test)' : ''; }
 
@@ -772,7 +782,7 @@ async function loadDonateTransactions() {
   list.innerHTML = liveDonations.map(d => {
     const shortSig = (d.sig || '').slice(0, 6) + '…' + (d.sig || '').slice(-6);
     const statusTag = d.status === 'validated'
-      ? '<div class="tx-status validated">Tokens received</div>'
+      ? '<div class="tx-status validated">Validated — tokens coming soon</div>'
       : d.status === 'pending'
         ? (d.photoLink
             ? '<div class="tx-status pending">Donated</div>'
@@ -891,7 +901,7 @@ function renderLiveItem(idx) {
     ];
     if (d.status === 'validated') {
       const vShort = d.validatedSig.slice(0, 6) + '…' + d.validatedSig.slice(-6);
-      document.getElementById('track-item-desc').textContent = `${d.kg}kg collected — tokens sent to your wallet.`;
+      document.getElementById('track-item-desc').textContent = `${d.kg}kg collected and validated — tokens will be sent to your wallet separately.`;
       document.getElementById('track-item-sig').textContent  = `${fmtShortDate(d.validatedBlockTime)} · ${vShort}`;
       link.href = `https://solscan.io/tx/${d.validatedSig}`;
       link.classList.remove('inert');
@@ -1684,6 +1694,8 @@ function checkStaffPin() {
 }
 
 /* ── Staff: look up a code's wallet + photo before validating ── */
+let currentValidateCode = null;
+
 async function submitLookupDonation() {
   const code = document.getElementById('validate-code-input').value.trim().toUpperCase();
   if (!code) { setValidateStatus('err', 'Enter the code from the bag.'); return; }
@@ -1700,19 +1712,56 @@ async function submitLookupDonation() {
     const data = await res.json();
     if (!data.success) { setValidateStatus('err', '❌ ' + (data.error ?? 'Failed')); return; }
 
+    currentValidateCode = code;
     document.getElementById('lookup-wallet').textContent = data.wallet;
     document.getElementById('lookup-type').textContent   = titleCase(data.type);
     document.getElementById('lookup-batch').textContent  = data.batch ?? '—';
     document.getElementById('lookup-status').textContent = data.status;
+    document.getElementById('lookup-scale-status').textContent = data.scalePhotoLink ? '✅ Uploaded' : 'Not uploaded yet';
     const photoEl = document.getElementById('lookup-photo');
     if (data.photoLink) { photoEl.src = data.photoLink; photoEl.style.display = 'block'; }
     else { photoEl.style.display = 'none'; }
     document.getElementById('lookup-result').style.display = 'block';
     document.getElementById('validate-status').innerHTML = '';
+
+    // Reset the scale-photo box for this (possibly new) code
+    document.getElementById('scale-photo-status').textContent = data.scalePhotoLink ? '✅ Scale photo already on file' : '';
+    document.getElementById('scale-photo-box').innerHTML =
+      `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#8a8a78" stroke-width="1.6"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6l1.5-2h5L16 6"/><circle cx="12" cy="13" r="3.5"/></svg><span>Take a photo showing the scale's reading</span>`;
   } catch (e) {
     setValidateStatus('err', '❌ ' + e.message);
   } finally {
     btn.disabled = false;
+  }
+}
+
+function handleScalePhoto(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  if (!currentValidateCode) { setValidateStatus('err', 'Look up the code first.'); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    document.getElementById('scale-photo-box').innerHTML =
+      `<img src="${reader.result}" alt="Scale photo" style="width:100%;height:100%;object-fit:cover;">`;
+    uploadScalePhoto(reader.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+async function uploadScalePhoto(dataUrl) {
+  const statusEl = document.getElementById('scale-photo-status');
+  statusEl.textContent = 'Uploading…';
+  try {
+    const res = await fetch('/api/donate', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'scalePhoto', code: currentValidateCode, photo: dataUrl }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Upload failed');
+    statusEl.textContent = '✅ Scale photo uploaded';
+    document.getElementById('lookup-scale-status').textContent = '✅ Uploaded';
+  } catch (e) {
+    statusEl.textContent = '❌ ' + e.message;
   }
 }
 
@@ -1734,10 +1783,12 @@ async function submitValidateDonation() {
     const data = await res.json();
     if (!data.success) { setValidateStatus('err', '❌ ' + (data.error ?? 'Failed')); return; }
 
-    setValidateStatus('ok', `✅ +${data.tokensAwarded} TUC → ${data.wallet.slice(0, 6)}…${data.wallet.slice(-4)} — <a href="https://solscan.io/tx/${data.signature}" target="_blank" style="color:var(--moss)">View on Solscan ↗</a>`);
-    toast('Donation validated — tokens sent!');
+    setValidateStatus('ok', `✅ Validated — ${data.kg}kg confirmed, ~${data.tokensOwed} TUC owed to ${data.wallet.slice(0, 6)}…${data.wallet.slice(-4)} (tokens sent separately) — <a href="https://solscan.io/tx/${data.signature}" target="_blank" style="color:var(--moss)">View on Solscan ↗</a>`);
+    toast('Donation validated — tokens will be sent separately.');
     document.getElementById('validate-code-input').value = '';
     document.getElementById('validate-kg-input').value = '';
+    document.getElementById('lookup-result').style.display = 'none';
+    currentValidateCode = null;
   } catch (e) {
     setValidateStatus('err', '❌ ' + e.message);
   } finally {

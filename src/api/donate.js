@@ -1,11 +1,6 @@
 const { PublicKey, Transaction, sendAndConfirmTransaction } = require('@solana/web3.js');
-const {
-  TOKEN_2022_PROGRAM_ID,
-  getOrCreateAssociatedTokenAccount,
-  createMintToInstruction,
-} = require('@solana/spl-token');
 const { createMemoInstruction } = require('@solana/spl-memo');
-const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require('./_utils');
+const { getConnection, getOrganiser, jsonOk, jsonErr } = require('./_utils');
 const crypto = require('crypto');
 const bs58 = require('bs58');
 
@@ -148,14 +143,15 @@ async function actionLookup(req, res) {
   if (!spreadsheetId) return jsonErr(res, 500, 'Google Sheet not configured');
 
   try {
-    const rows = await sheetsGetValues({ spreadsheetId, range: 'A2:G' });
+    const rows = await sheetsGetValues({ spreadsheetId, range: 'A2:H' });
     const row = rows.find(r => (r[0] || '').toUpperCase() === code);
     if (!row) return jsonErr(res, 404, 'Code not found. Check the label and try again.');
-    const [, wallet, type, batch, photoLink, status, timestamp] = row;
+    const [, wallet, type, batch, photoLink, status, timestamp, scalePhotoLink] = row;
     return jsonOk(res, {
       success: true, code, wallet, type,
       batch: batch || null, photoLink: photoLink || null,
       status: status || 'pending', timestamp: timestamp || null,
+      scalePhotoLink: scalePhotoLink || null,
     });
   } catch (err) {
     console.error('[donate:lookup]', err);
@@ -163,7 +159,34 @@ async function actionLookup(req, res) {
   }
 }
 
-// ── action: validate — staff mints tokens for a sealed, dropped-off code ──
+// ── action: scalePhoto — staff uploads a photo of the weight scale reading;
+// required before validate will accept this code ──
+async function actionScalePhoto(req, res) {
+  const { blobUploadPhoto, sheetsGetValues, sheetsUpdateRange } = require('./_google');
+  const { code: rawCode, photo } = req.body ?? {};
+  const code = String(rawCode || '').trim().toUpperCase();
+  if (!CODE_RE.test(code)) return jsonErr(res, 400, 'invalid code');
+  if (!photo || !String(photo).startsWith('data:image/')) return jsonErr(res, 400, 'photo required');
+
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+  if (!spreadsheetId) return jsonErr(res, 500, 'Google Sheet not configured');
+
+  try {
+    const rows = await sheetsGetValues({ spreadsheetId, range: 'A2:A' });
+    const idx = rows.findIndex(r => (r[0] || '').toUpperCase() === code);
+    if (idx === -1) return jsonErr(res, 404, 'Code not found. Look it up first.');
+
+    const photoLink = await blobUploadPhoto({ dataUrl: photo, filename: `scale/${code}-${Date.now()}.jpg` });
+    await sheetsUpdateRange({ spreadsheetId, range: `H${idx + 2}`, values: [photoLink] });
+
+    return jsonOk(res, { success: true, photoLink });
+  } catch (err) {
+    console.error('[donate:scalePhoto]', err);
+    return jsonErr(res, 500, err.message);
+  }
+}
+
+// ── action: validate — staff confirms a sealed, dropped-off code's weight ──
 async function actionValidate(req, res) {
   const { code: rawCode, kg: rawKg } = req.body ?? {};
   const code = String(rawCode || '').trim().toUpperCase();
@@ -171,10 +194,22 @@ async function actionValidate(req, res) {
   const kg = parseFloat(rawKg);
   if (!Number.isFinite(kg) || kg <= 0) return jsonErr(res, 400, 'kg must be a positive number');
 
+  // No scale photo, no validation — mirrors the donor side (no bag photo,
+  // no code on-chain). Checked before any chain scanning so a staff member
+  // who forgot the photo fails fast instead of waiting on a ~150-sig scan.
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+  if (spreadsheetId) {
+    const { sheetsGetValues } = require('./_google');
+    const rows = await sheetsGetValues({ spreadsheetId, range: 'A2:H' });
+    const row = rows.find(r => (r[0] || '').toUpperCase() === code);
+    if (!row || !row[7]) {
+      return jsonErr(res, 400, 'Upload a photo of the weight scale before validating.');
+    }
+  }
+
   try {
     const connection = getConnection();
     const organiser  = getOrganiser();
-    const mint       = getMintPublicKey();
 
     const sigs = await connection.getSignaturesForAddress(organiser.publicKey, { limit: SCAN_LIMIT }, 'confirmed');
 
@@ -210,14 +245,12 @@ async function actionValidate(req, res) {
       return jsonErr(res, 500, 'Code found but its wallet address is invalid.');
     }
 
-    const tokens = Math.max(1, Math.round(kg));
-    const tokenAccount = await getOrCreateAssociatedTokenAccount(
-      connection, organiser, mint, donorPubkey, false, 'confirmed', {}, TOKEN_2022_PROGRAM_ID,
+    // Memo-only — validating no longer mints. That's now a deliberately
+    // separate step (organiser-wallet only), so a leaked/shared staff PIN
+    // can at most mark a fake donation "validated," never move real tokens.
+    const tx = new Transaction().add(
+      createMemoInstruction(`TUC:DONATE:VALIDATED:${code}:${issued.type}:${kg}KG:${issued.wallet}`, [organiser.publicKey]),
     );
-
-    const tx = new Transaction()
-      .add(createMintToInstruction(mint, tokenAccount.address, organiser.publicKey, tokens, [], TOKEN_2022_PROGRAM_ID))
-      .add(createMemoInstruction(`TUC:DONATE:VALIDATED:${code}:${issued.type}:${kg}KG:${issued.wallet}`, [organiser.publicKey]));
 
     const signature = await sendAndConfirmTransaction(connection, tx, [organiser]);
 
@@ -233,8 +266,12 @@ async function actionValidate(req, res) {
       }
     }
 
+    // Display-only estimate of what the future send step will pay out —
+    // no tokens have actually moved yet.
+    const tokensOwed = Math.max(1, Math.round(kg));
+
     return jsonOk(res, {
-      success: true, code, wallet: issued.wallet, type: issued.type, kg, tokensAwarded: tokens, signature,
+      success: true, code, wallet: issued.wallet, type: issued.type, kg, tokensOwed, signature,
     });
   } catch (err) {
     console.error('[donate:validate]', err);
@@ -249,8 +286,9 @@ module.exports = async function handler(req, res) {
     case 'log':      return actionLog(req, res);
     case 'code':     return actionCode(req, res);
     case 'photo':    return actionPhoto(req, res);
-    case 'lookup':   return actionLookup(req, res);
-    case 'validate': return actionValidate(req, res);
+    case 'lookup':     return actionLookup(req, res);
+    case 'scalePhoto': return actionScalePhoto(req, res);
+    case 'validate':   return actionValidate(req, res);
     default:         return jsonErr(res, 400, `unknown action: ${action}`);
   }
 };
