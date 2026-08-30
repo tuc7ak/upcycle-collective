@@ -15,7 +15,7 @@
   :root{
     --bg-base:#111f13; --bg-page:#0c1a0e; --bg-surface:#172319; --bg-surface-2:#1c2c1f;
     --gold:#a3e635; --gold-dim:#6b8f24; --gold-15:rgba(163,230,53,0.15); --gold-25:rgba(163,230,53,0.25);
-    --moss:#22c55e; --moss-dim:#166534; --moss-15:rgba(34,197,94,0.15);
+    --moss:#22c55e; --moss-dim:#166534; --moss-15:rgba(34,197,94,0.15); --moss-25:rgba(34,197,94,0.25);
     --rust:#E5586E; --rust-15:rgba(229,88,110,0.15);
     --text-primary:#f0ebe0; --text-muted:rgba(240,235,224,0.56); --text-faint:rgba(240,235,224,0.32); --divider:rgba(255,255,255,0.08);
   }
@@ -88,6 +88,7 @@
   .tx-status{font-size:10px;font-family:'IBM Plex Mono';text-transform:uppercase;letter-spacing:0.04em;padding:2px 8px;border-radius:999px;margin-top:4px;display:inline-block;}
   .tx-status.pending{color:var(--text-faint);border:1px solid var(--divider);}
   .tx-status.validated{color:var(--gold);border:1px solid var(--gold-25);}
+  .tx-status.paid{color:var(--moss);border:1px solid var(--moss-25);}
 
   /* ── Track (preview) ── */
   .item-card{background:var(--bg-surface);border:1px solid var(--divider);border-radius:14px;padding:16px;margin:24px 0 16px;}
@@ -856,13 +857,15 @@ async function loadDonateTransactions() {
 
   list.innerHTML = liveDonations.map(d => {
     const shortSig = (d.sig || '').slice(0, 6) + '…' + (d.sig || '').slice(-6);
-    const statusTag = d.status === 'validated'
-      ? '<div class="tx-status validated">Validated</div>'
-      : d.status === 'pending'
-        ? (d.photoLink
-            ? '<div class="tx-status pending">Donated</div>'
-            : '<div class="tx-status pending">Awaiting drop-off</div>')
-        : '';
+    const statusTag = d.status === 'paid'
+      ? `<div class="tx-status paid">Airdropped ${d.tokensSent} TUC</div>`
+      : d.status === 'validated'
+        ? '<div class="tx-status validated">Validated</div>'
+        : d.status === 'pending'
+          ? (d.photoLink
+              ? '<div class="tx-status pending">Donated</div>'
+              : '<div class="tx-status pending">Awaiting drop-off</div>')
+          : '';
     const amount = d.status === 'pending' ? '—' : `${d.kg}kg`;
     const thumb = d.photoLink
       ? `<img src="${d.photoLink}" alt="" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;">`
@@ -983,21 +986,30 @@ function renderLiveItem(idx) {
     const steps = [
       { title: 'Donated', meta: `${fmtShortDate(d.codeBlockTime)} · ${codeShort}`, state: 'done' },
     ];
-    if (d.status === 'validated') {
+    if (d.status === 'paid') {
+      const vShort = d.validatedSig.slice(0, 6) + '…' + d.validatedSig.slice(-6);
+      const aShort = d.airdropSig.slice(0, 6) + '…' + d.airdropSig.slice(-6);
+      document.getElementById('track-item-desc').textContent = `${d.kg}kg collected and validated — ${d.tokensSent} TUC airdropped to your wallet.`;
+      document.getElementById('track-item-sig').textContent  = `${fmtShortDate(d.airdropBlockTime)} · ${aShort}`;
+      link.href = `https://solscan.io/tx/${d.airdropSig}`;
+      link.classList.remove('inert');
+      steps.push({ title: 'Validated', meta: `${fmtShortDate(d.validatedBlockTime)} · ${vShort}`, state: 'done' });
+      steps.push({ title: 'Airdropped', meta: `${d.tokensSent} TUC · ${fmtShortDate(d.airdropBlockTime)}`, state: 'current' });
+    } else if (d.status === 'validated') {
       const vShort = d.validatedSig.slice(0, 6) + '…' + d.validatedSig.slice(-6);
       document.getElementById('track-item-desc').textContent = `${d.kg}kg collected and validated — tokens will be sent to your wallet separately.`;
       document.getElementById('track-item-sig').textContent  = `${fmtShortDate(d.validatedBlockTime)} · ${vShort}`;
       link.href = `https://solscan.io/tx/${d.validatedSig}`;
       link.classList.remove('inert');
       steps.push({ title: 'Validated', meta: `${fmtShortDate(d.validatedBlockTime)} · ${vShort}`, state: 'current' });
-      steps.push({ title: 'Given new life', meta: 'Pending', state: 'pending' });
+      steps.push({ title: 'Airdropped', meta: 'Pending', state: 'pending' });
     } else {
       document.getElementById('track-item-desc').textContent = `Seal your bag, label it ${d.code}, and drop it off — staff will collect it.`;
       document.getElementById('track-item-sig').textContent  = `${fmtShortDate(d.codeBlockTime)} · ${codeShort}`;
       link.href = d.codeSig ? `https://solscan.io/tx/${d.codeSig}` : '#';
       link.classList.toggle('inert', !d.codeSig);
       steps.push({ title: 'Validated', meta: 'Pending', state: 'pending' });
-      steps.push({ title: 'Given new life', meta: 'Pending', state: 'pending' });
+      steps.push({ title: 'Airdropped', meta: 'Pending', state: 'pending' });
     }
     renderTimeline(steps);
     return;
@@ -1013,7 +1025,7 @@ function renderLiveItem(idx) {
   renderTimeline([
     { title: 'Donated',        meta: `${fmtShortDate(d.blockTime)} · ${shortSig}`, state: 'current' },
     { title: 'Validated',      meta: 'Pending', state: 'pending' },
-    { title: 'Given new life', meta: 'Pending', state: 'pending' },
+    { title: 'Airdropped', meta: 'Pending', state: 'pending' },
   ]);
 }
 
@@ -1081,6 +1093,16 @@ async function loadLiveDonations() {
           entry.validatedSig = s.signature;
           entry.validatedBlockTime = tx.blockTime;
           codeMap.set(code, entry);
+        } else if (parts[2] === 'PAID') {
+          // TUC DONATE PAID <code> <tokens> <wallet>
+          if (parts[5] !== walletPubkey) continue;
+          const code  = parts[3];
+          const entry = codeMap.get(code) || { code };
+          entry.status = 'paid';
+          entry.tokensSent = parts[4];
+          entry.airdropSig = s.signature;
+          entry.airdropBlockTime = tx.blockTime;
+          codeMap.set(code, entry);
         } else if (parts[2] === 'PHOTO') {
           // TUC DONATE PHOTO <code> <batch> <wallet> <url> — url may itself
           // contain colons (e.g. "https:"), so it's everything after the
@@ -1105,13 +1127,14 @@ async function loadLiveDonations() {
       }
     }
     const codeEntries = Array.from(codeMap.values()).map(e => ({
-      sig: e.validatedSig || e.photoSig || e.codeSig,
-      blockTime: e.validatedBlockTime || e.photoBlockTime || e.codeBlockTime,
+      sig: e.airdropSig || e.validatedSig || e.photoSig || e.codeSig,
+      blockTime: e.airdropBlockTime || e.validatedBlockTime || e.photoBlockTime || e.codeBlockTime,
       type: e.type, kg: e.kg, status: e.status || 'pending', code: e.code,
       codeSig: e.codeSig, codeBlockTime: e.codeBlockTime,
       validatedSig: e.validatedSig, validatedBlockTime: e.validatedBlockTime,
       photoLink: e.photoLink, batch: e.batch,
       photoSig: e.photoSig, photoBlockTime: e.photoBlockTime,
+      tokensSent: e.tokensSent, airdropSig: e.airdropSig, airdropBlockTime: e.airdropBlockTime,
     }));
     return [...codeEntries, ...legacy].sort((a, b) => (b.blockTime || 0) - (a.blockTime || 0));
   } catch (e) {
