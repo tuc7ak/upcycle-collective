@@ -857,7 +857,7 @@ async function loadDonateTransactions() {
   list.innerHTML = liveDonations.map(d => {
     const shortSig = (d.sig || '').slice(0, 6) + '…' + (d.sig || '').slice(-6);
     const statusTag = d.status === 'validated'
-      ? '<div class="tx-status validated">Validated — tokens coming soon</div>'
+      ? '<div class="tx-status validated">Validated</div>'
       : d.status === 'pending'
         ? (d.photoLink
             ? '<div class="tx-status pending">Donated</div>'
