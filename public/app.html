@@ -109,6 +109,8 @@
   .tl-title.pending{color:var(--text-faint);font-weight:400;}
   .tl-title.current{color:var(--gold);font-weight:600;}
   .tl-meta{font-size:11px;color:var(--text-faint);font-family:'IBM Plex Mono';margin-top:2px;}
+  .tl-meta a{color:var(--moss);text-decoration:none;}
+  .tl-meta a:hover{text-decoration:underline;}
 
   /* ── Redeem (preview) ── */
   .partner-card{background:var(--bg-surface);border:1px solid var(--divider);border-radius:16px;padding:16px;margin-bottom:14px;}
@@ -889,7 +891,10 @@ function renderTimeline(steps) {
     const dotCls   = step.state === 'done' ? 'tl-dot' : `tl-dot ${step.state}`;
     const titleCls = step.state === 'done' ? 'tl-title' : `tl-title ${step.state}`;
     const line     = isLast ? '' : '<div class="tl-line"></div>';
-    return `<div class="tl-row"><div class="tl-dot-col"><div class="${dotCls}"></div>${line}</div><div class="tl-content"><div class="${titleCls}">${step.title}</div><div class="tl-meta">${step.meta}</div></div></div>`;
+    const meta     = step.sig
+      ? `<a href="https://solscan.io/tx/${step.sig}" target="_blank" rel="noopener">${step.meta} · Solscan ↗</a>`
+      : step.meta;
+    return `<div class="tl-row"><div class="tl-dot-col"><div class="${dotCls}"></div>${line}</div><div class="tl-content"><div class="${titleCls}">${step.title}</div><div class="tl-meta">${meta}</div></div></div>`;
   }).join('');
 }
 
@@ -984,24 +989,23 @@ function renderLiveItem(idx) {
 
     const codeShort = d.codeSig ? d.codeSig.slice(0, 6) + '…' + d.codeSig.slice(-6) : '—';
     const steps = [
-      { title: 'Donated', meta: `${fmtShortDate(d.codeBlockTime)} · ${codeShort}`, state: 'done' },
+      { title: 'Donated', meta: fmtShortDate(d.codeBlockTime), sig: d.codeSig, state: 'done' },
     ];
     if (d.status === 'paid') {
-      const vShort = d.validatedSig.slice(0, 6) + '…' + d.validatedSig.slice(-6);
       const aShort = d.airdropSig.slice(0, 6) + '…' + d.airdropSig.slice(-6);
-      document.getElementById('track-item-desc').textContent = `${d.kg}kg collected and validated — ${d.tokensSent} TUC airdropped to your wallet.`;
+      document.getElementById('track-item-desc').textContent = `${d.kg}kg collected and validated — tokens airdropped to your wallet.`;
       document.getElementById('track-item-sig').textContent  = `${fmtShortDate(d.airdropBlockTime)} · ${aShort}`;
       link.href = `https://solscan.io/tx/${d.airdropSig}`;
       link.classList.remove('inert');
-      steps.push({ title: 'Validated', meta: `${fmtShortDate(d.validatedBlockTime)} · ${vShort}`, state: 'done' });
-      steps.push({ title: 'Airdropped', meta: `${d.tokensSent} TUC · ${fmtShortDate(d.airdropBlockTime)}`, state: 'current' });
+      steps.push({ title: 'Validated', meta: fmtShortDate(d.validatedBlockTime), sig: d.validatedSig, state: 'done' });
+      steps.push({ title: 'Airdropped', meta: fmtShortDate(d.airdropBlockTime), sig: d.airdropSig, state: 'current' });
     } else if (d.status === 'validated') {
       const vShort = d.validatedSig.slice(0, 6) + '…' + d.validatedSig.slice(-6);
       document.getElementById('track-item-desc').textContent = `${d.kg}kg collected and validated — tokens will be sent to your wallet separately.`;
       document.getElementById('track-item-sig').textContent  = `${fmtShortDate(d.validatedBlockTime)} · ${vShort}`;
       link.href = `https://solscan.io/tx/${d.validatedSig}`;
       link.classList.remove('inert');
-      steps.push({ title: 'Validated', meta: `${fmtShortDate(d.validatedBlockTime)} · ${vShort}`, state: 'current' });
+      steps.push({ title: 'Validated', meta: fmtShortDate(d.validatedBlockTime), sig: d.validatedSig, state: 'current' });
       steps.push({ title: 'Airdropped', meta: 'Pending', state: 'pending' });
     } else {
       document.getElementById('track-item-desc').textContent = `Seal your bag, label it ${d.code}, and drop it off — staff will collect it.`;
@@ -1023,8 +1027,8 @@ function renderLiveItem(idx) {
   link.classList.remove('inert');
 
   renderTimeline([
-    { title: 'Donated',        meta: `${fmtShortDate(d.blockTime)} · ${shortSig}`, state: 'current' },
-    { title: 'Validated',      meta: 'Pending', state: 'pending' },
+    { title: 'Donated',   meta: fmtShortDate(d.blockTime), sig: d.sig, state: 'current' },
+    { title: 'Validated', meta: 'Pending', state: 'pending' },
     { title: 'Airdropped', meta: 'Pending', state: 'pending' },
   ]);
 }
