@@ -14,6 +14,7 @@ build({
     'src/api/pay/beer.js',
     'src/api/pay/clothes-swap.js',
     'src/api/pay/creative.js',
+    'src/api/tickets.js',
   ],
   bundle:   true,
   platform: 'node',
