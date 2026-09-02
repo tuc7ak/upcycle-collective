@@ -6,7 +6,7 @@
   <title>The Upcycle Collective — TUC Token</title>
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -217,7 +217,7 @@
 
     /* ── TUC FLOW (What is TUC) ── */
     .tuc-flow-wrap { margin-top: 48px; }
-    .tuc-flow { display: flex; align-items: stretch; gap: 0; }
+    .tuc-flow { display: flex; align-items: stretch; gap: 16px; }
     .tuc-step {
       flex: 1; background: var(--bg-card);
       border: 1px solid var(--border); border-top: 2px solid var(--green-dim);
@@ -340,75 +340,116 @@
       position: relative; z-index: 10;
       pointer-events: none;
     }
+    /* Scoped 1:1 port of app.html's real #screen-wallet — same tokens,
+       same class names, same structure, just resized to fit the phone
+       mockup — so this illustration can't visually drift from the actual
+       app the way a hand-drawn approximation would. */
     .phone-screen {
       position: absolute;
       top: 10px; left: 13px; right: 12px; bottom: 11px;
-      background: #080f09; border-radius: 28px; overflow: hidden;
-      z-index: 1;
-      font-family: -apple-system, 'SF Pro Display', 'Segoe UI', sans-serif;
+      border-radius: 28px; overflow: hidden; z-index: 1;
+      --bg-base:#111f13; --bg-page:#0c1a0e; --bg-surface:#172319; --bg-surface-2:#1c2c1f;
+      --gold:#a3e635; --gold-15:rgba(163,230,53,0.15); --gold-25:rgba(163,230,53,0.25);
+      --moss:#22c55e; --rust:#E5586E;
+      --text-primary:#f0ebe0; --text-muted:rgba(240,235,224,0.56); --text-faint:rgba(240,235,224,0.32); --divider:rgba(255,255,255,0.08);
+      background: var(--bg-page); color: var(--text-primary);
+      font-family: 'Inter', -apple-system, sans-serif;
       -webkit-font-smoothing: antialiased;
     }
     .ps-status {
       display: flex; justify-content: space-between;
-      padding: 16px 22px 6px;
-      font-size: 10px; font-weight: 700; color: rgba(240,235,224,.32);
+      padding: 14px 18px 4px;
+      font-size: 9px; font-weight: 700; color: var(--text-faint);
     }
-    .ps-header {
-      display: flex; align-items: center; gap: 9px;
-      padding: 10px 16px 12px; border-bottom: 1px solid rgba(255,255,255,.05);
+    .phone-screen .screen { display: none; padding: 8px 14px 16px; position: absolute; top: 26px; left: 0; right: 0; bottom: 40px; overflow-y: auto; }
+    .phone-screen .screen.active { display: block; }
+    .phone-screen .eyebrow-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+    .phone-screen .eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 8px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); }
+    .phone-screen .preview-tag { font-family: 'IBM Plex Mono', monospace; font-size: 6.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-faint); border: 1px solid var(--divider); border-radius: 999px; padding: 1px 6px; }
+    .phone-screen .field-label { font-size: 7px; font-family: 'IBM Plex Mono', monospace; color: var(--text-faint); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 4px; display: block; }
+    .phone-screen .map-box { height: 44px; border-radius: 8px; background: var(--bg-surface); border: 1px solid var(--divider); position: relative; margin-bottom: 5px; }
+    .phone-screen .map-pin { position: absolute; top: 44%; left: 38%; width: 6px; height: 6px; border-radius: 50% 50% 50% 0; background: var(--gold); transform: rotate(-45deg); }
+    .phone-screen .location-name { font-size: 8.5px; color: var(--text-primary); font-weight: 500; }
+    .phone-screen .location-addr { font-size: 7px; color: var(--text-faint); margin-top: 1px; margin-bottom: 8px; }
+    .phone-screen .btn { display: flex; align-items: center; justify-content: center; padding: 8px; border: none; border-radius: 8px; font-size: 8.5px; font-weight: 700; width: 100%; font-family: 'Inter'; }
+    .phone-screen .btn-gold { background: var(--gold); color: var(--bg-page); }
+    .phone-screen .btn-outline-wide { background: transparent; border: 1px solid var(--divider); color: var(--text-muted); }
+    .phone-screen .item-card { background: var(--bg-surface); border: 1px solid var(--divider); border-radius: 10px; padding: 9px; margin: 6px 0 8px; }
+    .phone-screen .item-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .phone-screen .item-name { font-size: 8.5px; color: var(--text-primary); font-weight: 500; }
+    .phone-screen .item-id { font-family: 'IBM Plex Mono', monospace; font-size: 6.5px; color: var(--text-faint); }
+    .phone-screen .chain-row { display: flex; justify-content: space-between; font-family: 'IBM Plex Mono', monospace; font-size: 6.5px; color: var(--moss); padding-top: 6px; margin-top: 6px; border-top: 1px solid var(--divider); }
+    .phone-screen .timeline { margin-top: 4px; }
+    .phone-screen .tl-row { display: flex; gap: 7px; padding: 5px 0; }
+    .phone-screen .tl-dot-col { display: flex; flex-direction: column; align-items: center; width: 7px; }
+    .phone-screen .tl-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--moss); flex-shrink: 0; }
+    .phone-screen .tl-dot.pending { background: var(--bg-surface-2); border: 1px solid var(--divider); }
+    .phone-screen .tl-line { width: 1px; flex: 1; background: var(--divider); margin-top: 1px; }
+    .phone-screen .tl-title { font-size: 7.5px; color: var(--text-primary); font-weight: 500; }
+    .phone-screen .tl-title.pending { color: var(--text-faint); font-weight: 400; }
+    .phone-screen .tl-meta { font-size: 6.5px; color: var(--text-faint); font-family: 'IBM Plex Mono', monospace; margin-top: 1px; }
+    .phone-screen .partner-card { background: var(--bg-surface); border: 1px solid var(--divider); border-radius: 10px; padding: 8px; margin-bottom: 7px; }
+    .phone-screen .partner-top { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+    .phone-screen .partner-thumb { width: 20px; height: 20px; border-radius: 6px; background: var(--bg-surface-2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .phone-screen .partner-name { font-size: 8px; color: var(--text-primary); font-weight: 500; }
+    .phone-screen .partner-meta { font-size: 6.5px; color: var(--text-faint); margin-top: 1px; }
+    .phone-screen .stars { color: var(--gold); font-size: 6.5px; }
+    .phone-screen .redeem-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-top: 1px solid var(--divider); }
+    .phone-screen .ri-name { font-size: 7.5px; color: var(--text-primary); }
+    .phone-screen .ri-price { font-family: 'IBM Plex Mono', monospace; font-size: 7px; color: var(--gold); }
+    .phone-screen .redeem-btn { background: var(--bg-surface-2); border: 1px solid var(--divider); color: var(--text-primary); padding: 3px 7px; border-radius: 6px; font-size: 6.5px; }
+    .phone-screen .wallet-card { background: var(--bg-surface); border: 1px solid var(--divider); border-radius: 10px; padding: 9px; margin-bottom: 10px; }
+    .phone-screen .wallet-addr-label { font-size: 6.5px; color: var(--text-faint); font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 4px; }
+    .phone-screen .wallet-addr { font-family: 'IBM Plex Mono', monospace; font-size: 8px; color: var(--text-primary); }
+    .phone-screen .badge-row { display: flex; gap: 6px; margin-bottom: 4px; }
+    .phone-screen .badge { flex: 1; background: var(--bg-surface); border: 1px solid var(--divider); border-radius: 8px; padding: 8px 4px; text-align: center; }
+    .phone-screen .badge svg { width: 14px; height: 14px; }
+    .phone-screen .badge-label { font-size: 6.5px; color: var(--text-muted); margin-top: 4px; line-height: 1.2; }
+    .phone-screen .page-title { font-weight: 800; font-size: 17px; color: var(--text-primary); letter-spacing: -0.03em; margin: 3px 0 3px; }
+    .phone-screen .subtext { color: var(--text-muted); font-size: 8.5px; line-height: 1.4; margin-bottom: 10px; }
+    .phone-screen .wallet-topbar { display: flex; justify-content: flex-end; margin-bottom: 4px; }
+    .phone-screen .icon-btn { background: var(--bg-surface); border: 1px solid var(--divider); border-radius: 8px; padding: 5px 6px; display: flex; }
+    .phone-screen .icon-btn img { width: 12px; height: 12px; filter: invert(1) opacity(.7); }
+    .phone-screen .ring-wrap { position: relative; display: flex; flex-direction: column; align-items: center; margin: 4px 0 4px; }
+    .phone-screen .ring-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; }
+    .phone-screen .ring-balance {
+      font-weight: 900; font-size: 26px; letter-spacing: -0.03em; line-height: 1;
+      background: linear-gradient(135deg, var(--moss) 0%, var(--gold) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
-    .ps-logo { width: 26px; height: 26px; border-radius: 8px; object-fit: cover; }
-    .ps-title { font-size: 12px; font-weight: 700; color: #fff; flex: 1; }
-    .ps-dash {
-      font-size: 10px; font-weight: 700; padding: 4px 10px;
-      background: rgba(163,230,53,0.12); border: 1px solid rgba(163,230,53,0.2);
-      border-radius: 8px; color: rgba(163,230,53,0.8);
+    .phone-screen .ring-label { font-family: 'IBM Plex Mono', monospace; font-size: 6.5px; color: var(--text-muted); letter-spacing: 0.06em; margin-top: 2px; }
+    .phone-screen .ring-addr-row { display: flex; justify-content: center; align-items: center; gap: 4px; margin-top: 8px; }
+    .phone-screen .wallet-addr-text { font-size: 7.5px; opacity: .5; font-family: 'IBM Plex Mono', monospace; }
+    .phone-screen .wallet-copy-icon { font-size: 7.5px; opacity: .4; }
+    .phone-screen .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 12px 0 12px; }
+    .phone-screen .action-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      background: var(--bg-surface); border: 1px solid var(--divider); border-radius: 12px;
+      padding: 8px 6px; color: var(--text-primary); font-size: 8px; font-weight: 700;
     }
-    .ps-balance-card {
-      margin: 14px 12px 12px;
-      background: linear-gradient(135deg, #162018 0%, #0d1a0f 100%);
-      border: 1px solid rgba(163,230,53,.2); border-radius: 18px;
-      padding: 20px 16px; text-align: center;
-      box-shadow: 0 8px 24px rgba(0,0,0,.3);
+    .phone-screen .action-btn svg { width: 13px; height: 13px; }
+    .phone-screen .section-title, .phone-screen .section-label { font-size: 7.5px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-faint); margin: 10px 0 6px; }
+    .phone-screen .empty { text-align: center; padding: 14px 6px; color: var(--text-faint); font-size: 8px; }
+    .phone-screen .tx-list { display: flex; flex-direction: column; }
+    .phone-screen .tx-item { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--divider); }
+    .phone-screen .tx-item:last-child { border-bottom: none; }
+    .phone-screen .tx-info { flex: 1; min-width: 0; }
+    .phone-screen .tx-type { font-size: 9px; font-weight: 600; }
+    .phone-screen .tx-solscan { font-size: 6.5px; color: var(--moss); opacity: .8; margin-top: 2px; }
+    .phone-screen .tx-amount { font-size: 12px; font-weight: 900; white-space: nowrap; }
+    .phone-screen .tx-amount.pos { color: var(--gold); }
+    .phone-screen .tx-amount.neg { color: var(--rust); }
+
+    .phone-screen .navbar {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      display: flex; justify-content: space-around; align-items: center;
+      padding: 7px 2px 9px; background: var(--bg-base); border-top: 1px solid var(--divider);
     }
-    .ps-bal-label { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: rgba(240,235,224,.32); margin-bottom: 6px; }
-    .ps-bal-num { font-size: 52px; font-weight: 900; color: #a3e635; line-height: 1; letter-spacing: -1px; }
-    .ps-bal-sym { font-size: 11px; color: rgba(240,235,224,.28); margin-top: 3px; }
-    .ps-addr { font-size: 9px; color: rgba(240,235,224,.14); margin-top: 10px; font-family: monospace; }
-    .ps-actions {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 8px; margin: 0 12px 14px;
-    }
-    .ps-action {
-      background: rgba(163,230,53,0.08); border: 1px solid rgba(163,230,53,0.14);
-      border-radius: 14px; padding: 12px 8px; text-align: center;
-      font-size: 10px; font-weight: 600; color: rgba(240,235,224,0.8);
-    }
-    .ps-action .ai { font-size: 20px; display: block; margin-bottom: 5px; }
-    .ps-section-label {
-      font-size: 9px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .1em; color: rgba(240,235,224,.2);
-      padding: 0 14px; margin-bottom: 8px;
-    }
-    .ps-txs { padding: 0 12px 18px; display: flex; flex-direction: column; gap: 6px; }
-    .ps-tx {
-      display: flex; align-items: center; gap: 10px;
-      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.055);
-      border-radius: 13px; padding: 9px 12px;
-    }
-    .ps-tx-icon {
-      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center; font-size: 13px;
-    }
-    .ps-tx-icon.mint   { background: rgba(163,230,53,.18); }
-    .ps-tx-icon.reward { background: rgba(34,197,94,.15); }
-    .ps-tx-icon.spend  { background: rgba(255,152,0,.16); }
-    .ps-tx-info { flex: 1; min-width: 0; }
-    .ps-tx-name { font-size: 10px; font-weight: 600; color: rgba(240,235,224,0.82); }
-    .ps-tx-time { font-size: 8px; color: rgba(240,235,224,.22); margin-top: 2px; }
-    .ps-tx-amt  { font-size: 12px; font-weight: 800; white-space: nowrap; }
-    .ps-tx-amt.pos { color: #a3e635; }
-    .ps-tx-amt.neg { color: #ff8a65; }
+    .phone-screen .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-faint); cursor: pointer; background: none; border: none; padding: 2px; -webkit-tap-highlight-color: transparent; }
+    .phone-screen .icon-btn { cursor: pointer; }
+    .phone-screen .nav-item.active { color: var(--gold); }
+    .phone-screen .nav-item svg { display: block; width: 13px; height: 13px; }
+    .phone-screen .nav-label { font-size: 6px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.02em; }
 
     /* ── SOLANA SECTION ── */
     .sol-section { background: var(--bg-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
@@ -438,8 +479,8 @@
 
     /* ── ACCESS CARDS ── */
     .access-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 16px; margin-top: 48px;
+      display: grid; grid-template-columns: 1fr;
+      max-width: 460px; gap: 16px; margin-top: 48px;
     }
     .access-card {
       border-radius: 24px; padding: 40px 36px;
@@ -537,7 +578,7 @@
 
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-pill" data-reveal><div class="dot"></div> Live on Solana Mainnet</div>
+  <div class="hero-pill" data-reveal><div class="dot"></div> 2nd Pilot Event · The Spring Mall, Kuching · Oct 24 &amp; 25</div>
   <h1 data-reveal data-reveal-delay="1">Connecting people,<br>circulating value,<br><em>inspiring change.</em></h1>
   <p class="sub" data-reveal data-reveal-delay="2">TUC is a community token for The Upcycle Collective — earn tokens by donating, spend them at stations, all powered by the Solana blockchain.</p>
   <div class="hero-btns" data-reveal data-reveal-delay="3">
@@ -545,9 +586,7 @@
     <a href="app.html" class="btn-ghost">Open My Wallet</a>
   </div>
   <div class="hero-stats" data-reveal data-reveal-delay="4">
-    <div class="hero-stat"><div class="stat-num">TUC</div><div class="stat-label">Token name</div></div>
-    <div class="hero-stat"><div class="stat-num">$0.00</div><div class="stat-label">Fee for attendees</div></div>
-    <div class="hero-stat"><div class="stat-num">&lt; 1s</div><div class="stat-label">Transaction speed</div></div>
+    <div class="hero-stat"><div class="stat-num">Solana</div><div class="stat-label">Live on Mainnet</div></div>
     <div class="hero-stat"><div class="stat-num">Forever</div><div class="stat-label">Records on-chain</div></div>
   </div>
 </div>
@@ -557,36 +596,36 @@
 <!-- WHAT IS TUC -->
 <div class="section" id="what">
   <span class="section-label" data-reveal>What is TUC</span>
-  <h2 data-reveal data-reveal-delay="1">The model behind<br>the token</h2>
-  <p class="sub" data-reveal data-reveal-delay="2">Asset-light from day one — we own the waste and the sales; the co-ops make the products.</p>
+  <h2 data-reveal data-reveal-delay="1">The loop behind<br>the token</h2>
+  <p class="sub" data-reveal data-reveal-delay="2">Donate your waste, we turn it into something new, you earn TUC for closing the loop.</p>
   <div class="tuc-flow-wrap" data-reveal data-reveal-delay="3">
     <div class="tuc-flow">
       <div class="tuc-step">
         <div class="tuc-step-num">1</div>
-        <h3>COLLECT</h3>
-        <p>Recover lanyards, banners &amp; event materials from venues.</p>
-      </div>
-      <div class="tuc-arrow">→</div>
-      <div class="tuc-step tuc-step-highlight">
-        <div class="tuc-step-num">2</div>
-        <h3>UPCYCLE</h3>
-        <p>Sewing co-ops &amp; women's associations craft the products.</p>
+        <h3>DONATE</h3>
+        <p>Give lanyards, banners &amp; event materials instead of throwing them out.</p>
       </div>
       <div class="tuc-arrow">→</div>
       <div class="tuc-step">
+        <div class="tuc-step-num">2</div>
+        <h3>COLLECT</h3>
+        <p>TUC picks up what's donated from venues and drop-off points.</p>
+      </div>
+      <div class="tuc-arrow">→</div>
+      <div class="tuc-step tuc-step-highlight">
         <div class="tuc-step-num">3</div>
-        <h3>SELL</h3>
-        <p>Supply upcycled gift sets to GLCs &amp; corporates.</p>
+        <h3>UPCYCLE</h3>
+        <p>Sewing co-ops &amp; women's associations craft it into new products.</p>
       </div>
       <div class="tuc-arrow">→</div>
       <div class="tuc-step">
         <div class="tuc-step-num">4</div>
-        <h3>REINVEST</h3>
-        <p>Commission income funds the next phase — no factory.</p>
+        <h3>EARN</h3>
+        <p>Get TUC tokens for every donation — spend them at stations.</p>
       </div>
     </div>
     <div class="tuc-phase2">
-      <p><strong>PHASE 2:</strong> Blockchain smart collection bins at BCCK &amp; venues — automate collection and verify ESG impact on-chain, funded by commission.</p>
+      <p><strong>NEXT UP:</strong> Our 2nd pilot event lands at The Spring Mall, Kuching — October 24 &amp; 25.</p>
     </div>
   </div>
 </div>
@@ -609,29 +648,21 @@
     <div class="step" data-reveal>
       <div class="step-num">2</div>
       <div>
-        <h3>Check in at the door</h3>
-        <p>Scan the check-in QR code at the entrance with your Solana wallet. TUC tokens are instantly minted to your wallet on the Solana blockchain.</p>
-        <span class="step-tag">TUC tokens on arrival</span>
+        <h3>Donate bags, earn more tokens</h3>
+        <p>Bring pre-loved clothing or items. Drop off at the donation point — every transaction is labelled on-chain.</p>
+        <span class="step-tag">TUC tokens per recycle bag</span>
       </div>
     </div>
     <div class="step" data-reveal>
       <div class="step-num">3</div>
       <div>
-        <h3>Donate bags, earn more tokens</h3>
-        <p>Bring pre-loved clothing or items in a standard recycle bag. Staff scan your QR at the donation point and TUC tokens are added instantly. Every transaction is labelled on-chain.</p>
-        <span class="step-tag">TUC tokens per recycle bag</span>
-      </div>
-    </div>
-    <div class="step" data-reveal>
-      <div class="step-num">4</div>
-      <div>
         <h3>Spend at stations</h3>
-        <p>Show your wallet QR at any station. Staff process the transaction and your balance updates in real time. All powered by Solana — no middleman, no delays.</p>
+        <p>Show your wallet QR at any station to redeem items — all powered by Solana.</p>
         <span class="step-tag">QR code at every station</span>
       </div>
     </div>
     <div class="step" data-reveal>
-      <div class="step-num">5</div>
+      <div class="step-num">4</div>
       <div>
         <h3>Your history lives on-chain forever</h3>
         <p>Every TUC transaction is permanently recorded on Solana with a readable memo. View your full history on Solscan anytime — even years after the event.</p>
@@ -690,28 +721,122 @@
     </svg>
   </span>
 </div>
-            <div class="ps-header">
-              <img class="ps-logo" src="logo.png" alt="TUC" />
-              <div class="ps-title">The Upcycle Collective</div>
-              <div class="ps-dash">Dashboard →</div>
+            <div class="screen active" id="ps-screen-wallet">
+              <div class="eyebrow">Wallet</div>
+              <h1 class="page-title">Your balance</h1>
+              <div class="subtext">Self-custodial wallet — only you hold the keys.</div>
+
+              <div class="wallet-topbar">
+                <div class="icon-btn"><img src="scan-logo.png" alt="Scan" /></div>
+              </div>
+
+              <div class="ring-wrap">
+                <svg width="120" height="120" viewBox="0 0 200 200">
+                  <circle cx="100" cy="100" r="80" fill="none" stroke="var(--bg-surface-2)" stroke-width="10"/>
+                  <circle cx="100" cy="100" r="80" fill="none" stroke="var(--gold)" stroke-width="10" stroke-linecap="round" stroke-dasharray="502.4 502.4" transform="rotate(-90 100 100)"/>
+                </svg>
+                <div class="ring-center">
+                  <div class="ring-balance">35</div>
+                  <div class="ring-label">TUC TOKENS</div>
+                </div>
+              </div>
+              <div class="ring-addr-row">
+                <span class="wallet-addr-text">7xKp…mN3q</span>
+                <span class="wallet-copy-icon">⎘</span>
+              </div>
+
+              <div class="actions">
+                <div class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>Send</div>
+                <div class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3z"/><path d="M14 21h.01"/><path d="M21 14h.01"/><path d="M21 21h.01"/><path d="M17.5 17.5h.01"/></svg>Receive</div>
+              </div>
+
+              <div class="section-title">Activity</div>
+              <div class="tx-list">
+                <div class="tx-item"><div class="tx-info"><div class="tx-type">Check-in (+5 TUC)</div><div class="tx-solscan">↗ 4f9a2c…e81b · Solscan</div></div><div class="tx-amount pos">+5</div></div>
+                <div class="tx-item"><div class="tx-info"><div class="tx-type">Recycle Bag (+10 TUC)</div><div class="tx-solscan">↗ 8b31df…4c02 · Solscan</div></div><div class="tx-amount pos">+10</div></div>
+                <div class="tx-item"><div class="tx-info"><div class="tx-type">Clothes Swap (15 TUC)</div><div class="tx-solscan">↗ 1e77aa…9f3d · Solscan</div></div><div class="tx-amount neg">−15</div></div>
+              </div>
             </div>
-            <div class="ps-balance-card">
-              <div class="ps-bal-label">💳 My Wallet</div>
-              <div class="ps-bal-num">35</div>
-              <div class="ps-bal-sym">TUC Tokens</div>
-              <div class="ps-addr">7xKp…mN3q · Solana Mainnet</div>
+
+            <div class="screen" id="ps-screen-donate">
+              <div class="eyebrow-row"><span class="eyebrow">New donation</span></div>
+              <h1 class="page-title">What are you giving up?</h1>
+              <div class="subtext">Generate a code, seal your bag, drop it off — tokens land automatically.</div>
+              <span class="field-label">Drop-off point</span>
+              <div class="map-box"><div class="map-pin"></div></div>
+              <div class="location-name">Padungan Collection Point</div>
+              <div class="location-addr">0.8 km away · open until 6:00 PM</div>
+              <div class="btn btn-gold">Generate my donation code</div>
+              <div class="section-title">Transactions</div>
+              <div class="empty">No donations yet — generate a code above.</div>
             </div>
-            <div class="ps-actions">
-              <div class="ps-action"><span class="ai">↑</span>Send</div>
-              <div class="ps-action"><span class="ai">↓</span>Receive</div>
+
+            <div class="screen" id="ps-screen-track">
+              <div class="eyebrow-row"><span class="eyebrow">The loop</span></div>
+              <h1 class="page-title">Track your donations</h1>
+              <div class="subtext">Your real donations, pulled live from the chain.</div>
+              <div class="item-card">
+                <div class="item-card-top"><div class="item-name">Clothes donation</div><div class="item-id">Batch #3</div></div>
+                <div class="chain-row"><span>4f9a…e81b</span><span>View on-chain →</span></div>
+              </div>
+              <div class="section-title">Timeline</div>
+              <div class="timeline">
+                <div class="tl-row"><div class="tl-dot-col"><div class="tl-dot"></div><div class="tl-line"></div></div><div><div class="tl-title">Donated</div><div class="tl-meta">10:15 AM · on-chain</div></div></div>
+                <div class="tl-row"><div class="tl-dot-col"><div class="tl-dot"></div><div class="tl-line"></div></div><div><div class="tl-title">Validated</div><div class="tl-meta">2:40 PM · on-chain</div></div></div>
+                <div class="tl-row"><div class="tl-dot-col"><div class="tl-dot pending"></div></div><div><div class="tl-title pending">Tokens airdropped</div><div class="tl-meta">Pending</div></div></div>
+              </div>
             </div>
-            <div class="ps-section-label">Recent Activity</div>
-            <div class="ps-txs">
-              <div class="ps-tx"><div class="ps-tx-icon mint">🪙</div><div class="ps-tx-info"><div class="ps-tx-name">Check-in reward</div><div class="ps-tx-time">TUC:CHECKIN · 10:02 AM</div></div><div class="ps-tx-amt pos">+ TUC</div></div>
-              <div class="ps-tx"><div class="ps-tx-icon reward">♻️</div><div class="ps-tx-info"><div class="ps-tx-name">Recycle bag donated</div><div class="ps-tx-time">TUC:RECYCLE_UNIT · 10:15 AM</div></div><div class="ps-tx-amt pos">+ TUC</div></div>
-              <div class="ps-tx"><div class="ps-tx-icon reward">♻️</div><div class="ps-tx-info"><div class="ps-tx-name">Recycle bag donated</div><div class="ps-tx-time">TUC:RECYCLE_UNIT · 11:03 AM</div></div><div class="ps-tx-amt pos">+ TUC</div></div>
-              <div class="ps-tx"><div class="ps-tx-icon spend">✂️</div><div class="ps-tx-info"><div class="ps-tx-name">Upcycle workshop</div><div class="ps-tx-time">Station 1 · 2:10 PM</div></div><div class="ps-tx-amt neg">−15</div></div>
-              <div class="ps-tx"><div class="ps-tx-icon spend">🎰</div><div class="ps-tx-info"><div class="ps-tx-name">Lucky draw entry</div><div class="ps-tx-time">Final draw · 9:20 PM</div></div><div class="ps-tx-amt neg">−5</div></div>
+
+            <div class="screen" id="ps-screen-redeem">
+              <div class="eyebrow-row"><span class="eyebrow">Marketplace</span><span class="preview-tag">Preview</span></div>
+              <h1 class="page-title">Redeem your tokens</h1>
+              <div class="subtext">Spend at partner stores across Kuching.</div>
+              <div class="partner-card">
+                <div class="partner-top">
+                  <div class="partner-thumb"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.8"><path d="M4 9l1-5h14l1 5"/><path d="M4 9h16v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9z"/></svg></div>
+                  <div><div class="partner-name">Kertas &amp; Co.</div><div class="partner-meta"><span class="stars">★★★★★</span> Secondhand</div></div>
+                </div>
+                <div class="redeem-item"><div class="ri-name">Upcycled tote bag</div><div style="display:flex;align-items:center;gap:5px;"><span class="ri-price">8 tokens</span><span class="redeem-btn">Redeem</span></div></div>
+                <div class="redeem-item"><div class="ri-name">Relisted denim jacket</div><div style="display:flex;align-items:center;gap:5px;"><span class="ri-price">14 tokens</span><span class="redeem-btn">Redeem</span></div></div>
+              </div>
+            </div>
+
+            <div class="screen" id="ps-screen-profile">
+              <div class="eyebrow-row"><span class="eyebrow">Account</span></div>
+              <h1 class="page-title">Your account</h1>
+              <div class="subtext">The Upcycle Collective</div>
+              <div class="wallet-card">
+                <div class="wallet-addr-label">Wallet address</div>
+                <div class="wallet-addr">7xKp…mN3q</div>
+              </div>
+              <div class="section-title">Badges</div>
+              <div class="badge-row">
+                <div class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#a3e635" stroke-width="1.6"><path d="M12 2l2.6 6.6L21 9.3l-5 4.6L17.4 21 12 17.3 6.6 21 8 13.9 3 9.3l6.4-.7L12 2z"/></svg><div class="badge-label">First donation</div></div>
+                <div class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#a3e635" stroke-width="1.6"><path d="M4 12a8 8 0 0 1 14-5"/><path d="M18 3v5h-5"/><path d="M20 12a8 8 0 0 1-14 5"/><path d="M6 21v-5h5"/></svg><div class="badge-label">Loop closer</div></div>
+              </div>
+            </div>
+
+            <div class="navbar">
+              <div class="nav-item active" data-tab="wallet" onclick="tucPhoneNav(this,'wallet')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M3 11h18"/><circle cx="16.5" cy="15" r="1"/></svg>
+                <div class="nav-label">Wallet</div>
+              </div>
+              <div class="nav-item" data-tab="donate" onclick="tucPhoneNav(this,'donate')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v16M4 12h16"/></svg>
+                <div class="nav-label">Donate</div>
+              </div>
+              <div class="nav-item" data-tab="track" onclick="tucPhoneNav(this,'track')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12a8 8 0 0 1 14-5"/><path d="M18 3v5h-5"/><path d="M20 12a8 8 0 0 1-14 5"/><path d="M6 21v-5h5"/></svg>
+                <div class="nav-label">Track</div>
+              </div>
+              <div class="nav-item" data-tab="redeem" onclick="tucPhoneNav(this,'redeem')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v6H4z"/><path d="M4 10v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9"/><path d="M9 15h6"/></svg>
+                <div class="nav-label">Redeem</div>
+              </div>
+              <div class="nav-item" data-tab="profile" onclick="tucPhoneNav(this,'profile')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>
+                <div class="nav-label">Profile</div>
+              </div>
             </div>
           </div>
         </div>
@@ -743,22 +868,15 @@
 <!-- ACCESS -->
 <div class="section" id="access">
   <span class="section-label" data-reveal>Get started</span>
-  <h2 data-reveal data-reveal-delay="1">Two ways<br>to access TUC</h2>
-  <p class="sub" data-reveal data-reveal-delay="2">One for attendees, one for staff. Both work on any phone — no app install required.</p>
+  <h2 data-reveal data-reveal-delay="1">One app for<br>the whole event</h2>
+  <p class="sub" data-reveal data-reveal-delay="2">Log in with email and you're ready — works on any phone, no app install required.</p>
   <div class="access-grid">
     <a href="app.html" class="access-card public" data-reveal data-reveal-delay="1">
       <span class="ac-tag">Public · For attendees</span>
       <span class="ac-icon">💳</span>
-      <h3>TUC Wallet</h3>
+      <h3>TUC App</h3>
       <p>Log in with email, check your balance, view transaction history, and show your QR code at stations. Designed for everyone — no crypto knowledge needed.</p>
-      <span class="ac-link">Open Wallet App <span class="ac-arr">→</span></span>
-    </a>
-    <a href="staff.html" class="access-card staff" data-reveal data-reveal-delay="2">
-      <span class="ac-tag">Restricted · Staff only</span>
-      <span class="ac-icon">🛡️</span>
-      <h3>Staff Terminal</h3>
-      <p>Scan attendee QR codes to issue check-in tokens and manual rewards. Used by event staff to manage all token minting during the event.</p>
-      <span class="ac-link">Open Staff Terminal <span class="ac-arr">→</span></span>
+      <span class="ac-link">Open App <span class="ac-arr">→</span></span>
     </a>
   </div>
 </div>
@@ -800,6 +918,16 @@
   window.addEventListener('scroll', () => {
     nav.classList.toggle('scrolled', window.scrollY > 40);
   }, { passive: true });
+
+  function tucPhoneNav(btn, tab) {
+    const screen = btn.closest('.phone-screen');
+    if (!screen) return;
+    screen.querySelectorAll('.navbar .nav-item').forEach(el => el.classList.remove('active'));
+    btn.classList.add('active');
+    screen.querySelectorAll(':scope > .screen').forEach(el => el.classList.remove('active'));
+    const target = screen.querySelector('#ps-screen-' + tab);
+    if (target) target.classList.add('active');
+  }
 </script>
 
 </body>
