@@ -7,6 +7,7 @@
 <link rel="icon" type="image/png" href="/favicon.png" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<script src="vendor-list.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -140,6 +141,7 @@ tbody td { padding: 12px 16px; font-size: 13px; vertical-align: middle; }
 .badge-mint     { background: rgba(34,197,94,.15);  color: #22c55e; border: 1px solid rgba(34,197,94,.25); }
 .badge-transfer { background: rgba(163,230,53,.12); color: #a3e635; border: 1px solid rgba(163,230,53,.22); }
 .badge-burn     { background: rgba(239,68,68,.12);  color: #ef4444; border: 1px solid rgba(239,68,68,.22); }
+.badge-vendor   { background: rgba(251,191,36,.13); color: #fbbf24; border: 1px solid rgba(251,191,36,.28); }
 .badge-unknown  { background: rgba(255,255,255,.06); color: var(--muted); border: 1px solid var(--border); }
 
 .wallet-cell { display: flex; align-items: center; gap: 6px; }
@@ -250,11 +252,11 @@ tbody td { padding: 12px 16px; font-size: 13px; vertical-align: middle; }
   <div class="nav-left">
     <img class="nav-logo-img" src="../logo/TUC Logo.png" alt="TUC" />
     <div class="nav-logo">The Upcycle Collective — Dashboard</div>
-    <div class="nav-ca" id="nav-ca" title="Click to copy CA">2hgWy…ngRj</div>
+    <div class="nav-ca" id="nav-ca" title="Click to copy CA">AQbA6…X87yz</div>
   </div>
   <div class="nav-right">
     <div class="live-pill"><div class="live-dot"></div><span id="refresh-label">Live</span></div>
-    <a class="nav-btn btn-outline" href="https://solscan.io/token/2hgWyBDWgw4xesu8NpwTAhHgy2gnAo5iBhsBNSasngRj" target="_blank" rel="noopener">↗ Solscan</a>
+    <a class="nav-btn btn-outline" href="https://solscan.io/token/AQbA6U1aHJen4Y85Skn8GYJgYcqKWT6atBaH8JQX87yz" target="_blank" rel="noopener">↗ Solscan</a>
     <button class="nav-btn btn-outline" id="btn-export">⬇ Export CSV</button>
     <button class="nav-btn btn-lime"    id="btn-refresh">↻ Refresh</button>
   </div>
@@ -264,7 +266,7 @@ tbody td { padding: 12px 16px; font-size: 13px; vertical-align: middle; }
 
   <!-- VENDOR STATS (last 24h) -->
   <div id="vendor-stats" style="margin-bottom:24px;">
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.4;margin-bottom:12px;">Vendor transactions · last 24h</div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.4;margin-bottom:12px;">Vendor visits · from vendor-checkin.html</div>
     <div id="vendor-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">
       <div style="opacity:.4;font-size:13px;padding:12px 0">Loading…</div>
     </div>
@@ -281,6 +283,7 @@ tbody td { padding: 12px 16px; font-size: 13px; vertical-align: middle; }
       <option value="MINT">Mint</option>
       <option value="TRANSFER">Transfer</option>
       <option value="BURN">Burn</option>
+      <option value="VENDOR">Vendor visit</option>
     </select>
     <select class="filter-select" id="filter-memo">
       <option value="">All Memos</option>
@@ -312,7 +315,8 @@ tbody td { padding: 12px 16px; font-size: 13px; vertical-align: middle; }
 /* ═══════════════════════════════════════════
    CONFIG
    ═══════════════════════════════════════════ */
-const MINT    = 'AQbA6U1aHJen4Y85Skn8GYJgYcqKWT6atBaH8JQX87yz'; // wTUC
+const MINT      = 'AQbA6U1aHJen4Y85Skn8GYJgYcqKWT6atBaH8JQX87yz'; // wTUC
+const ORGANISER = 'CGDLbYHVnoMpw2CCbKMMomm6U3ByVZRFqKuGZfpdsrBK';
 const API_KEY = 'a353da56-f27a-4a7a-9091-bdc6f8d66f27';
 const RPC_URL = `https://mainnet.helius-rpc.com/?api-key=${API_KEY}`;
 const HELIUS  = `https://api.helius.xyz/v0`;
@@ -322,6 +326,14 @@ const MEMO_PROGRAMS = new Set([
   'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo',   // SPL Memo v1 (legacy)
 ]);
 
+async function rpc(method, params) {
+  const r = await fetch(RPC_URL, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
+  });
+  return (await r.json()).result;
+}
+
 /* ═══════════════════════════════════════════
    STATE
    ═══════════════════════════════════════════ */
@@ -330,6 +342,8 @@ let cursor    = null; // last sig for pagination
 let loading   = false;
 let autoTimer = null;
 const AUTO_REFRESH_SEC = 30;
+
+let vendorCounts = {}; // { POUCH: 3, FIGURINE: 0, ... } — always has every TUC_VENDORS key
 
 /* ═══════════════════════════════════════════
    BASE58 DECODE (for memo extraction)
@@ -437,6 +451,86 @@ function parseTx(tx) {
 }
 
 /* ═══════════════════════════════════════════
+   VENDOR CHECK-INS — memo-only, never touch the mint, so the
+   Helius mint-scan above can never see them. Scanned separately here via
+   the organiser's own signature history (organiser fee-pays every
+   check-in), same approach as vendor-checkin.html and checkin.html's
+   own feed use. Tied to TUC_VENDORS (vendor-list.js) so this list is
+   always in sync with what's actually on the QR page.
+   ═══════════════════════════════════════════ */
+const VENDOR_SCAN_LIMIT = 100;
+
+async function loadVendorCheckins() {
+  // Always start every known vendor at 0 — never collapse to "no data"
+  vendorCounts = Object.fromEntries(TUC_VENDORS.map(v => [v, 0]));
+  const rows = [];
+
+  let sigs;
+  try {
+    sigs = await rpc('getSignaturesForAddress', [ORGANISER, { limit: VENDOR_SCAN_LIMIT }]);
+  } catch { sigs = null; }
+  if (!sigs) { renderVendorGrid(); return; }
+
+  for (const sig of sigs) {
+    let tx;
+    try {
+      tx = await rpc('getTransaction', [sig.signature, { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 }]);
+    } catch { continue; }
+    if (!tx) continue;
+
+    const allIx = [
+      ...(tx.transaction?.message?.instructions ?? []),
+      ...(tx.meta?.innerInstructions ?? []).flatMap(ii => ii?.instructions ?? []),
+    ].filter(Boolean);
+
+    let memo = '';
+    for (const ix of allIx) {
+      const pid = typeof ix.programId === 'string' ? ix.programId : ix.programId?.toBase58?.();
+      if (MEMO_PROGRAMS.has(pid) && ix.parsed && typeof ix.parsed === 'string') memo = ix.parsed.trim();
+    }
+    const m = /^wTUC:VENDOR:(.+)$/.exec(memo);
+    if (!m) continue;
+    const vendorName = m[1];
+
+    // The attendee is simply the other signer — organiser is always fee payer
+    const accountKeys = tx.transaction?.message?.accountKeys ?? [];
+    const signerKeys   = accountKeys.filter(k => k?.signer).map(k => k.pubkey ?? k);
+    const wallet = signerKeys.find(k => k !== ORGANISER) || null;
+
+    if (vendorName in vendorCounts) vendorCounts[vendorName]++;
+    else vendorCounts[vendorName] = (vendorCounts[vendorName] || 0) + 1; // unregistered vendor name — still shown
+
+    rows.push({
+      sig: sig.signature, time: (tx.blockTime || 0) * 1000, type: 'VENDOR',
+      from: wallet, to: null, amount: 0, memo, err: !!tx.meta?.err,
+      vendor: vendorName,
+    });
+  }
+
+  // Merge into the main table dataset, replacing any previous vendor-checkin
+  // rows so a refresh doesn't duplicate them
+  allTxs = [...allTxs.filter(t => t.type !== 'VENDOR'), ...rows];
+  renderVendorGrid();
+  updateMemoFilter();
+  renderTable();
+}
+
+function renderVendorGrid() {
+  const grid = document.getElementById('vendor-grid');
+  const names = Object.keys(vendorCounts);
+  grid.innerHTML = names.map(name => {
+    const count = vendorCounts[name] || 0;
+    const dim = count === 0;
+    return `<div style="background:${dim ? 'rgba(255,255,255,.03)' : 'rgba(163,230,53,.08)'};border:1px solid ${dim ? 'rgba(255,255,255,.07)' : 'rgba(163,230,53,.2)'};border-radius:16px;padding:16px;">
+      <div style="font-size:22px;margin-bottom:8px;">🏪</div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.5;margin-bottom:6px;">${esc(name)}</div>
+      <div style="font-size:32px;font-weight:900;color:${dim ? 'rgba(255,255,255,.25)' : 'var(--lime)'};">${count}</div>
+      <div style="font-size:11px;opacity:.4;margin-top:4px;">visit${count === 1 ? '' : 's'}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════
    LOAD TRANSACTIONS
    ═══════════════════════════════════════════ */
 async function loadTxs(reset = false) {
@@ -458,9 +552,9 @@ async function loadTxs(reset = false) {
       allTxs = [...allTxs, ...parsed];
     }
 
-    updateStats();
     updateMemoFilter();
     renderTable();
+    if (reset) loadVendorCheckins(); // independent scan, self-renders when done
 
     const hasMore = raw.length === 100;
     document.getElementById('load-more-wrap').style.display = hasMore ? 'block' : 'none';
@@ -471,61 +565,6 @@ async function loadTxs(reset = false) {
     loading = false;
     updateRefreshLabel();
   }
-}
-
-/* ═══════════════════════════════════════════
-   STATS
-   ═══════════════════════════════════════════ */
-const VENDOR_LABELS = {
-  'wTUC:landik':       { label: 'Landik',       icon: '🛍️' },
-  'wTUC:uitm':         { label: 'UiTM',         icon: '🎓' },
-  'wTUC:beer':         { label: 'Beer',         icon: '🍺' },
-  'wTUC:clothes-swap': { label: 'Clothes Swap', icon: '👕' },
-  'wTUC:creative':     { label: 'Creative',     icon: '🎨' },
-  // legacy — event 1's original 0-decimal TUC memos, kept so older activity still labels correctly
-  'TUC:landik':        { label: 'Landik',       icon: '🛍️' },
-  'TUC:uitm':          { label: 'UiTM',         icon: '🎓' },
-  'TUC:beer':          { label: 'Beer',         icon: '🍺' },
-  'TUC:clothes-swap':  { label: 'Clothes Swap', icon: '👕' },
-  'TUC:creative':      { label: 'Creative',     icon: '🎨' },
-};
-
-function updateStats() {
-  const cutoff = Date.now() - 24 * 60 * 60 * 1000;
-  const recent = allTxs.filter(tx => tx.time >= cutoff && tx.type === 'TRANSFER');
-
-  const counts = {};
-  const tucTotals = {};
-  for (const tx of recent) {
-    const key = tx.memo || 'OTHER';
-    counts[key]    = (counts[key]    || 0) + 1;
-    tucTotals[key] = (tucTotals[key] || 0) + tx.amount;
-  }
-
-  const grid = document.getElementById('vendor-grid');
-  const keys = Object.keys(VENDOR_LABELS);
-
-  // Include any memos not in our known list
-  const unknownKeys = Object.keys(counts).filter(k => !keys.includes(k) && k !== 'OTHER');
-  const allKeys = [...keys, ...unknownKeys];
-
-  if (!allKeys.some(k => counts[k])) {
-    grid.innerHTML = '<div style="opacity:.4;font-size:13px;padding:8px 0;grid-column:1/-1">No vendor transactions in the last 24h</div>';
-    return;
-  }
-
-  grid.innerHTML = allKeys.map(key => {
-    const v     = VENDOR_LABELS[key] || { label: key.replace(/^w?TUC:/, '').replace(/_/g, ' '), icon: '🏪' };
-    const count = counts[key] || 0;
-    const tuc   = tucTotals[key] || 0;
-    const dim   = count === 0;
-    return `<div style="background:${dim ? 'rgba(255,255,255,.03)' : 'rgba(163,230,53,.08)'};border:1px solid ${dim ? 'rgba(255,255,255,.07)' : 'rgba(163,230,53,.2)'};border-radius:16px;padding:16px;">
-      <div style="font-size:22px;margin-bottom:8px;">${v.icon}</div>
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.5;margin-bottom:6px;">${v.label}</div>
-      <div style="font-size:32px;font-weight:900;color:${dim ? 'rgba(255,255,255,.25)' : 'var(--lime)'};">${count}</div>
-      <div style="font-size:11px;opacity:.4;margin-top:4px;">${tuc.toFixed(2)} wTUC spent</div>
-    </div>`;
-  }).join('');
 }
 
 function fmt(n) {
@@ -614,12 +653,13 @@ function rowHTML(tx) {
 }
 
 function badgeHTML(type) {
-  const map = { MINT: 'badge-mint', TRANSFER: 'badge-transfer', BURN: 'badge-burn' };
+  const map = { MINT: 'badge-mint', TRANSFER: 'badge-transfer', BURN: 'badge-burn', VENDOR: 'badge-vendor' };
   return `<span class="badge ${map[type] || 'badge-unknown'}">${type}</span>`;
 }
 
 const VENDOR_PREFIXES = ['DRINKS_','FOOD_','MERCH_','VIP_','GAME_','SPICE_'];
 function getMemoSource(tx) {
+  if (tx.type === 'VENDOR')  return 'vendor';
   if (tx.type === 'MINT')     return 'staff';
   if (tx.type === 'TRANSFER') {
     if (tx.memo && VENDOR_PREFIXES.some(p => tx.memo.startsWith(p))) return 'vendor';
@@ -730,11 +770,11 @@ async function refreshTop() {
     const newTxs = parsed.filter(t => !existingSigs.has(t.sig));
     if (newTxs.length) {
       allTxs = [...newTxs, ...allTxs];
-      updateStats();
       updateMemoFilter();
       renderTable();
       toast(`↑ ${newTxs.length} new transaction${newTxs.length > 1 ? 's' : ''}`);
     }
+    loadVendorCheckins(); // refresh vendor visit counts every cycle too
   } catch(e) {}
   _countdown = AUTO_REFRESH_SEC;
   document.getElementById('refresh-label').textContent = 'Live';

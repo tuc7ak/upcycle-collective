@@ -7,6 +7,7 @@
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="vendor-list.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -95,10 +96,9 @@
 
 <script>
   const BASE_URL = 'https://upcycle-collective.vercel.app';
-  const VENDORS = ['POUCH', 'FIGURINE', 'PEWANI', 'LANDIK', 'MAKENTAKE'];
 
   const grid = document.getElementById('grid');
-  VENDORS.forEach(name => {
+  TUC_VENDORS.forEach(name => {
     const card = document.createElement('div');
     card.className = 'qr-card';
     const canvasId = `qr-${name}`;
