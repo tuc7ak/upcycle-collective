@@ -7,7 +7,6 @@
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -83,58 +82,6 @@
     .feed-memo { font-size: 10px; font-family: monospace; opacity: 0.4; margin-top: 1px; }
     .feed-time { font-size: 11px; opacity: 0.38; text-align: right; flex-shrink: 0; }
     .feed-empty { text-align: center; opacity: 0.3; font-size: 13px; padding: 20px 0; }
-
-    /* ── Manual rewards ── */
-    .rewards-wrap { width: 100%; max-width: 360px; margin-top: 28px; }
-    .rewards-title { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; opacity: 0.45; margin-bottom: 12px; }
-    .reward-result {
-      margin-top: 10px; border-radius: 10px; padding: 12px 14px;
-      font-size: 13px; display: none;
-    }
-    .reward-result.ok  { background: rgba(76,175,80,0.2); border: 1px solid rgba(76,175,80,0.4); }
-    .reward-result.err { background: rgba(244,67,54,0.2); border: 1px solid rgba(244,67,54,0.4); }
-
-    .scan-reward-btn {
-      width: 100%; padding: 16px; border-radius: 12px; cursor: pointer;
-      background: rgba(76,175,80,0.15); border: 1px solid rgba(76,175,80,0.4);
-      color: #7fff7f; font-size: 15px; font-weight: 700;
-    }
-    .scan-reward-btn:hover { background: rgba(76,175,80,0.25); }
-
-    #reward-scanner-wrap { margin-top: 4px; }
-    #reward-scanner { border-radius: 12px; overflow: hidden; }
-    .cancel-scan-btn, .rescan-btn {
-      width: 100%; margin-top: 10px; padding: 10px; cursor: pointer;
-      border: 1px solid rgba(255,255,255,0.2); border-radius: 10px;
-      background: transparent; color: rgba(255,255,255,0.6); font-size: 13px;
-    }
-    .cancel-scan-btn:hover, .rescan-btn:hover { background: rgba(255,255,255,0.08); }
-
-    .scanned-wallet-chip {
-      background: rgba(76,175,80,0.15); border: 1px solid rgba(76,175,80,0.4);
-      border-radius: 10px; padding: 10px 14px; margin-bottom: 10px;
-      font-size: 13px; font-family: monospace; color: #7fff7f; text-align: center;
-    }
-    .amount-quick { display: flex; gap: 8px; margin-bottom: 10px; }
-    .amount-quick button {
-      flex: 1; padding: 10px 0; cursor: pointer; border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.07);
-      color: #fff; font-size: 14px; font-weight: 700;
-    }
-    .amount-quick button:hover { background: rgba(255,255,255,0.15); }
-    .amount-input {
-      width: 100%; background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.2); border-radius: 12px;
-      color: #fff; font-size: 22px; font-weight: 800; text-align: center;
-      padding: 14px; outline: none; margin-bottom: 10px;
-    }
-    .amount-input::placeholder { font-size: 13px; font-weight: 400; opacity: 0.4; }
-    .amount-input:focus { border-color: #7fff7f; }
-    .send-reward-btn {
-      width: 100%; padding: 14px; cursor: pointer; border: none; border-radius: 12px;
-      background: #4caf50; color: #fff; font-size: 15px; font-weight: 800;
-    }
-    .send-reward-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -191,32 +138,6 @@
   </div>
 </div>
 
-<!-- Manual rewards -->
-<div class="rewards-wrap">
-  <div class="rewards-title">Manual Rewards</div>
-
-  <button class="scan-reward-btn" id="scan-reward-btn" onclick="openRewardScanner()">📷 Scan Guest Wallet</button>
-
-  <div id="reward-scanner-wrap" style="display:none">
-    <div id="reward-scanner"></div>
-    <button class="cancel-scan-btn" onclick="closeRewardScanner()">Cancel</button>
-  </div>
-
-  <div id="reward-amount-wrap" style="display:none">
-    <div class="scanned-wallet-chip" id="scanned-wallet-chip"></div>
-    <div class="amount-quick">
-      <button type="button" onclick="setAmount(5)">+5</button>
-      <button type="button" onclick="setAmount(10)">+10</button>
-      <button type="button" onclick="setAmount(15)">+15</button>
-      <button type="button" onclick="setAmount(20)">+20</button>
-    </div>
-    <input id="reward-amount" class="amount-input" type="number" inputmode="decimal" placeholder="Or type an amount" min="0.01" step="0.01" max="200" />
-    <button class="send-reward-btn" id="send-reward-btn" onclick="sendManualReward()">Send wTUC</button>
-    <button class="rescan-btn" onclick="rescanWallet()">Scan a different wallet</button>
-  </div>
-
-  <div class="reward-result" id="reward-result"></div>
-</div>
 
 <script>
   const BASE_URL     = 'https://upcycle-collective.vercel.app';
@@ -330,102 +251,6 @@
   loadFeed();
   setInterval(loadFeed, REFRESH_MS);
 
-  /* ── Manual reward: scan → amount ── */
-  let rewardScanner = null, rewardScannerRunning = false, scannedWallet = null;
-
-  function openRewardScanner() {
-    document.getElementById('scan-reward-btn').style.display = 'none';
-    document.getElementById('reward-amount-wrap').style.display = 'none';
-    document.getElementById('reward-scanner-wrap').style.display = 'block';
-    document.getElementById('reward-scanner').innerHTML = '';
-    rewardScanner = new Html5Qrcode('reward-scanner');
-    rewardScanner.start(
-      { facingMode: 'environment' },
-      { fps: 10, qrbox: { width: 240, height: 240 } },
-      async (text) => {
-        await stopRewardScanner();
-        onWalletScanned(text.trim());
-      },
-      () => {},
-    ).then(() => {
-      rewardScannerRunning = true;
-    }).catch(() => {
-      document.getElementById('reward-scanner-wrap').style.display = 'none';
-      document.getElementById('scan-reward-btn').style.display = 'block';
-      showRewardResult('err', '❌ Camera access denied');
-    });
-  }
-
-  async function stopRewardScanner() {
-    if (rewardScanner && rewardScannerRunning) {
-      await rewardScanner.stop().catch(() => {});
-      rewardScannerRunning = false;
-    }
-    document.getElementById('reward-scanner-wrap').style.display = 'none';
-  }
-
-  function closeRewardScanner() {
-    stopRewardScanner();
-    document.getElementById('scan-reward-btn').style.display = 'block';
-  }
-
-  function onWalletScanned(raw) {
-    let wallet = raw;
-    if (wallet.startsWith('solana:')) wallet = wallet.slice(7).split('?')[0];
-    scannedWallet = wallet;
-    document.getElementById('scanned-wallet-chip').textContent =
-      wallet.length > 20 ? wallet.slice(0, 8) + '…' + wallet.slice(-6) : wallet;
-    document.getElementById('reward-amount-wrap').style.display = 'block';
-    const amountInput = document.getElementById('reward-amount');
-    amountInput.value = '';
-    amountInput.focus();
-  }
-
-  function setAmount(n) {
-    document.getElementById('reward-amount').value = n;
-  }
-
-  function rescanWallet() {
-    scannedWallet = null;
-    document.getElementById('reward-amount-wrap').style.display = 'none';
-    openRewardScanner();
-  }
-
-  async function sendManualReward() {
-    if (!scannedWallet) { showRewardResult('err', 'Scan a wallet first.'); return; }
-    const amount = Math.round(parseFloat(document.getElementById('reward-amount').value) * 100) / 100;
-    if (!amount || amount < 1) { showRewardResult('err', 'Enter a valid amount.'); return; }
-
-    const btn = document.getElementById('send-reward-btn');
-    btn.disabled = true;
-    try {
-      const res  = await fetch('/api/reward', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ wallet: scannedWallet, amount }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        showRewardResult('ok', `✅ +${data.tokensAwarded} wTUC → ${scannedWallet.slice(0, 10)}…`);
-        document.getElementById('reward-amount-wrap').style.display = 'none';
-        document.getElementById('scan-reward-btn').style.display = 'block';
-        scannedWallet = null;
-      } else {
-        showRewardResult('err', '❌ ' + (data.error ?? 'Failed'));
-      }
-    } catch (e) {
-      showRewardResult('err', '❌ ' + e.message);
-    } finally {
-      btn.disabled = false;
-    }
-  }
-
-  function showRewardResult(type, msg) {
-    const el = document.getElementById('reward-result');
-    el.className = `reward-result ${type}`;
-    el.style.display = 'block';
-    el.textContent = msg;
-    setTimeout(() => { el.style.display = 'none'; }, 4000);
-  }
 </script>
 
 </body>

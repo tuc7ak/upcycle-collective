@@ -4,7 +4,6 @@ require('dotenv').config();
 build({
   entryPoints: [
     'src/api/checkin.js',
-    'src/api/reward.js',
     'src/api/donate.js',
     'src/api/transfer.js',
     'src/api/vendor-history.js',
