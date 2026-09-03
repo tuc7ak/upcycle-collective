@@ -316,7 +316,7 @@ async function actionValidate(req, res) {
 // shared staff PIN never reaches this, only someone connected with the
 // organiser's own wallet address can call it at all.
 async function actionAirdrop(req, res) {
-  const { wallet: callerWallet, code: rawCode, tokens: rawTokens } = req.body ?? {};
+  const { wallet: callerWallet, code: rawCode, tokens: rawTokens, pin: rawPin } = req.body ?? {};
   let organiser;
   try { organiser = getOrganiser(); } catch (e) {
     console.error('[donate:airdrop]', e);
@@ -324,6 +324,17 @@ async function actionAirdrop(req, res) {
   }
   if (!callerWallet || callerWallet !== organiser.publicKey.toBase58()) {
     return jsonErr(res, 403, 'Only the organiser wallet can do this.');
+  }
+
+  // The wallet check above is just a string sent in the request body — not a
+  // signature, so on its own it's spoofable by anyone who knows the
+  // organiser's public key (which is visible in the client source). This PIN
+  // is the actual gate: checked server-side against an env var, never
+  // shipped to the browser, so a direct API call still can't mint without it.
+  const ORGANISER_AIRDROP_PIN = process.env.ORGANISER_AIRDROP_PIN;
+  if (!ORGANISER_AIRDROP_PIN) return jsonErr(res, 500, 'ORGANISER_AIRDROP_PIN not set — server misconfigured.');
+  if (String(rawPin || '') !== ORGANISER_AIRDROP_PIN) {
+    return jsonErr(res, 403, 'Incorrect PIN.');
   }
 
   const code = String(rawCode || '').trim().toUpperCase();

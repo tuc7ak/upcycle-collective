@@ -534,6 +534,8 @@
     <div style="background:var(--rust-15);border:1px solid var(--rust);border-radius:12px;padding:12px 14px;margin-bottom:18px;text-align:left;">
       <p style="font-size:12.5px;color:var(--rust);line-height:1.6;margin:0;">This action is <strong>irreversible</strong> — tokens will be minted immediately.</p>
     </div>
+    <input id="airdrop-pin-input" type="password" maxlength="10" placeholder="Airdrop PIN" inputmode="numeric" autocomplete="off"
+      style="text-align:center;letter-spacing:0.3em;margin-bottom:14px;" onkeydown="if(event.key==='Enter')confirmAirdrop()">
     <button class="btn btn-gold" style="width:100%;" onclick="confirmAirdrop()">Confirm and send</button>
     <button class="btn btn-outline-wide" style="width:100%;margin-top:8px;" onclick="closeSheet('airdrop-confirm-sheet')">Cancel</button>
   </div>
@@ -1904,6 +1906,10 @@ function submitAirdrop() {
 // UI. A sheet, like everywhere else this app confirms something, always
 // works the same way regardless of host.
 async function confirmAirdrop() {
+  const pin = document.getElementById('airdrop-pin-input').value;
+  document.getElementById('airdrop-pin-input').value = ''; // never leave a PIN sitting in the DOM
+  if (!pin) { setAirdropStatus('err', 'Enter the airdrop PIN.'); return; }
+
   closeSheet('airdrop-confirm-sheet');
   const tokens = Math.round(parseFloat(document.getElementById('airdrop-tokens-input').value) * 100) / 100;
 
@@ -1913,7 +1919,7 @@ async function confirmAirdrop() {
   try {
     const res = await fetch('/api/donate', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'airdrop', wallet: walletPubkey, code: currentAirdropCode, tokens }),
+      body: JSON.stringify({ action: 'airdrop', wallet: walletPubkey, code: currentAirdropCode, tokens, pin }),
     });
     const data = await res.json();
     if (!data.success) { setAirdropStatus('err', '❌ ' + (data.error || 'Failed')); return; }

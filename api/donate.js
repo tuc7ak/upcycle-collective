@@ -107311,7 +107311,7 @@ async function actionValidate(req, res) {
   }
 }
 async function actionAirdrop(req, res) {
-  const { wallet: callerWallet, code: rawCode, tokens: rawTokens } = req.body ?? {};
+  const { wallet: callerWallet, code: rawCode, tokens: rawTokens, pin: rawPin } = req.body ?? {};
   let organiser;
   try {
     organiser = getOrganiser();
@@ -107321,6 +107321,11 @@ async function actionAirdrop(req, res) {
   }
   if (!callerWallet || callerWallet !== organiser.publicKey.toBase58()) {
     return jsonErr(res, 403, "Only the organiser wallet can do this.");
+  }
+  const ORGANISER_AIRDROP_PIN = process.env.ORGANISER_AIRDROP_PIN;
+  if (!ORGANISER_AIRDROP_PIN) return jsonErr(res, 500, "ORGANISER_AIRDROP_PIN not set \u2014 server misconfigured.");
+  if (String(rawPin || "") !== ORGANISER_AIRDROP_PIN) {
+    return jsonErr(res, 403, "Incorrect PIN.");
   }
   const code = String(rawCode || "").trim().toUpperCase();
   if (!CODE_RE.test(code)) return jsonErr(res, 400, "invalid code");
