@@ -176,9 +176,8 @@
 <div class="qr-card">
   <div class="qr-label">Scan to Check In</div>
   <div id="qr-wrap"><div id="qr-canvas"></div></div>
-  <div class="qr-hint">Open Solflare → tap scan → approve</div>
-  <div class="qr-reward">+50 wTUC on check-in</div>
-  <div class="memo-row">On-chain memo: wTUC:CHECKIN · once per 24 hours</div>
+  <div class="qr-hint">Open TUC App → tap scan → approve</div>
+  <div class="memo-row">On-chain memo: wTUC:CHECKIN · once per day (resets at midnight MYT)</div>
 </div>
 
 <!-- Recent check-ins feed -->
@@ -224,6 +223,7 @@
   const CHECKIN_URL  = `${BASE_URL}/api/checkin`;
   const HELIUS_RPC   = 'https://mainnet.helius-rpc.com/?api-key=a353da56-f27a-4a7a-9091-bdc6f8d66f27';
   const MINT         = 'AQbA6U1aHJen4Y85Skn8GYJgYcqKWT6atBaH8JQX87yz'; // wTUC
+  const ORGANISER    = 'CGDLbYHVnoMpw2CCbKMMomm6U3ByVZRFqKuGZfpdsrBK';
   const MEMO_PROGRAM = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
   const REFRESH_MS   = 20000;
 
@@ -247,7 +247,10 @@
 
   async function loadFeed() {
     try {
-      const sigs = await rpc('getSignaturesForAddress', [MINT, { limit: 20 }]);
+      // Check-in is memo-only now — it never touches the mint account, so
+      // this scans the organiser's own signature history instead (the
+      // organiser is fee payer on every check-in transaction).
+      const sigs = await rpc('getSignaturesForAddress', [ORGANISER, { limit: 20 }]);
       const list = document.getElementById('feed-list');
       const rows = [];
 
@@ -268,14 +271,12 @@
         }
         if (memo !== 'wTUC:CHECKIN') continue;
 
-        const keys = (tx.transaction?.message?.accountKeys ?? []).map(k => k.pubkey ?? k);
-        const pre  = tx.meta?.preTokenBalances  ?? [];
-        const post = tx.meta?.postTokenBalances ?? [];
-        for (const p of post) {
-          const preEntry = pre.find(e => e.accountIndex === p.accountIndex);
-          const gained   = Number(p.uiTokenAmount?.uiAmount ?? 0) - Number(preEntry?.uiTokenAmount?.uiAmount ?? 0);
-          if (gained > 0) { recipient = keys[p.accountIndex] ?? ''; break; }
-        }
+        // Memo-only now — no token balance change to spot the attendee from.
+        // The attendee is simply the other signer on the transaction (the
+        // organiser is always the fee payer / first signer).
+        const accountKeys = tx.transaction?.message?.accountKeys ?? [];
+        const signerKeys  = accountKeys.filter(k => k?.signer).map(k => k.pubkey ?? k);
+        recipient = signerKeys.find(k => k !== ORGANISER) || '';
 
         rows.push({ sig: sig.signature, blockTime: tx.blockTime, recipient, memo });
         if (rows.length >= 8) break;

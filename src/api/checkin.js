@@ -1,19 +1,23 @@
 const { PublicKey, Transaction } = require('@solana/web3.js');
-const {
-  TOKEN_2022_PROGRAM_ID,
-  getAssociatedTokenAddressSync,
-  getAccount,
-  createAssociatedTokenAccountInstruction,
-  createMintToInstruction,
-} = require('@solana/spl-token');
 const { createMemoInstruction } = require('@solana/spl-memo');
-const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr, MEMO_PREFIX, toRawAmount } = require('./_utils');
+const { getConnection, getOrganiser, jsonOk, jsonErr, MEMO_PREFIX } = require('./_utils');
 const bs58 = require('bs58');
 
-const CHECKIN_AMOUNT = 50; // UI amount (wTUC) — scaled to raw base units via toRawAmount() at mint time
+// Check-in is memo-only — no tokens are minted here. It just records that
+// this wallet showed up, once per Malaysia Time calendar day.
 const CHECKIN_MEMO   = `${MEMO_PREFIX}:CHECKIN`;
 const MEMO_PROGRAM   = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
-const WINDOW_SECS    = 86400; // 24 hours
+const MYT_OFFSET_SECS = 8 * 3600; // Malaysia Time = UTC+8, no DST
+
+// Start of "today" in MYT, expressed as a UTC unix timestamp — e.g. checking
+// in at 11pm MYT and again at 1am MYT the next day is two different calendar
+// days (only 2 hours apart), so the second check-in is allowed. This resets
+// at midnight MYT regardless of when the last check-in happened, unlike a
+// rolling 24h window.
+function mytMidnightCutoff() {
+  const nowSecs = Math.floor(Date.now() / 1000);
+  return Math.floor((nowSecs + MYT_OFFSET_SECS) / 86400) * 86400 - MYT_OFFSET_SECS;
+}
 
 module.exports = async function handler(req, res) {
 
@@ -27,7 +31,7 @@ module.exports = async function handler(req, res) {
 
   if (req.method !== 'POST') return jsonErr(res, 405, 'GET or POST only');
 
-  // ── POST — build mint transaction ────────────────────────────────────────
+  // ── POST — build memo transaction ────────────────────────────────────────
   const { account } = req.body ?? {};
   if (!account) return jsonErr(res, 400, 'account required');
 
@@ -37,19 +41,18 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const connection  = getConnection();
-    const organiser   = getOrganiser();
-    const mint        = getMintPublicKey();
-    const attendeeATA = getAssociatedTokenAddressSync(mint, attendeePubkey, false, TOKEN_2022_PROGRAM_ID);
+    const connection = getConnection();
+    const organiser  = getOrganiser();
 
-    // ── 24-hour duplicate check ─────────────────────────────────────────
-    const cutoff   = Math.floor(Date.now() / 1000) - WINDOW_SECS;
-    let alreadyIn  = false;
+    // ── Once-per-MYT-calendar-day duplicate check ────────────────────────
+    const cutoff  = mytMidnightCutoff();
+    let alreadyIn = false;
 
     try {
-      const sigs = await connection.getSignaturesForAddress(attendeeATA, { limit: 20 }, 'confirmed');
+      const sigs = await connection.getSignaturesForAddress(attendeePubkey, { limit: 20 }, 'confirmed');
       for (const sig of sigs) {
-        // Only skip if blockTime is confirmed older than 24h — null means very recent, still check it
+        // Only skip once blockTime is confirmed before today's MYT cutoff —
+        // null means very recent, still check it
         if (sig.blockTime !== null && sig.blockTime < cutoff) break;
         let tx = null;
         try {
@@ -76,28 +79,17 @@ module.exports = async function handler(req, res) {
         }
         if (alreadyIn) break;
       }
-    } catch { /* ATA may not exist yet — first check-in */ }
+    } catch { /* first-ever check-in for this wallet — no history yet */ }
 
     if (alreadyIn) {
       return jsonErr(res, 429, 'Already checked in today.');
     }
 
-    // ── Build mint transaction ──────────────────────────────────────────
+    // ── Build memo-only transaction ──────────────────────────────────────
     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
     const tx = new Transaction({ feePayer: organiser.publicKey, blockhash, lastValidBlockHeight });
 
-    // Create ATA if first-time wallet
-    try {
-      await getAccount(connection, attendeeATA, 'confirmed', TOKEN_2022_PROGRAM_ID);
-    } catch {
-      tx.add(createAssociatedTokenAccountInstruction(
-        organiser.publicKey, attendeeATA, attendeePubkey, mint, TOKEN_2022_PROGRAM_ID,
-      ));
-    }
-
-    tx.add(createMintToInstruction(mint, attendeeATA, organiser.publicKey, toRawAmount(CHECKIN_AMOUNT), [], TOKEN_2022_PROGRAM_ID));
-
-    // Attendee as co-signer on memo so Solflare shows the approval screen
+    // Attendee as co-signer on memo so their wallet shows the approval screen
     tx.add(createMemoInstruction(CHECKIN_MEMO, [organiser.publicKey, attendeePubkey]));
 
     tx.partialSign(organiser);
@@ -105,7 +97,7 @@ module.exports = async function handler(req, res) {
     const serialised = tx.serialize({ requireAllSignatures: false });
     return jsonOk(res, {
       transaction: Buffer.from(serialised).toString('base64'),
-      message: `Welcome! You've received ${CHECKIN_AMOUNT} wTUC tokens.`,
+      message: `Welcome! You're checked in.`,
     });
 
   } catch (err) {
