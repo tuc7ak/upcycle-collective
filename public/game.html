@@ -375,7 +375,7 @@ function showDeathOverlay() {
   document.getElementById('overlay').classList.add('show');
   if (!qrMade) {
     new QRCode(document.getElementById('qr-code'),{
-      text:'https://upcycle-collective.vercel.app/app.html',
+      text:'https://upcycle-collective.vercel.app/',
       width:260,height:260,colorDark:'#000',colorLight:'#fff',
       correctLevel:QRCode.CorrectLevel.M,
     });
