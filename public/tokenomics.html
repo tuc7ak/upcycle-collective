@@ -21,225 +21,61 @@
     }
 
     .logo { font-size: 36px; margin-bottom: 6px; }
+    h1 { font-size: 26px; font-weight: 800; margin-bottom: 2px; text-align: center; }
+    .subtitle { font-size: 13px; opacity: 0.5; margin-bottom: 32px; text-align: center; }
 
-    h1 {
-      font-size: 26px;
-      font-weight: 800;
-      margin-bottom: 2px;
-      text-align: center;
-    }
-
-    .subtitle {
-      font-size: 13px;
-      opacity: 0.5;
-      margin-bottom: 32px;
-      text-align: center;
-    }
-
-    /* ── Summary cards ───────────────────────── */
-    .summary-row {
+    .grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
       width: 100%;
-      max-width: 600px;
-      margin-bottom: 28px;
+      max-width: 720px;
     }
 
-    .summary-card {
+    .token-card {
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 18px;
-      padding: 20px;
-      text-align: center;
+      border-radius: 24px;
+      padding: 24px;
     }
 
-    .summary-label {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      opacity: 0.5;
-      margin-bottom: 8px;
+    .token-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .token-name { font-size: 20px; font-weight: 900; }
+    .token-pilot {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      opacity: 0.5; background: rgba(255,255,255,0.1); border-radius: 999px; padding: 4px 10px;
     }
 
-    .summary-value {
-      font-size: 32px;
-      font-weight: 900;
-      color: #7fff7f;
-      line-height: 1;
-    }
+    .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+    .stat-box { background: rgba(0,0,0,0.2); border-radius: 14px; padding: 16px; text-align: center; }
+    .stat-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.45; margin-bottom: 6px; }
+    .stat-value { font-size: 26px; font-weight: 900; color: #7fff7f; line-height: 1; }
 
-    .summary-sub {
-      font-size: 12px;
-      opacity: 0.4;
-      margin-top: 4px;
+    .mint-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px 14px;
     }
-
-    /* ── Mint address ────────────────────────── */
-    .mint-card {
-      background: rgba(0,0,0,0.2);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 14px;
-      padding: 14px 16px;
-      width: 100%;
-      max-width: 600px;
-      margin-bottom: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .mint-label {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      opacity: 0.4;
-      margin-bottom: 4px;
-    }
-
-    .mint-addr {
-      font-size: 12px;
-      font-family: monospace;
-      opacity: 0.75;
-      word-break: break-all;
-    }
-
-    .mint-link {
-      color: #7fff7f;
-      font-size: 12px;
-      font-weight: 600;
-      text-decoration: none;
-      white-space: nowrap;
-      opacity: 0.8;
-    }
+    .mint-addr { font-size: 11px; font-family: monospace; opacity: 0.7; word-break: break-all; }
+    .mint-link { color: #7fff7f; font-size: 12px; font-weight: 600; text-decoration: none; white-space: nowrap; opacity: 0.85; flex-shrink: 0; }
     .mint-link:hover { opacity: 1; }
-
-    /* ── Table ───────────────────────────────── */
-    .table-wrap {
-      width: 100%;
-      max-width: 600px;
-    }
-
-    .table-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-
-    .table-title {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      opacity: 0.5;
-    }
-
-    .refresh-btn {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 8px;
-      color: #fff;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 6px 12px;
-      transition: background 0.15s;
-    }
-    .refresh-btn:hover { background: rgba(255,255,255,0.18); }
-    .refresh-btn:disabled { opacity: 0.4; cursor: default; }
-
-    .holder-list { display: flex; flex-direction: column; gap: 8px; }
-
-    .holder-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 14px;
-      padding: 14px 16px;
-    }
-
-    .rank {
-      font-size: 18px;
-      font-weight: 900;
-      color: rgba(255,255,255,0.2);
-      width: 28px;
-      text-align: center;
-      flex-shrink: 0;
-    }
-    .holder-row:nth-child(1) .rank { color: #ffd700; }
-    .holder-row:nth-child(2) .rank { color: #c0c0c0; }
-    .holder-row:nth-child(3) .rank { color: #cd7f32; }
-
-    .holder-body { flex: 1; min-width: 0; }
-
-    .holder-wallet {
-      font-size: 12px;
-      font-family: monospace;
-      opacity: 0.75;
-      margin-bottom: 3px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .holder-links { display: flex; gap: 10px; }
-
-    .holder-link {
-      font-size: 11px;
-      color: #7fff7f;
-      text-decoration: none;
-      opacity: 0.7;
-    }
-    .holder-link:hover { opacity: 1; text-decoration: underline; }
-
-    .holder-right { text-align: right; flex-shrink: 0; }
-
-    .holder-amount {
-      font-size: 18px;
-      font-weight: 900;
-      color: #7fff7f;
-      line-height: 1;
-      margin-bottom: 2px;
-    }
-
-    .holder-pct {
-      font-size: 11px;
-      opacity: 0.4;
-    }
-
-    /* ── States ──────────────────────────────── */
-    .loading-state {
-      text-align: center;
-      opacity: 0.4;
-      font-size: 14px;
-      padding: 32px 0;
-    }
 
     .error-bar {
       display: none;
-      background: rgba(244,67,54,0.15);
-      border: 1px solid rgba(244,67,54,0.4);
-      border-radius: 10px;
-      color: #fff;
-      font-size: 13px;
-      padding: 12px 16px;
-      text-align: center;
-      width: 100%;
-      max-width: 600px;
-      margin-bottom: 12px;
+      background: rgba(244,67,54,0.15); border: 1px solid rgba(244,67,54,0.4);
+      border-radius: 10px; color: #fff; font-size: 13px; padding: 12px 16px;
+      text-align: center; width: 100%; max-width: 720px; margin-bottom: 16px;
     }
     .error-bar.active { display: block; }
 
-    .updated-badge {
-      font-size: 11px;
-      opacity: 0.38;
+    .footer-row { display: flex; align-items: center; gap: 12px; margin-top: 24px; }
+    .refresh-btn {
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px; color: #fff; cursor: pointer; font-size: 12px; font-weight: 600;
+      padding: 7px 14px; transition: background 0.15s;
     }
+    .refresh-btn:hover { background: rgba(255,255,255,0.18); }
+    .refresh-btn:disabled { opacity: 0.4; cursor: default; }
+    .updated-badge { font-size: 11px; opacity: 0.38; }
   </style>
 </head>
 <body>
@@ -271,75 +107,51 @@
   }
 </script>
 
-<!-- PIN GATE -->
-<div id="pin-gate" style="position:fixed;inset:0;background:#0f4c2a;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;">
-  <div style="font-size:36px">🔒</div>
-  <div style="font-size:20px;font-weight:800;color:#fff">Admin Access</div>
-  <div style="font-size:13px;opacity:0.5;color:#fff;margin-bottom:4px">Enter PIN to continue</div>
-  <input id="pin-input" type="password" inputmode="text" maxlength="10" placeholder="PIN" autocomplete="off"
-    style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:12px;color:#fff;font-size:24px;letter-spacing:0.3em;padding:14px 20px;text-align:center;outline:none;width:220px;"
-    onkeydown="if(event.key==='Enter')checkPin()" />
-  <button onclick="checkPin()" style="background:#4caf50;border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:700;padding:14px 0;cursor:pointer;width:220px;">Unlock</button>
-  <div id="pin-error" style="color:#ff8a65;font-size:13px;display:none">Incorrect PIN</div>
-</div>
-<script>
-  (function(){
-    if(sessionStorage.getItem('tuc_pin')==='1990') document.getElementById('pin-gate').style.display='none';
-    else setTimeout(()=>document.getElementById('pin-input')?.focus(),100);
-  })();
-  function checkPin(){
-    if(document.getElementById('pin-input').value==='1990'){
-      sessionStorage.setItem('tuc_pin','1990');
-      document.getElementById('pin-gate').style.display='none';
-    } else {
-      document.getElementById('pin-error').style.display='block';
-      document.getElementById('pin-input').value='';
-    }
-  }
-</script>
-
   <div class="logo">♻️</div>
   <h1>TUC Tokenomics</h1>
   <p class="subtitle">Live on-chain data · Solana Mainnet</p>
 
-  <div class="summary-row">
-    <div class="summary-card">
-      <div class="summary-label">Total Minted</div>
-      <div class="summary-value" id="total-supply">—</div>
-      <div class="summary-sub">TUC tokens</div>
-    </div>
-    <div class="summary-card">
-      <div class="summary-label">Top Holder</div>
-      <div class="summary-value" id="top-holder-pct">—</div>
-      <div class="summary-sub">% of supply</div>
-    </div>
-  </div>
-
-  <div class="mint-card">
-    <div>
-      <div class="mint-label">Token Mint Address</div>
-      <div class="mint-addr">2hgWyBDWgw4xesu8NpwTAhHgy2gnAo5iBhsBNSasngRj</div>
-    </div>
-    <a class="mint-link" href="https://solscan.io/token/2hgWyBDWgw4xesu8NpwTAhHgy2gnAo5iBhsBNSasngRj" target="_blank" rel="noopener">Solscan ↗</a>
-  </div>
-
   <div class="error-bar" id="error-bar"></div>
 
-  <div class="table-wrap">
-    <div class="table-header">
-      <div class="table-title">Top 10 Holders</div>
-      <div style="display:flex;gap:10px;align-items:center">
-        <div class="updated-badge" id="updated-badge"></div>
-        <button class="refresh-btn" id="refresh-btn" onclick="load()">↻ Refresh</button>
-      </div>
+  <div class="grid" id="grid">
+    <div class="token-card">
+      <div class="token-header"><div class="token-name">TUC</div><div class="token-pilot">Pilot Token 1</div></div>
+      <div class="loading-state" style="opacity:.4;padding:20px 0;text-align:center;">Loading…</div>
     </div>
-    <div class="holder-list" id="holder-list">
-      <div class="loading-state">Loading holders…</div>
+    <div class="token-card">
+      <div class="token-header"><div class="token-name">wTUC</div><div class="token-pilot">Pilot Token 2</div></div>
+      <div class="loading-state" style="opacity:.4;padding:20px 0;text-align:center;">Loading…</div>
     </div>
+  </div>
+
+  <div class="footer-row">
+    <div class="updated-badge" id="updated-badge"></div>
+    <button class="refresh-btn" id="refresh-btn" onclick="load()">↻ Refresh</button>
   </div>
 
   <script>
     const BASE_URL = 'https://upcycle-collective.vercel.app';
+
+    function tokenCardHTML(name, pilotLabel, data) {
+      const short = data.mint.slice(0, 8) + '…' + data.mint.slice(-8);
+      return `
+        <div class="token-header"><div class="token-name">${name}</div><div class="token-pilot">${pilotLabel}</div></div>
+        <div class="stat-row">
+          <div class="stat-box">
+            <div class="stat-label">Total Minted</div>
+            <div class="stat-value">${data.totalSupply.toLocaleString()}</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Holders</div>
+            <div class="stat-value">${data.holders.toLocaleString()}</div>
+          </div>
+        </div>
+        <div class="mint-row">
+          <div class="mint-addr">${short}</div>
+          <a class="mint-link" href="https://solscan.io/token/${data.mint}" target="_blank" rel="noopener">Solscan ↗</a>
+        </div>
+      `;
+    }
 
     async function load() {
       const btn = document.getElementById('refresh-btn');
@@ -353,50 +165,10 @@
         if (data.error) { showError(data.error); return; }
         hideError();
 
-        // Summary
-        document.getElementById('total-supply').textContent =
-          data.totalSupply.toLocaleString();
+        const cards = document.getElementById('grid').children;
+        cards[0].innerHTML = tokenCardHTML('TUC', 'Pilot Token 1', data.tuc);
+        cards[1].innerHTML = tokenCardHTML('wTUC', 'Pilot Token 2', data.wtuc);
 
-        const topPct = data.holders[0]?.pct ?? '—';
-        document.getElementById('top-holder-pct').textContent =
-          topPct !== '—' ? `${topPct}%` : '—';
-
-        // Holders list
-        const list = document.getElementById('holder-list');
-        if (!data.holders.length) {
-          list.innerHTML = '<div class="loading-state">No holders yet</div>';
-          return;
-        }
-
-        list.innerHTML = '';
-        data.holders.forEach(h => {
-          const wallet = h.walletAddress ?? h.tokenAccount;
-          const shortWallet = wallet
-            ? wallet.slice(0, 8) + '…' + wallet.slice(-8)
-            : '—';
-
-          const row = document.createElement('div');
-          row.className = 'holder-row';
-          row.innerHTML = `
-            <div class="rank">${h.rank}</div>
-            <div class="holder-body">
-              <div class="holder-wallet">${wallet ?? '—'}</div>
-              <div class="holder-links">
-                ${h.walletAddress
-                  ? `<a class="holder-link" href="https://solscan.io/account/${h.walletAddress}" target="_blank" rel="noopener">Wallet ↗</a>`
-                  : ''}
-                <a class="holder-link" href="https://solscan.io/account/${h.tokenAccount}" target="_blank" rel="noopener">Token Acct ↗</a>
-              </div>
-            </div>
-            <div class="holder-right">
-              <div class="holder-amount">${h.amount.toLocaleString()}</div>
-              <div class="holder-pct">${h.pct}%</div>
-            </div>
-          `;
-          list.appendChild(row);
-        });
-
-        // Updated badge
         const now = new Date();
         document.getElementById('updated-badge').textContent =
           `Updated ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
