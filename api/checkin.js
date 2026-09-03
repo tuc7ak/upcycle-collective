@@ -31570,10 +31570,17 @@ function mytMidnightCutoff() {
   const nowSecs = Math.floor(Date.now() / 1e3);
   return Math.floor((nowSecs + MYT_OFFSET_SECS) / 86400) * 86400 - MYT_OFFSET_SECS;
 }
+function vendorSlug(name) {
+  return String(name || "").toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 30);
+}
 module.exports = async function handler(req, res) {
+  const vendor = vendorSlug(req.query?.vendor);
+  const isVendor = !!vendor;
+  const memo = isVendor ? `${MEMO_PREFIX}:VENDOR:${vendor}` : CHECKIN_MEMO;
+  const vendorName = isVendor ? req.query.vendor : null;
   if (req.method === "GET") {
     return jsonOk(res, {
-      label: "wTUC Check-in \u2014 The Upcycle Collective",
+      label: isVendor ? `${vendorName} \u2014 The Upcycle Collective` : "wTUC Check-in \u2014 The Upcycle Collective",
       icon: "https://upcycle-collective.vercel.app/tuc-logo.png"
     });
   }
@@ -31589,57 +31596,59 @@ module.exports = async function handler(req, res) {
   try {
     const connection = getConnection();
     const organiser = getOrganiser();
-    const cutoff = mytMidnightCutoff();
-    let alreadyIn = false;
-    try {
-      const sigs = await connection.getSignaturesForAddress(attendeePubkey, { limit: 20 }, "confirmed");
-      for (const sig of sigs) {
-        if (sig.blockTime !== null && sig.blockTime < cutoff) break;
-        let tx2 = null;
-        try {
-          tx2 = await connection.getParsedTransaction(
-            sig.signature,
-            { maxSupportedTransactionVersion: 0, commitment: "confirmed" }
-          );
-        } catch {
-          continue;
-        }
-        if (!tx2) continue;
-        const allIx = [
-          ...tx2.transaction?.message?.instructions ?? [],
-          ...(tx2.meta?.innerInstructions ?? []).flatMap((ii) => ii?.instructions ?? [])
-        ].filter(Boolean);
-        for (const ix of allIx) {
-          const pid = typeof ix.programId === "string" ? ix.programId : ix.programId?.toBase58?.() ?? ix.program ?? "";
-          if (pid !== MEMO_PROGRAM) continue;
-          let memo = "";
-          if (ix.parsed && typeof ix.parsed === "string") memo = ix.parsed.trim();
-          else if (ix.data) {
-            try {
-              memo = Buffer.from(bs58.decode(ix.data)).toString("utf8").trim();
-            } catch {
+    if (!isVendor) {
+      const cutoff = mytMidnightCutoff();
+      let alreadyIn = false;
+      try {
+        const sigs = await connection.getSignaturesForAddress(attendeePubkey, { limit: 20 }, "confirmed");
+        for (const sig of sigs) {
+          if (sig.blockTime !== null && sig.blockTime < cutoff) break;
+          let tx2 = null;
+          try {
+            tx2 = await connection.getParsedTransaction(
+              sig.signature,
+              { maxSupportedTransactionVersion: 0, commitment: "confirmed" }
+            );
+          } catch {
+            continue;
+          }
+          if (!tx2) continue;
+          const allIx = [
+            ...tx2.transaction?.message?.instructions ?? [],
+            ...(tx2.meta?.innerInstructions ?? []).flatMap((ii) => ii?.instructions ?? [])
+          ].filter(Boolean);
+          for (const ix of allIx) {
+            const pid = typeof ix.programId === "string" ? ix.programId : ix.programId?.toBase58?.() ?? ix.program ?? "";
+            if (pid !== MEMO_PROGRAM) continue;
+            let ixMemo = "";
+            if (ix.parsed && typeof ix.parsed === "string") ixMemo = ix.parsed.trim();
+            else if (ix.data) {
+              try {
+                ixMemo = Buffer.from(bs58.decode(ix.data)).toString("utf8").trim();
+              } catch {
+              }
+            }
+            if (ixMemo.includes("CHECKIN")) {
+              alreadyIn = true;
+              break;
             }
           }
-          if (memo.includes("CHECKIN")) {
-            alreadyIn = true;
-            break;
-          }
+          if (alreadyIn) break;
         }
-        if (alreadyIn) break;
+      } catch {
       }
-    } catch {
-    }
-    if (alreadyIn) {
-      return jsonErr(res, 429, "Already checked in today.");
+      if (alreadyIn) {
+        return jsonErr(res, 429, "Already checked in today.");
+      }
     }
     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
     const tx = new Transaction({ feePayer: organiser.publicKey, blockhash, lastValidBlockHeight });
-    tx.add(createMemoInstruction(CHECKIN_MEMO, [organiser.publicKey, attendeePubkey]));
+    tx.add(createMemoInstruction(memo, [organiser.publicKey, attendeePubkey]));
     tx.partialSign(organiser);
     const serialised = tx.serialize({ requireAllSignatures: false });
     return jsonOk(res, {
       transaction: Buffer.from(serialised).toString("base64"),
-      message: `Welcome! You're checked in.`
+      message: isVendor ? `Checked in at ${vendorName}!` : `Welcome! You're checked in.`
     });
   } catch (err) {
     console.error("[checkin]", err);

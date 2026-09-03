@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TUC — Vendor Check-in</title>
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a2e1a;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 20px 60px;
+    }
+
+    .logo { font-size: 40px; margin-bottom: 6px; }
+    h1 { font-size: 26px; font-weight: 800; margin-bottom: 2px; text-align: center; }
+    .subtitle { font-size: 13px; opacity: 0.5; margin-bottom: 36px; text-align: center; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    .qr-card {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 24px;
+      padding: 24px 20px;
+      text-align: center;
+    }
+    .qr-name {
+      font-size: 18px; font-weight: 800; letter-spacing: 0.5px;
+      margin-bottom: 14px; color: #7fff7f;
+    }
+    .qr-wrap {
+      background: #fff; border-radius: 16px; padding: 12px;
+      display: inline-flex; justify-content: center; margin-bottom: 12px;
+    }
+    .memo-row {
+      font-size: 11px; opacity: 0.4; font-family: monospace;
+    }
+
+    /* ── Pin gate ── */
+    #pin-gate { position:fixed; inset:0; background:#0a2e1a; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:24px; }
+  </style>
+</head>
+<body>
+
+<!-- ── PIN GATE ── -->
+<div id="pin-gate">
+  <div style="font-size:36px">🔒</div>
+  <div style="font-size:20px;font-weight:800">Staff Access</div>
+  <div style="font-size:13px;opacity:0.5;margin-bottom:4px">Enter PIN to continue</div>
+  <input id="pin-input" type="password" maxlength="10" placeholder="PIN" autocomplete="off"
+    style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:12px;color:#fff;font-size:24px;letter-spacing:0.3em;padding:14px 20px;text-align:center;outline:none;width:220px;"
+    onkeydown="if(event.key==='Enter')checkPin()" />
+  <button onclick="checkPin()" style="background:#4caf50;border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:700;padding:14px 0;cursor:pointer;width:220px;">Unlock</button>
+  <div id="pin-err" style="color:#ff8a65;font-size:13px;display:none">Incorrect PIN</div>
+</div>
+
+<script>
+  (function(){
+    if (sessionStorage.getItem('tuc_pin') === '1990') document.getElementById('pin-gate').style.display = 'none';
+    else setTimeout(() => document.getElementById('pin-input')?.focus(), 100);
+  })();
+  function checkPin() {
+    if (document.getElementById('pin-input').value === '1990') {
+      sessionStorage.setItem('tuc_pin', '1990');
+      document.getElementById('pin-gate').style.display = 'none';
+    } else {
+      document.getElementById('pin-err').style.display = 'block';
+      document.getElementById('pin-input').value = '';
+    }
+  }
+</script>
+
+<!-- ── MAIN ── -->
+<div class="logo">♻️</div>
+<h1>Vendor Check-in</h1>
+<p class="subtitle">One QR per vendor · memo-only, no token transfer</p>
+
+<div class="grid" id="grid"></div>
+
+<script>
+  const BASE_URL = 'https://upcycle-collective.vercel.app';
+  const VENDORS = ['POUCH', 'FIGURINE', 'PEWANI', 'LANDIK', 'MAKENTAKE'];
+
+  const grid = document.getElementById('grid');
+  VENDORS.forEach(name => {
+    const card = document.createElement('div');
+    card.className = 'qr-card';
+    const canvasId = `qr-${name}`;
+    card.innerHTML = `
+      <div class="qr-name">${name}</div>
+      <div class="qr-wrap"><div id="${canvasId}"></div></div>
+      <div class="memo-row">wTUC:VENDOR:${name}</div>
+    `;
+    grid.appendChild(card);
+
+    new QRCode(document.getElementById(canvasId), {
+      text: `solana:${BASE_URL}/api/checkin?vendor=${encodeURIComponent(name)}`,
+      width: 180,
+      height: 180,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M,
+    });
+  });
+</script>
+
+</body>
+</html>

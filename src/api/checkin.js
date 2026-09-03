@@ -19,12 +19,23 @@ function mytMidnightCutoff() {
   return Math.floor((nowSecs + MYT_OFFSET_SECS) / 86400) * 86400 - MYT_OFFSET_SECS;
 }
 
+function vendorSlug(name) {
+  return String(name || '').toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 30);
+}
+
 module.exports = async function handler(req, res) {
+  // ?vendor=POUCH turns this into a vendor-visit stamp instead of the
+  // attendee check-in — same memo-only mechanism, different tag, and no
+  // once-per-day limit (visiting a vendor booth more than once is fine).
+  const vendor     = vendorSlug(req.query?.vendor);
+  const isVendor   = !!vendor;
+  const memo       = isVendor ? `${MEMO_PREFIX}:VENDOR:${vendor}` : CHECKIN_MEMO;
+  const vendorName = isVendor ? req.query.vendor : null;
 
   // ── GET — Solana Pay label/icon ─────────────────────────────────────────
   if (req.method === 'GET') {
     return jsonOk(res, {
-      label: 'wTUC Check-in — The Upcycle Collective',
+      label: isVendor ? `${vendorName} — The Upcycle Collective` : 'wTUC Check-in — The Upcycle Collective',
       icon:  'https://upcycle-collective.vercel.app/tuc-logo.png',
     });
   }
@@ -44,45 +55,47 @@ module.exports = async function handler(req, res) {
     const connection = getConnection();
     const organiser  = getOrganiser();
 
-    // ── Once-per-MYT-calendar-day duplicate check ────────────────────────
-    const cutoff  = mytMidnightCutoff();
-    let alreadyIn = false;
+    // ── Once-per-MYT-calendar-day duplicate check (attendee check-in only) ──
+    if (!isVendor) {
+      const cutoff  = mytMidnightCutoff();
+      let alreadyIn = false;
 
-    try {
-      const sigs = await connection.getSignaturesForAddress(attendeePubkey, { limit: 20 }, 'confirmed');
-      for (const sig of sigs) {
-        // Only skip once blockTime is confirmed before today's MYT cutoff —
-        // null means very recent, still check it
-        if (sig.blockTime !== null && sig.blockTime < cutoff) break;
-        let tx = null;
-        try {
-          tx = await connection.getParsedTransaction(
-            sig.signature, { maxSupportedTransactionVersion: 0, commitment: 'confirmed' }
-          );
-        } catch { continue; }
-        if (!tx) continue;
-        const allIx = [
-          ...(tx.transaction?.message?.instructions ?? []),
-          ...(tx.meta?.innerInstructions ?? []).flatMap(ii => ii?.instructions ?? []),
-        ].filter(Boolean);
-        for (const ix of allIx) {
-          const pid = typeof ix.programId === 'string'
-            ? ix.programId
-            : (ix.programId?.toBase58?.() ?? ix.program ?? '');
-          if (pid !== MEMO_PROGRAM) continue;
-          let memo = '';
-          if (ix.parsed && typeof ix.parsed === 'string') memo = ix.parsed.trim();
-          else if (ix.data) {
-            try { memo = Buffer.from(bs58.decode(ix.data)).toString('utf8').trim(); } catch {}
+      try {
+        const sigs = await connection.getSignaturesForAddress(attendeePubkey, { limit: 20 }, 'confirmed');
+        for (const sig of sigs) {
+          // Only skip once blockTime is confirmed before today's MYT cutoff —
+          // null means very recent, still check it
+          if (sig.blockTime !== null && sig.blockTime < cutoff) break;
+          let tx = null;
+          try {
+            tx = await connection.getParsedTransaction(
+              sig.signature, { maxSupportedTransactionVersion: 0, commitment: 'confirmed' }
+            );
+          } catch { continue; }
+          if (!tx) continue;
+          const allIx = [
+            ...(tx.transaction?.message?.instructions ?? []),
+            ...(tx.meta?.innerInstructions ?? []).flatMap(ii => ii?.instructions ?? []),
+          ].filter(Boolean);
+          for (const ix of allIx) {
+            const pid = typeof ix.programId === 'string'
+              ? ix.programId
+              : (ix.programId?.toBase58?.() ?? ix.program ?? '');
+            if (pid !== MEMO_PROGRAM) continue;
+            let ixMemo = '';
+            if (ix.parsed && typeof ix.parsed === 'string') ixMemo = ix.parsed.trim();
+            else if (ix.data) {
+              try { ixMemo = Buffer.from(bs58.decode(ix.data)).toString('utf8').trim(); } catch {}
+            }
+            if (ixMemo.includes('CHECKIN')) { alreadyIn = true; break; }
           }
-          if (memo.includes('CHECKIN')) { alreadyIn = true; break; }
+          if (alreadyIn) break;
         }
-        if (alreadyIn) break;
-      }
-    } catch { /* first-ever check-in for this wallet — no history yet */ }
+      } catch { /* first-ever check-in for this wallet — no history yet */ }
 
-    if (alreadyIn) {
-      return jsonErr(res, 429, 'Already checked in today.');
+      if (alreadyIn) {
+        return jsonErr(res, 429, 'Already checked in today.');
+      }
     }
 
     // ── Build memo-only transaction ──────────────────────────────────────
@@ -90,14 +103,14 @@ module.exports = async function handler(req, res) {
     const tx = new Transaction({ feePayer: organiser.publicKey, blockhash, lastValidBlockHeight });
 
     // Attendee as co-signer on memo so their wallet shows the approval screen
-    tx.add(createMemoInstruction(CHECKIN_MEMO, [organiser.publicKey, attendeePubkey]));
+    tx.add(createMemoInstruction(memo, [organiser.publicKey, attendeePubkey]));
 
     tx.partialSign(organiser);
 
     const serialised = tx.serialize({ requireAllSignatures: false });
     return jsonOk(res, {
       transaction: Buffer.from(serialised).toString('base64'),
-      message: `Welcome! You're checked in.`,
+      message: isVendor ? `Checked in at ${vendorName}!` : `Welcome! You're checked in.`,
     });
 
   } catch (err) {
