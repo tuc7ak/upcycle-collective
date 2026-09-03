@@ -7,9 +7,7 @@ const {
   getAccount,
 } = require('@solana/spl-token');
 const { createMemoInstruction } = require('@solana/spl-memo');
-const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require('./_utils');
-
-const TOKEN_DECIMALS = 0;
+const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr, MEMO_PREFIX, TOKEN_DECIMALS, toRawAmount, fromRawAmount } = require('./_utils');
 
 const VENDORS = {
   'landik':        { label: 'Landik',        memo: 'landik',        envKey: 'VENDOR_LANDIK',        defaultCost: 20 },
@@ -39,9 +37,9 @@ function createVendorHandler(vendorId) {
     const VENDOR_WALLET = process.env[vendor.envKey];
     if (!VENDOR_WALLET) return jsonErr(res, 500, `${vendor.envKey} env var not set`);
 
-    const rawAmount = req.query?.amount;
-    const cost = rawAmount ? parseInt(rawAmount, 10) : vendor.defaultCost;
-    if (!cost || cost < 1) return jsonErr(res, 400, 'invalid amount');
+    const queryAmount = req.query?.amount;
+    const cost = queryAmount ? Math.round(parseFloat(queryAmount) * 100) / 100 : vendor.defaultCost;
+    if (!Number.isFinite(cost) || cost < 0.01) return jsonErr(res, 400, 'invalid amount');
 
     let attendeePubkey, vendorPubkey;
     try { attendeePubkey = new PublicKey(account); } catch { return jsonErr(res, 400, 'invalid account address'); }
@@ -55,16 +53,18 @@ function createVendorHandler(vendorId) {
       const attendeeATA = getAssociatedTokenAddressSync(mint, attendeePubkey, false, TOKEN_2022_PROGRAM_ID);
       const vendorATA   = getAssociatedTokenAddressSync(mint, vendorPubkey,   false, TOKEN_2022_PROGRAM_ID);
 
-      // Check attendee has been checked in and has enough tokens
-      let attendeeBalance = 0;
+      // Check attendee has been checked in and has enough tokens (raw base
+      // units throughout — rawCost is the UI cost scaled by wTUC's decimals)
+      const rawCost = toRawAmount(cost);
+      let attendeeBalanceRaw = 0;
       try {
         const attendeeAccount = await getAccount(connection, attendeeATA, 'confirmed', TOKEN_2022_PROGRAM_ID);
-        attendeeBalance = Number(attendeeAccount.amount);
+        attendeeBalanceRaw = Number(attendeeAccount.amount);
       } catch {
-        return jsonErr(res, 400, 'Wallet not checked in — visit the check-in desk to receive your TUC tokens first.');
+        return jsonErr(res, 400, 'Wallet not checked in — visit the check-in desk to receive your wTUC tokens first.');
       }
-      if (attendeeBalance < cost) {
-        return jsonErr(res, 400, `Not enough TUC — you have ${attendeeBalance} but need ${cost}.`);
+      if (attendeeBalanceRaw < rawCost) {
+        return jsonErr(res, 400, `Not enough wTUC — you have ${fromRawAmount(attendeeBalanceRaw)} but need ${cost}.`);
       }
 
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
@@ -79,17 +79,17 @@ function createVendorHandler(vendorId) {
       }
 
       tx.add(createTransferCheckedInstruction(
-        attendeeATA, mint, vendorATA, attendeePubkey, cost, TOKEN_DECIMALS, [], TOKEN_2022_PROGRAM_ID,
+        attendeeATA, mint, vendorATA, attendeePubkey, rawCost, TOKEN_DECIMALS, [], TOKEN_2022_PROGRAM_ID,
       ));
 
-      tx.add(createMemoInstruction(`TUC:${vendor.memo}`, [organiser.publicKey]));
+      tx.add(createMemoInstruction(`${MEMO_PREFIX}:${vendor.memo}`, [organiser.publicKey]));
 
       tx.partialSign(organiser);
 
       const serialised = tx.serialize({ requireAllSignatures: false });
       return jsonOk(res, {
         transaction: Buffer.from(serialised).toString('base64'),
-        message: `Pay ${cost} TUC — ${vendor.label}`,
+        message: `Pay ${cost} wTUC — ${vendor.label}`,
       });
     } catch (err) {
       console.error(`[pay/${vendorId}]`, err);

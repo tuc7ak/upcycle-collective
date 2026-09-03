@@ -6,9 +6,7 @@ const {
   createAssociatedTokenAccountInstruction,
   getAccount,
 } = require('@solana/spl-token');
-const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require('./_utils');
-
-const TOKEN_DECIMALS = 0;
+const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr, TOKEN_DECIMALS, toRawAmount, fromRawAmount } = require('./_utils');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return jsonErr(res, 405, 'POST only');
@@ -21,10 +19,11 @@ module.exports = async function handler(req, res) {
 
   // ── Step 1: build unsigned tx, return for Solflare to sign ─────────────────
   if (body.step === 'build') {
-    const { from, to, amount, memo } = body;
-    if (!from)                     return jsonErr(res, 400, 'from required');
-    if (!to)                       return jsonErr(res, 400, 'to required');
-    if (!amount || amount < 1)     return jsonErr(res, 400, 'amount >= 1 required');
+    const { from, to, memo } = body;
+    const amount = Math.round(parseFloat(body.amount) * 100) / 100;
+    if (!from)                                return jsonErr(res, 400, 'from required');
+    if (!to)                                  return jsonErr(res, 400, 'to required');
+    if (!Number.isFinite(amount) || amount < 0.01) return jsonErr(res, 400, 'amount >= 0.01 required');
 
     let fromPubkey, toPubkey;
     try { fromPubkey = new PublicKey(from); } catch { return jsonErr(res, 400, 'invalid from address'); }
@@ -39,16 +38,18 @@ module.exports = async function handler(req, res) {
       const fromATA = getAssociatedTokenAddressSync(mint, fromPubkey, false, TOKEN_2022_PROGRAM_ID);
       const toATA   = getAssociatedTokenAddressSync(mint, toPubkey,   false, TOKEN_2022_PROGRAM_ID);
 
-      // Check sender has TUC and enough balance
-      let senderBalance = 0;
+      // Check sender has wTUC and enough balance (raw base units throughout —
+      // rawAmount is the UI amount scaled by wTUC's decimals)
+      const rawAmount = toRawAmount(amount);
+      let senderBalanceRaw = 0;
       try {
         const senderAccount = await getAccount(connection, fromATA, 'confirmed', TOKEN_2022_PROGRAM_ID);
-        senderBalance = Number(senderAccount.amount);
+        senderBalanceRaw = Number(senderAccount.amount);
       } catch {
-        return jsonErr(res, 400, 'Sender wallet has no TUC tokens — check in at the desk first.');
+        return jsonErr(res, 400, 'Sender wallet has no wTUC tokens — check in at the desk first.');
       }
-      if (senderBalance < amount) {
-        return jsonErr(res, 400, `Not enough TUC — you have ${senderBalance} but need ${amount}.`);
+      if (senderBalanceRaw < rawAmount) {
+        return jsonErr(res, 400, `Not enough wTUC — you have ${fromRawAmount(senderBalanceRaw)} but need ${amount}.`);
       }
 
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
@@ -64,7 +65,7 @@ module.exports = async function handler(req, res) {
       }
 
       tx.add(createTransferCheckedInstruction(
-        fromATA, mint, toATA, fromPubkey, amount, TOKEN_DECIMALS, [], TOKEN_2022_PROGRAM_ID,
+        fromATA, mint, toATA, fromPubkey, rawAmount, TOKEN_DECIMALS, [], TOKEN_2022_PROGRAM_ID,
       ));
 
       // Memo is optional — add only if provided

@@ -7,11 +7,11 @@ const {
   createMintToInstruction,
 } = require('@solana/spl-token');
 const { createMemoInstruction } = require('@solana/spl-memo');
-const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require('./_utils');
+const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr, MEMO_PREFIX, toRawAmount } = require('./_utils');
 const bs58 = require('bs58');
 
-const CHECKIN_AMOUNT = 50;
-const CHECKIN_MEMO   = 'TUC:CHECKIN';
+const CHECKIN_AMOUNT = 50; // UI amount (wTUC) — scaled to raw base units via toRawAmount() at mint time
+const CHECKIN_MEMO   = `${MEMO_PREFIX}:CHECKIN`;
 const MEMO_PROGRAM   = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
 const WINDOW_SECS    = 86400; // 24 hours
 
@@ -20,7 +20,7 @@ module.exports = async function handler(req, res) {
   // ── GET — Solana Pay label/icon ─────────────────────────────────────────
   if (req.method === 'GET') {
     return jsonOk(res, {
-      label: 'TUC Check-in — The Upcycle Collective',
+      label: 'wTUC Check-in — The Upcycle Collective',
       icon:  'https://upcycle-collective.vercel.app/tuc-logo.png',
     });
   }
@@ -95,7 +95,7 @@ module.exports = async function handler(req, res) {
       ));
     }
 
-    tx.add(createMintToInstruction(mint, attendeeATA, organiser.publicKey, CHECKIN_AMOUNT, [], TOKEN_2022_PROGRAM_ID));
+    tx.add(createMintToInstruction(mint, attendeeATA, organiser.publicKey, toRawAmount(CHECKIN_AMOUNT), [], TOKEN_2022_PROGRAM_ID));
 
     // Attendee as co-signer on memo so Solflare shows the approval screen
     tx.add(createMemoInstruction(CHECKIN_MEMO, [organiser.publicKey, attendeePubkey]));
@@ -105,7 +105,7 @@ module.exports = async function handler(req, res) {
     const serialised = tx.serialize({ requireAllSignatures: false });
     return jsonOk(res, {
       transaction: Buffer.from(serialised).toString('base64'),
-      message: `Welcome! You've received ${CHECKIN_AMOUNT} TUC tokens.`,
+      message: `Welcome! You've received ${CHECKIN_AMOUNT} wTUC tokens.`,
     });
 
   } catch (err) {

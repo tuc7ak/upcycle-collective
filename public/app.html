@@ -221,7 +221,7 @@
 <!-- ══ LOGIN GATE — must complete before the app is reachable ══ -->
 <div id="login-gate">
   <img src="/tuc-logo-white.png" alt="The Upcycle Collective" style="height:168px;width:auto;" />
-  <p>Log in to view your TUC balance, donate, track loops, redeem rewards, and see your full on-chain activity.</p>
+  <p>Log in to view your wTUC balance, donate, track loops, redeem rewards, and see your full on-chain activity.</p>
   <button class="btn btn-gold" onclick="connectWithEmail()" style="max-width:260px;margin-top:6px;">Continue with Email</button>
   <button class="btn btn-outline-wide" onclick="openWalletPicker()" style="max-width:260px;">Connect Wallet</button>
 </div>
@@ -420,7 +420,7 @@
           </div>
 
           <label style="margin-top:16px;display:block;">Tokens to send</label>
-          <input id="airdrop-tokens-input" type="number" min="1" step="1" inputmode="numeric" placeholder="e.g. 2">
+          <input id="airdrop-tokens-input" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="e.g. 2.50">
 
           <button class="btn btn-gold" id="airdrop-submit-btn" onclick="submitAirdrop()">Validate and Airdrop</button>
           <div id="airdrop-status"></div>
@@ -446,7 +446,7 @@
           </svg>
           <div class="ring-center">
             <div class="ring-balance" id="balance">—</div>
-            <div class="ring-label">TUC TOKENS</div>
+            <div class="ring-label">wTUC TOKENS</div>
           </div>
         </div>
         <div style="display:flex;justify-content:center;">
@@ -529,7 +529,7 @@
     </div>
     <h3 style="color:var(--rust);">Confirm airdrop</h3>
     <p style="font-size:14px;color:var(--text-primary);line-height:1.6;margin:12px 0 20px;">
-      Send <strong id="airdrop-confirm-tokens">—</strong> TUC to <strong id="airdrop-confirm-wallet">—</strong> for code <strong id="airdrop-confirm-code">—</strong>?
+      Send <strong id="airdrop-confirm-tokens">—</strong> wTUC to <strong id="airdrop-confirm-wallet">—</strong> for code <strong id="airdrop-confirm-code">—</strong>?
     </p>
     <div style="background:var(--rust-15);border:1px solid var(--rust);border-radius:12px;padding:12px 14px;margin-bottom:18px;text-align:left;">
       <p style="font-size:12.5px;color:var(--rust);line-height:1.6;margin:0;">This action is <strong>irreversible</strong> — tokens will be minted immediately.</p>
@@ -553,8 +553,8 @@
 <div class="sheet-bg" id="receive-sheet" onclick="closeSheet('receive-sheet')">
   <div class="sheet" onclick="event.stopPropagation()">
     <button class="sheet-close" onclick="closeSheet('receive-sheet')">✕</button>
-    <h2>📥 Receive TUC</h2>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Show this QR to anyone who wants to send you TUC.</p>
+    <h2>📥 Receive wTUC</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Show this QR to anyone who wants to send you wTUC.</p>
     <div class="qr-box"><img id="receive-qr" width="220" height="220" alt="QR" /></div>
     <div class="addr-box" id="receive-addr"></div>
     <button class="copy-btn" onclick="copyAddress()">⎘ Copy Address</button>
@@ -565,15 +565,15 @@
 <div class="sheet-bg" id="send-sheet" onclick="closeSheet('send-sheet')">
   <div class="sheet" onclick="event.stopPropagation()">
     <button class="sheet-close" onclick="closeSheet('send-sheet')">✕</button>
-    <h2>📤 Send TUC</h2>
+    <h2>📤 Send wTUC</h2>
     <div id="send-status"></div>
     <label>Recipient wallet</label>
     <button class="scan-btn" onclick="toggleScanner()">📷 Scan QR Code</button>
     <div id="scanner-wrap"></div>
     <input id="send-to" type="text" placeholder="Or paste wallet address…" />
-    <label>Amount (TUC)</label>
-    <input id="send-amount" type="number" min="1" step="1" placeholder="e.g. 5" />
-    <button class="btn btn-gold" id="send-btn" onclick="doSend()">Send TUC</button>
+    <label>Amount (wTUC)</label>
+    <input id="send-amount" type="number" min="0.01" step="0.01" placeholder="e.g. 5.50" />
+    <button class="btn btn-gold" id="send-btn" onclick="doSend()">Send wTUC</button>
   </div>
 </div>
 
@@ -598,7 +598,10 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const MINT         = '2hgWyBDWgw4xesu8NpwTAhHgy2gnAo5iBhsBNSasngRj';
+const MINT          = 'AQbA6U1aHJen4Y85Skn8GYJgYcqKWT6atBaH8JQX87yz'; // wTUC — 2 decimals, 2nd pilot event
+const TOKEN_DECIMALS = 2;
+const MEMO_PREFIX   = 'wTUC';
+const LEGACY_MEMO_PREFIX = 'TUC'; // original 0-decimal token — read-only, for showing event-1 history
 const RPC          = 'https://mainnet.helius-rpc.com/?api-key=a353da56-f27a-4a7a-9091-bdc6f8d66f27';
 const ORGANISER    = 'CGDLbYHVnoMpw2CCbKMMomm6U3ByVZRFqKuGZfpdsrBK';
 const MEMO_PROGRAM = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
@@ -860,7 +863,7 @@ async function loadDonateTransactions() {
   list.innerHTML = liveDonations.map(d => {
     const shortSig = (d.sig || '').slice(0, 6) + '…' + (d.sig || '').slice(-6);
     const statusTag = d.status === 'paid'
-      ? `<div class="tx-status paid">Airdropped ${d.tokensSent} TUC</div>`
+      ? `<div class="tx-status paid">Airdropped ${d.tokensSent} wTUC</div>`
       : d.status === 'validated'
         ? '<div class="tx-status validated">Validated</div>'
         : d.status === 'pending'
@@ -1072,7 +1075,7 @@ async function loadLiveDonations() {
         const pid = ix.programId ?? ix.program ?? '';
         if (pid !== MEMO_PROGRAM) continue;
         const memo = (ix.parsed && typeof ix.parsed === 'string') ? ix.parsed : '';
-        if (!memo.startsWith('TUC:DONATE:')) continue;
+        if (!memo.startsWith(`${MEMO_PREFIX}:DONATE:`) && !memo.startsWith(`${LEGACY_MEMO_PREFIX}:DONATE:`)) continue;
 
         // Ownership check is per-type below (not a blanket endsWith), since
         // a PHOTO memo ends in a URL, not the wallet — the wallet sits
@@ -1405,7 +1408,7 @@ async function loadBalance() {
       walletPubkey, {mint:MINT}, {encoding:'jsonParsed'},
     ]);
     const bal = r?.value?.[0]?.account?.data?.parsed?.info?.tokenAmount?.uiAmount ?? 0;
-    document.getElementById('balance').textContent = bal.toLocaleString();
+    document.getElementById('balance').textContent = bal.toFixed(TOKEN_DECIMALS);
   } catch { document.getElementById('balance').textContent = '0'; }
 }
 
@@ -1417,7 +1420,7 @@ async function loadTransactions() {
     const ataR = await rpc('getTokenAccountsByOwner',[walletPubkey,{mint:MINT},{encoding:'jsonParsed'}]);
     const accs = ataR?.value ?? [];
     if (!accs.length) {
-      list.innerHTML = '<div class="empty">No TUC transactions yet.<br>Check in at the entrance!</div>';
+      list.innerHTML = '<div class="empty">No wTUC transactions yet.<br>Check in at the entrance!</div>';
       return;
     }
     const ataAddr = accs[0].pubkey;
@@ -1437,7 +1440,7 @@ async function loadTransactions() {
     const items = txs.map((tx,i) => parseTx(tx, sigs[i].signature, ataAddr)).filter(Boolean);
     list.innerHTML = items.length
       ? items.map(renderTx).join('')
-      : `<div class="empty">No TUC activity yet. (fetched ${txs.length}, null: ${nullCount})</div>`;
+      : `<div class="empty">No wTUC activity yet. (fetched ${txs.length}, null: ${nullCount})</div>`;
   } catch(e) {
     console.error(e);
     list.innerHTML = `<div class="empty">Error: ${e.message}</div>`;
@@ -1474,21 +1477,21 @@ function parseTx(tx, sig, ataAddr) {
 
     let type='transfer', label='';
     if (delta > 0) {
-      if      (memo.includes('CHECKIN'))      { type='mint';    label=`Check-in (+${delta} TUC)`; }
-      else if (memo.includes('RECYCLE_UNIT')) { type='reward';  label=`Recycle Bag (+${delta} TUC)`; }
-      else if (memo.includes('DRAFT_1'))      { type='reward';  label=`Draft 1 (+${delta} TUC)`; }
-      else if (memo.includes('DRAFT_2'))      { type='reward';  label=`Draft 2 (+${delta} TUC)`; }
-      else                                    { type='mint';    label=`Received ${delta} TUC`; }
+      if      (memo.includes('CHECKIN'))      { type='mint';    label=`Check-in (+${delta} wTUC)`; }
+      else if (memo.includes('RECYCLE_UNIT')) { type='reward';  label=`Recycle Bag (+${delta} wTUC)`; }
+      else if (memo.includes('DRAFT_1'))      { type='reward';  label=`Draft 1 (+${delta} wTUC)`; }
+      else if (memo.includes('DRAFT_2'))      { type='reward';  label=`Draft 2 (+${delta} wTUC)`; }
+      else                                    { type='mint';    label=`Received ${delta} wTUC`; }
     } else {
       const abs = Math.abs(delta);
       type = 'payment';
       const m = memo.toLowerCase();
-      if      (m.includes('landik'))       { label=`Landik (${abs} TUC)`; }
-      else if (m.includes('uitm'))         { label=`UiTM (${abs} TUC)`; }
-      else if (m.includes('beer'))         { label=`Beer (${abs} TUC)`; }
-      else if (m.includes('clothes-swap') || m.includes('clothes_swap')) { label=`Clothes Swap (${abs} TUC)`; }
-      else if (m.includes('creative'))     { label=`Creative (${abs} TUC)`; }
-      else                                 { label=`Sent ${abs} TUC`; }
+      if      (m.includes('landik'))       { label=`Landik (${abs} wTUC)`; }
+      else if (m.includes('uitm'))         { label=`UiTM (${abs} wTUC)`; }
+      else if (m.includes('beer'))         { label=`Beer (${abs} wTUC)`; }
+      else if (m.includes('clothes-swap') || m.includes('clothes_swap')) { label=`Clothes Swap (${abs} wTUC)`; }
+      else if (m.includes('creative'))     { label=`Creative (${abs} wTUC)`; }
+      else                                 { label=`Sent ${abs} wTUC`; }
     }
     return {sig,ts,delta,type,label,memo};
   } catch { return null; }
@@ -1716,11 +1719,11 @@ async function handleVendorPay(payUrl, statusElId = 'send-status') {
 
 async function doSend(memo = scannedMemo) {
   const to     = document.getElementById('send-to').value.trim();
-  const amount = parseInt(document.getElementById('send-amount').value);
+  const amount = Math.round(parseFloat(document.getElementById('send-amount').value) * 100) / 100;
   const btn    = document.getElementById('send-btn');
 
   if (!to)             { setStatus('info','Enter or scan a recipient address.'); return; }
-  if (!amount||amount<1){ setStatus('info','Enter an amount of at least 1 TUC.'); return; }
+  if (!amount||amount<0.01){ setStatus('info','Enter an amount of at least 0.01 wTUC.'); return; }
 
   btn.disabled = true;
   btn.textContent = 'Building transaction…';
@@ -1749,7 +1752,7 @@ async function doSend(memo = scannedMemo) {
     if (sendData.error) { setStatus('err','❌ '+sendData.error); return; }
 
     setStatus('ok', `✅ Sent! <a href="https://solscan.io/tx/${sendData.signature}" target="_blank" style="color:var(--moss)">View on Solscan ↗</a>`);
-    toast(`Sent ${amount} TUC!`);
+    toast(`Sent ${amount} wTUC!`);
     await loadBalance();
     await loadTransactions();
   } catch(e) {
@@ -1761,7 +1764,7 @@ async function doSend(memo = scannedMemo) {
     }
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Send TUC';
+    btn.textContent = 'Send wTUC';
   }
 }
 
@@ -1885,7 +1888,7 @@ async function submitAirdropLookup() {
 
 function submitAirdrop() {
   if (!currentAirdropCode) { setAirdropStatus('err', 'Look up a code first.'); return; }
-  const tokens = parseInt(document.getElementById('airdrop-tokens-input').value, 10);
+  const tokens = Math.round(parseFloat(document.getElementById('airdrop-tokens-input').value) * 100) / 100;
   if (!Number.isFinite(tokens) || tokens <= 0) { setAirdropStatus('err', 'Enter how many tokens to send.'); return; }
 
   const donorWallet = document.getElementById('airdrop-wallet').textContent;
@@ -1902,7 +1905,7 @@ function submitAirdrop() {
 // works the same way regardless of host.
 async function confirmAirdrop() {
   closeSheet('airdrop-confirm-sheet');
-  const tokens = parseInt(document.getElementById('airdrop-tokens-input').value, 10);
+  const tokens = Math.round(parseFloat(document.getElementById('airdrop-tokens-input').value) * 100) / 100;
 
   const btn = document.getElementById('airdrop-submit-btn');
   btn.disabled = true;
@@ -1915,7 +1918,7 @@ async function confirmAirdrop() {
     const data = await res.json();
     if (!data.success) { setAirdropStatus('err', '❌ ' + (data.error || 'Failed')); return; }
 
-    setAirdropStatus('ok', `✅ Sent ${data.tokens} TUC → ${data.wallet.slice(0, 6)}…${data.wallet.slice(-4)} — <a href="https://solscan.io/tx/${data.signature}" target="_blank" style="color:var(--moss)">View on Solscan ↗</a>`);
+    setAirdropStatus('ok', `✅ Sent ${data.tokens} wTUC → ${data.wallet.slice(0, 6)}…${data.wallet.slice(-4)} — <a href="https://solscan.io/tx/${data.signature}" target="_blank" style="color:var(--moss)">View on Solscan ↗</a>`);
     toast('Tokens sent!');
     document.getElementById('airdrop-code-input').value = '';
     document.getElementById('airdrop-tokens-input').value = '';
@@ -2031,7 +2034,7 @@ async function submitValidateDonation() {
     const data = await res.json();
     if (!data.success) { setValidateStatus('err', '❌ ' + (data.error || 'Failed')); return; }
 
-    setValidateStatus('ok', `✅ Validated — ${data.kg}kg confirmed, ~${data.tokensOwed} TUC owed to ${data.wallet.slice(0, 6)}…${data.wallet.slice(-4)} (tokens sent separately) — <a href="https://solscan.io/tx/${data.signature}" target="_blank" style="color:var(--moss)">View on Solscan ↗</a>`);
+    setValidateStatus('ok', `✅ Validated — ${data.kg}kg confirmed, ~${data.tokensOwed} wTUC owed to ${data.wallet.slice(0, 6)}…${data.wallet.slice(-4)} (tokens sent separately) — <a href="https://solscan.io/tx/${data.signature}" target="_blank" style="color:var(--moss)">View on Solscan ↗</a>`);
     toast('Donation validated — tokens will be sent separately.');
     document.getElementById('validate-code-input').value = '';
     document.getElementById('validate-kg-input').value = '';

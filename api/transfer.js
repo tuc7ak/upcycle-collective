@@ -44527,6 +44527,15 @@ var require_utils4 = __commonJS({
   "src/api/_utils.js"(exports2, module2) {
     var { Connection, Keypair, PublicKey: PublicKey2 } = require_index_cjs();
     var bs58 = require_bs583();
+    var MEMO_PREFIX = "wTUC";
+    var TOKEN_DECIMALS2 = 2;
+    var TOKEN_SYMBOL = "wTUC";
+    function toRawAmount2(uiAmount) {
+      return Math.round(uiAmount * 10 ** TOKEN_DECIMALS2);
+    }
+    function fromRawAmount2(rawAmount) {
+      return rawAmount / 10 ** TOKEN_DECIMALS2;
+    }
     function getConnection2() {
       const rpc = process.env.HELIUS_RPC || "https://api.devnet.solana.com";
       return new Connection(rpc, "confirmed");
@@ -44549,7 +44558,18 @@ var require_utils4 = __commonJS({
       res.setHeader("Content-Type", "application/json");
       res.status(code).json({ error: message });
     }
-    module2.exports = { getConnection: getConnection2, getOrganiser: getOrganiser2, getMintPublicKey: getMintPublicKey2, jsonOk: jsonOk2, jsonErr: jsonErr2 };
+    module2.exports = {
+      getConnection: getConnection2,
+      getOrganiser: getOrganiser2,
+      getMintPublicKey: getMintPublicKey2,
+      jsonOk: jsonOk2,
+      jsonErr: jsonErr2,
+      MEMO_PREFIX,
+      TOKEN_DECIMALS: TOKEN_DECIMALS2,
+      TOKEN_SYMBOL,
+      toRawAmount: toRawAmount2,
+      fromRawAmount: fromRawAmount2
+    };
   }
 });
 
@@ -44585,8 +44605,7 @@ var {
   createAssociatedTokenAccountInstruction,
   getAccount
 } = require_cjs4();
-var { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require_utils4();
-var TOKEN_DECIMALS = 0;
+var { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr, TOKEN_DECIMALS, toRawAmount, fromRawAmount } = require_utils4();
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return jsonErr(res, 405, "POST only");
   let body = req.body ?? {};
@@ -44598,10 +44617,11 @@ module.exports = async function handler(req, res) {
     }
   }
   if (body.step === "build") {
-    const { from, to, amount, memo } = body;
+    const { from, to, memo } = body;
+    const amount = Math.round(parseFloat(body.amount) * 100) / 100;
     if (!from) return jsonErr(res, 400, "from required");
     if (!to) return jsonErr(res, 400, "to required");
-    if (!amount || amount < 1) return jsonErr(res, 400, "amount >= 1 required");
+    if (!Number.isFinite(amount) || amount < 0.01) return jsonErr(res, 400, "amount >= 0.01 required");
     let fromPubkey, toPubkey;
     try {
       fromPubkey = new PublicKey(from);
@@ -44620,15 +44640,16 @@ module.exports = async function handler(req, res) {
       const mint = getMintPublicKey();
       const fromATA = getAssociatedTokenAddressSync(mint, fromPubkey, false, TOKEN_2022_PROGRAM_ID);
       const toATA = getAssociatedTokenAddressSync(mint, toPubkey, false, TOKEN_2022_PROGRAM_ID);
-      let senderBalance = 0;
+      const rawAmount = toRawAmount(amount);
+      let senderBalanceRaw = 0;
       try {
         const senderAccount = await getAccount(connection, fromATA, "confirmed", TOKEN_2022_PROGRAM_ID);
-        senderBalance = Number(senderAccount.amount);
+        senderBalanceRaw = Number(senderAccount.amount);
       } catch {
-        return jsonErr(res, 400, "Sender wallet has no TUC tokens \u2014 check in at the desk first.");
+        return jsonErr(res, 400, "Sender wallet has no wTUC tokens \u2014 check in at the desk first.");
       }
-      if (senderBalance < amount) {
-        return jsonErr(res, 400, `Not enough TUC \u2014 you have ${senderBalance} but need ${amount}.`);
+      if (senderBalanceRaw < rawAmount) {
+        return jsonErr(res, 400, `Not enough wTUC \u2014 you have ${fromRawAmount(senderBalanceRaw)} but need ${amount}.`);
       }
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
       const tx = new Transaction({ feePayer: organiser.publicKey, blockhash, lastValidBlockHeight });
@@ -44648,7 +44669,7 @@ module.exports = async function handler(req, res) {
         mint,
         toATA,
         fromPubkey,
-        amount,
+        rawAmount,
         TOKEN_DECIMALS,
         [],
         TOKEN_2022_PROGRAM_ID

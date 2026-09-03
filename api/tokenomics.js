@@ -31489,6 +31489,15 @@ var require_utils4 = __commonJS({
   "src/api/_utils.js"(exports2, module2) {
     var { Connection, Keypair, PublicKey: PublicKey2 } = require_index_cjs();
     var bs58 = require_bs583();
+    var MEMO_PREFIX = "wTUC";
+    var TOKEN_DECIMALS = 2;
+    var TOKEN_SYMBOL = "wTUC";
+    function toRawAmount(uiAmount) {
+      return Math.round(uiAmount * 10 ** TOKEN_DECIMALS);
+    }
+    function fromRawAmount(rawAmount) {
+      return rawAmount / 10 ** TOKEN_DECIMALS;
+    }
     function getConnection2() {
       const rpc = process.env.HELIUS_RPC || "https://api.devnet.solana.com";
       return new Connection(rpc, "confirmed");
@@ -31511,7 +31520,18 @@ var require_utils4 = __commonJS({
       res.setHeader("Content-Type", "application/json");
       res.status(code).json({ error: message });
     }
-    module2.exports = { getConnection: getConnection2, getOrganiser, getMintPublicKey: getMintPublicKey2, jsonOk: jsonOk2, jsonErr: jsonErr2 };
+    module2.exports = {
+      getConnection: getConnection2,
+      getOrganiser,
+      getMintPublicKey: getMintPublicKey2,
+      jsonOk: jsonOk2,
+      jsonErr: jsonErr2,
+      MEMO_PREFIX,
+      TOKEN_DECIMALS,
+      TOKEN_SYMBOL,
+      toRawAmount,
+      fromRawAmount
+    };
   }
 });
 

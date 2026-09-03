@@ -44550,6 +44550,15 @@ var require_utils4 = __commonJS({
   "src/api/_utils.js"(exports2, module2) {
     var { Connection, Keypair, PublicKey: PublicKey2 } = require_index_cjs();
     var bs582 = require_bs583();
+    var MEMO_PREFIX2 = "wTUC";
+    var TOKEN_DECIMALS = 2;
+    var TOKEN_SYMBOL = "wTUC";
+    function toRawAmount2(uiAmount) {
+      return Math.round(uiAmount * 10 ** TOKEN_DECIMALS);
+    }
+    function fromRawAmount(rawAmount) {
+      return rawAmount / 10 ** TOKEN_DECIMALS;
+    }
     function getConnection2() {
       const rpc = process.env.HELIUS_RPC || "https://api.devnet.solana.com";
       return new Connection(rpc, "confirmed");
@@ -44572,7 +44581,18 @@ var require_utils4 = __commonJS({
       res.setHeader("Content-Type", "application/json");
       res.status(code).json({ error: message });
     }
-    module2.exports = { getConnection: getConnection2, getOrganiser: getOrganiser2, getMintPublicKey: getMintPublicKey2, jsonOk: jsonOk2, jsonErr: jsonErr2 };
+    module2.exports = {
+      getConnection: getConnection2,
+      getOrganiser: getOrganiser2,
+      getMintPublicKey: getMintPublicKey2,
+      jsonOk: jsonOk2,
+      jsonErr: jsonErr2,
+      MEMO_PREFIX: MEMO_PREFIX2,
+      TOKEN_DECIMALS,
+      TOKEN_SYMBOL,
+      toRawAmount: toRawAmount2,
+      fromRawAmount
+    };
   }
 });
 
@@ -44586,16 +44606,16 @@ var {
   createMintToInstruction
 } = require_cjs4();
 var { createMemoInstruction } = require_cjs5();
-var { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require_utils4();
+var { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr, MEMO_PREFIX, toRawAmount } = require_utils4();
 var bs58 = require_bs583();
 var CHECKIN_AMOUNT = 50;
-var CHECKIN_MEMO = "TUC:CHECKIN";
+var CHECKIN_MEMO = `${MEMO_PREFIX}:CHECKIN`;
 var MEMO_PROGRAM = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr";
 var WINDOW_SECS = 86400;
 module.exports = async function handler(req, res) {
   if (req.method === "GET") {
     return jsonOk(res, {
-      label: "TUC Check-in \u2014 The Upcycle Collective",
+      label: "wTUC Check-in \u2014 The Upcycle Collective",
       icon: "https://upcycle-collective.vercel.app/tuc-logo.png"
     });
   }
@@ -44669,13 +44689,13 @@ module.exports = async function handler(req, res) {
         TOKEN_2022_PROGRAM_ID
       ));
     }
-    tx.add(createMintToInstruction(mint, attendeeATA, organiser.publicKey, CHECKIN_AMOUNT, [], TOKEN_2022_PROGRAM_ID));
+    tx.add(createMintToInstruction(mint, attendeeATA, organiser.publicKey, toRawAmount(CHECKIN_AMOUNT), [], TOKEN_2022_PROGRAM_ID));
     tx.add(createMemoInstruction(CHECKIN_MEMO, [organiser.publicKey, attendeePubkey]));
     tx.partialSign(organiser);
     const serialised = tx.serialize({ requireAllSignatures: false });
     return jsonOk(res, {
       transaction: Buffer.from(serialised).toString("base64"),
-      message: `Welcome! You've received ${CHECKIN_AMOUNT} TUC tokens.`
+      message: `Welcome! You've received ${CHECKIN_AMOUNT} wTUC tokens.`
     });
   } catch (err) {
     console.error("[checkin]", err);

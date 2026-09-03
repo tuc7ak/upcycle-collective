@@ -5,7 +5,7 @@ const {
   createMintToInstruction,
 } = require('@solana/spl-token');
 const { createMemoInstruction } = require('@solana/spl-memo');
-const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require('./_utils');
+const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr, MEMO_PREFIX, toRawAmount } = require('./_utils');
 const crypto = require('crypto');
 const bs58 = require('bs58');
 
@@ -63,7 +63,7 @@ async function actionLog(req, res) {
     const connection = getConnection();
     const organiser  = getOrganiser();
     const tx = new Transaction().add(
-      createMemoInstruction(`TUC:DONATE:${type}:${kg}KG:${donorPubkey.toBase58()}`, [organiser.publicKey]),
+      createMemoInstruction(`${MEMO_PREFIX}:DONATE:${type}:${kg}KG:${donorPubkey.toBase58()}`, [organiser.publicKey]),
     );
     const signature = await sendAndConfirmTransaction(connection, tx, [organiser]);
     return jsonOk(res, { success: true, wallet, type, kg, signature });
@@ -122,8 +122,8 @@ async function actionPhoto(req, res) {
     const connection = getConnection();
     const organiser  = getOrganiser();
     const tx = new Transaction()
-      .add(createMemoInstruction(`TUC:DONATE:CODE:${code}:${type}:${donorPubkey.toBase58()}`, [organiser.publicKey]))
-      .add(createMemoInstruction(`TUC:DONATE:PHOTO:${code}:${batch}:${donorPubkey.toBase58()}:${photoLink}`, [organiser.publicKey]));
+      .add(createMemoInstruction(`${MEMO_PREFIX}:DONATE:CODE:${code}:${type}:${donorPubkey.toBase58()}`, [organiser.publicKey]))
+      .add(createMemoInstruction(`${MEMO_PREFIX}:DONATE:PHOTO:${code}:${batch}:${donorPubkey.toBase58()}:${photoLink}`, [organiser.publicKey]));
     const photoSig = await sendAndConfirmTransaction(connection, tx, [organiser]);
 
     // Best-effort — the on-chain memos above are the real record; the
@@ -250,10 +250,10 @@ async function actionValidate(req, res) {
       for (const ix of allIx) {
         const memo = parseMemo(ix);
         if (!memo) continue;
-        if (memo.startsWith(`TUC:DONATE:VALIDATED:${code}:`)) {
+        if (memo.startsWith(`${MEMO_PREFIX}:DONATE:VALIDATED:${code}:`)) {
           return jsonErr(res, 409, 'This code has already been validated.');
         }
-        if (memo.startsWith(`TUC:DONATE:CODE:${code}:`)) {
+        if (memo.startsWith(`${MEMO_PREFIX}:DONATE:CODE:${code}:`)) {
           const parts = memo.split(':');
           issued = { type: parts[4], wallet: parts[5] };
         }
@@ -272,15 +272,16 @@ async function actionValidate(req, res) {
     // separate step (organiser-wallet only), so a leaked/shared staff PIN
     // can at most mark a fake donation "validated," never move real tokens.
     const tx = new Transaction().add(
-      createMemoInstruction(`TUC:DONATE:VALIDATED:${code}:${issued.type}:${kg}KG:${issued.wallet}`, [organiser.publicKey]),
+      createMemoInstruction(`${MEMO_PREFIX}:DONATE:VALIDATED:${code}:${issued.type}:${kg}KG:${issued.wallet}`, [organiser.publicKey]),
     );
 
     const signature = await sendAndConfirmTransaction(connection, tx, [organiser]);
 
     // Display-only estimate of what the airdrop step will pay out — no
     // tokens have actually moved yet. Persisted to the Sheet so that step
-    // can read it later without re-scanning the chain.
-    const tokensOwed = Math.max(1, Math.round(kg));
+    // can read it later without re-scanning the chain. 1kg ≈ 1 wTUC, rounded
+    // to 2dp (wTUC's decimals) rather than forced to a whole number.
+    const tokensOwed = Math.max(0.01, Math.round(kg * 100) / 100);
 
     if (process.env.GOOGLE_SHEET_ID) {
       try {
@@ -327,8 +328,8 @@ async function actionAirdrop(req, res) {
 
   const code = String(rawCode || '').trim().toUpperCase();
   if (!CODE_RE.test(code)) return jsonErr(res, 400, 'invalid code');
-  const tokens = parseInt(rawTokens, 10);
-  if (!Number.isFinite(tokens) || tokens <= 0) return jsonErr(res, 400, 'tokens must be a positive whole number');
+  const tokens = Math.round(parseFloat(rawTokens) * 100) / 100;
+  if (!Number.isFinite(tokens) || tokens <= 0) return jsonErr(res, 400, 'tokens must be a positive amount');
 
   const spreadsheetId = process.env.GOOGLE_SHEET_ID;
   if (!spreadsheetId) return jsonErr(res, 500, 'Google Sheet not configured');
@@ -366,8 +367,8 @@ async function actionAirdrop(req, res) {
         connection, organiser, mint, donorPubkey, false, 'confirmed', {}, TOKEN_2022_PROGRAM_ID,
       );
       const tx = new Transaction()
-        .add(createMintToInstruction(mint, tokenAccount.address, organiser.publicKey, tokens, [], TOKEN_2022_PROGRAM_ID))
-        .add(createMemoInstruction(`TUC:DONATE:PAID:${code}:${tokens}:${donorWallet}`, [organiser.publicKey]));
+        .add(createMintToInstruction(mint, tokenAccount.address, organiser.publicKey, toRawAmount(tokens), [], TOKEN_2022_PROGRAM_ID))
+        .add(createMemoInstruction(`${MEMO_PREFIX}:DONATE:PAID:${code}:${tokens}:${donorWallet}`, [organiser.publicKey]));
       signature = await sendAndConfirmTransaction(connection, tx, [organiser]);
     } catch (mintErr) {
       // Minting didn't happen — revert the claim so this can be retried

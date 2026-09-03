@@ -44527,6 +44527,15 @@ var require_utils4 = __commonJS({
   "src/api/_utils.js"(exports2, module2) {
     var { Connection, Keypair, PublicKey: PublicKey2 } = require_index_cjs();
     var bs582 = require_bs583();
+    var MEMO_PREFIX = "wTUC";
+    var TOKEN_DECIMALS = 2;
+    var TOKEN_SYMBOL = "wTUC";
+    function toRawAmount(uiAmount) {
+      return Math.round(uiAmount * 10 ** TOKEN_DECIMALS);
+    }
+    function fromRawAmount(rawAmount) {
+      return rawAmount / 10 ** TOKEN_DECIMALS;
+    }
     function getConnection2() {
       const rpc = process.env.HELIUS_RPC || "https://api.devnet.solana.com";
       return new Connection(rpc, "confirmed");
@@ -44549,7 +44558,18 @@ var require_utils4 = __commonJS({
       res.setHeader("Content-Type", "application/json");
       res.status(code).json({ error: message });
     }
-    module2.exports = { getConnection: getConnection2, getOrganiser, getMintPublicKey: getMintPublicKey2, jsonOk: jsonOk2, jsonErr: jsonErr2 };
+    module2.exports = {
+      getConnection: getConnection2,
+      getOrganiser,
+      getMintPublicKey: getMintPublicKey2,
+      jsonOk: jsonOk2,
+      jsonErr: jsonErr2,
+      MEMO_PREFIX,
+      TOKEN_DECIMALS,
+      TOKEN_SYMBOL,
+      toRawAmount,
+      fromRawAmount
+    };
   }
 });
 
@@ -44588,8 +44608,7 @@ var require_vendor = __commonJS({
       getAccount
     } = require_cjs4();
     var { createMemoInstruction } = require_cjs5();
-    var { getConnection: getConnection2, getOrganiser, getMintPublicKey: getMintPublicKey2, jsonOk: jsonOk2, jsonErr: jsonErr2 } = require_utils4();
-    var TOKEN_DECIMALS = 0;
+    var { getConnection: getConnection2, getOrganiser, getMintPublicKey: getMintPublicKey2, jsonOk: jsonOk2, jsonErr: jsonErr2, MEMO_PREFIX, TOKEN_DECIMALS, toRawAmount, fromRawAmount } = require_utils4();
     var VENDORS2 = {
       "landik": { label: "Landik", memo: "landik", envKey: "VENDOR_LANDIK", defaultCost: 20 },
       "uitm": { label: "UiTM", memo: "uitm", envKey: "VENDOR_UITM", defaultCost: 20 },
@@ -44612,9 +44631,9 @@ var require_vendor = __commonJS({
         if (!account) return jsonErr2(res, 400, "account (attendee wallet) required");
         const VENDOR_WALLET = process.env[vendor.envKey];
         if (!VENDOR_WALLET) return jsonErr2(res, 500, `${vendor.envKey} env var not set`);
-        const rawAmount = req.query?.amount;
-        const cost = rawAmount ? parseInt(rawAmount, 10) : vendor.defaultCost;
-        if (!cost || cost < 1) return jsonErr2(res, 400, "invalid amount");
+        const queryAmount = req.query?.amount;
+        const cost = queryAmount ? Math.round(parseFloat(queryAmount) * 100) / 100 : vendor.defaultCost;
+        if (!Number.isFinite(cost) || cost < 0.01) return jsonErr2(res, 400, "invalid amount");
         let attendeePubkey, vendorPubkey;
         try {
           attendeePubkey = new PublicKey2(account);
@@ -44632,15 +44651,16 @@ var require_vendor = __commonJS({
           const mint = getMintPublicKey2();
           const attendeeATA = getAssociatedTokenAddressSync2(mint, attendeePubkey, false, TOKEN_2022_PROGRAM_ID2);
           const vendorATA = getAssociatedTokenAddressSync2(mint, vendorPubkey, false, TOKEN_2022_PROGRAM_ID2);
-          let attendeeBalance = 0;
+          const rawCost = toRawAmount(cost);
+          let attendeeBalanceRaw = 0;
           try {
             const attendeeAccount = await getAccount(connection, attendeeATA, "confirmed", TOKEN_2022_PROGRAM_ID2);
-            attendeeBalance = Number(attendeeAccount.amount);
+            attendeeBalanceRaw = Number(attendeeAccount.amount);
           } catch {
-            return jsonErr2(res, 400, "Wallet not checked in \u2014 visit the check-in desk to receive your TUC tokens first.");
+            return jsonErr2(res, 400, "Wallet not checked in \u2014 visit the check-in desk to receive your wTUC tokens first.");
           }
-          if (attendeeBalance < cost) {
-            return jsonErr2(res, 400, `Not enough TUC \u2014 you have ${attendeeBalance} but need ${cost}.`);
+          if (attendeeBalanceRaw < rawCost) {
+            return jsonErr2(res, 400, `Not enough wTUC \u2014 you have ${fromRawAmount(attendeeBalanceRaw)} but need ${cost}.`);
           }
           const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
           const tx = new Transaction({ feePayer: organiser.publicKey, blockhash, lastValidBlockHeight });
@@ -44660,17 +44680,17 @@ var require_vendor = __commonJS({
             mint,
             vendorATA,
             attendeePubkey,
-            cost,
+            rawCost,
             TOKEN_DECIMALS,
             [],
             TOKEN_2022_PROGRAM_ID2
           ));
-          tx.add(createMemoInstruction(`TUC:${vendor.memo}`, [organiser.publicKey]));
+          tx.add(createMemoInstruction(`${MEMO_PREFIX}:${vendor.memo}`, [organiser.publicKey]));
           tx.partialSign(organiser);
           const serialised = tx.serialize({ requireAllSignatures: false });
           return jsonOk2(res, {
             transaction: Buffer.from(serialised).toString("base64"),
-            message: `Pay ${cost} TUC \u2014 ${vendor.label}`
+            message: `Pay ${cost} wTUC \u2014 ${vendor.label}`
           });
         } catch (err) {
           console.error(`[pay/${vendorId}]`, err);

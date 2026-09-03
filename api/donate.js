@@ -44550,6 +44550,15 @@ var require_utils4 = __commonJS({
   "src/api/_utils.js"(exports2, module2) {
     var { Connection, Keypair, PublicKey: PublicKey2 } = require_index_cjs();
     var bs582 = require_bs583();
+    var MEMO_PREFIX2 = "wTUC";
+    var TOKEN_DECIMALS = 2;
+    var TOKEN_SYMBOL = "wTUC";
+    function toRawAmount2(uiAmount) {
+      return Math.round(uiAmount * 10 ** TOKEN_DECIMALS);
+    }
+    function fromRawAmount(rawAmount) {
+      return rawAmount / 10 ** TOKEN_DECIMALS;
+    }
     function getConnection2() {
       const rpc = process.env.HELIUS_RPC || "https://api.devnet.solana.com";
       return new Connection(rpc, "confirmed");
@@ -44572,7 +44581,18 @@ var require_utils4 = __commonJS({
       res.setHeader("Content-Type", "application/json");
       res.status(code).json({ error: message });
     }
-    module2.exports = { getConnection: getConnection2, getOrganiser: getOrganiser2, getMintPublicKey: getMintPublicKey2, jsonOk: jsonOk2, jsonErr: jsonErr2 };
+    module2.exports = {
+      getConnection: getConnection2,
+      getOrganiser: getOrganiser2,
+      getMintPublicKey: getMintPublicKey2,
+      jsonOk: jsonOk2,
+      jsonErr: jsonErr2,
+      MEMO_PREFIX: MEMO_PREFIX2,
+      TOKEN_DECIMALS,
+      TOKEN_SYMBOL,
+      toRawAmount: toRawAmount2,
+      fromRawAmount
+    };
   }
 });
 
@@ -107010,7 +107030,7 @@ var {
   createMintToInstruction
 } = require_cjs4();
 var { createMemoInstruction } = require_cjs5();
-var { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr } = require_utils4();
+var { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr, MEMO_PREFIX, toRawAmount } = require_utils4();
 var crypto5 = require("crypto");
 var bs58 = require_bs583();
 var TYPES = ["GENERAL", "CLOTHES", "ELECTRONICS", "PLASTICS", "PAPER"];
@@ -107070,7 +107090,7 @@ async function actionLog(req, res) {
     const connection = getConnection();
     const organiser = getOrganiser();
     const tx = new Transaction().add(
-      createMemoInstruction(`TUC:DONATE:${type}:${kg}KG:${donorPubkey.toBase58()}`, [organiser.publicKey])
+      createMemoInstruction(`${MEMO_PREFIX}:DONATE:${type}:${kg}KG:${donorPubkey.toBase58()}`, [organiser.publicKey])
     );
     const signature = await sendAndConfirmTransaction(connection, tx, [organiser]);
     return jsonOk(res, { success: true, wallet, type, kg, signature });
@@ -107106,7 +107126,7 @@ async function actionPhoto(req, res) {
     const batch = existing.length + 1;
     const connection = getConnection();
     const organiser = getOrganiser();
-    const tx = new Transaction().add(createMemoInstruction(`TUC:DONATE:CODE:${code}:${type}:${donorPubkey.toBase58()}`, [organiser.publicKey])).add(createMemoInstruction(`TUC:DONATE:PHOTO:${code}:${batch}:${donorPubkey.toBase58()}:${photoLink}`, [organiser.publicKey]));
+    const tx = new Transaction().add(createMemoInstruction(`${MEMO_PREFIX}:DONATE:CODE:${code}:${type}:${donorPubkey.toBase58()}`, [organiser.publicKey])).add(createMemoInstruction(`${MEMO_PREFIX}:DONATE:PHOTO:${code}:${batch}:${donorPubkey.toBase58()}:${photoLink}`, [organiser.publicKey]));
     const photoSig = await sendAndConfirmTransaction(connection, tx, [organiser]);
     try {
       await sheetsAppendRow({
@@ -107237,10 +107257,10 @@ async function actionValidate(req, res) {
       for (const ix of allIx) {
         const memo = parseMemo(ix);
         if (!memo) continue;
-        if (memo.startsWith(`TUC:DONATE:VALIDATED:${code}:`)) {
+        if (memo.startsWith(`${MEMO_PREFIX}:DONATE:VALIDATED:${code}:`)) {
           return jsonErr(res, 409, "This code has already been validated.");
         }
-        if (memo.startsWith(`TUC:DONATE:CODE:${code}:`)) {
+        if (memo.startsWith(`${MEMO_PREFIX}:DONATE:CODE:${code}:`)) {
           const parts = memo.split(":");
           issued = { type: parts[4], wallet: parts[5] };
         }
@@ -107255,10 +107275,10 @@ async function actionValidate(req, res) {
       return jsonErr(res, 500, "Code found but its wallet address is invalid.");
     }
     const tx = new Transaction().add(
-      createMemoInstruction(`TUC:DONATE:VALIDATED:${code}:${issued.type}:${kg}KG:${issued.wallet}`, [organiser.publicKey])
+      createMemoInstruction(`${MEMO_PREFIX}:DONATE:VALIDATED:${code}:${issued.type}:${kg}KG:${issued.wallet}`, [organiser.publicKey])
     );
     const signature = await sendAndConfirmTransaction(connection, tx, [organiser]);
-    const tokensOwed = Math.max(1, Math.round(kg));
+    const tokensOwed = Math.max(0.01, Math.round(kg * 100) / 100);
     if (process.env.GOOGLE_SHEET_ID) {
       try {
         const { sheetsGetValues, sheetsUpdateRange } = require_google();
@@ -107304,8 +107324,8 @@ async function actionAirdrop(req, res) {
   }
   const code = String(rawCode || "").trim().toUpperCase();
   if (!CODE_RE.test(code)) return jsonErr(res, 400, "invalid code");
-  const tokens = parseInt(rawTokens, 10);
-  if (!Number.isFinite(tokens) || tokens <= 0) return jsonErr(res, 400, "tokens must be a positive whole number");
+  const tokens = Math.round(parseFloat(rawTokens) * 100) / 100;
+  if (!Number.isFinite(tokens) || tokens <= 0) return jsonErr(res, 400, "tokens must be a positive amount");
   const spreadsheetId = process.env.GOOGLE_SHEET_ID;
   if (!spreadsheetId) return jsonErr(res, 500, "Google Sheet not configured");
   try {
@@ -107339,7 +107359,7 @@ async function actionAirdrop(req, res) {
         {},
         TOKEN_2022_PROGRAM_ID
       );
-      const tx = new Transaction().add(createMintToInstruction(mint, tokenAccount.address, organiser.publicKey, tokens, [], TOKEN_2022_PROGRAM_ID)).add(createMemoInstruction(`TUC:DONATE:PAID:${code}:${tokens}:${donorWallet}`, [organiser.publicKey]));
+      const tx = new Transaction().add(createMintToInstruction(mint, tokenAccount.address, organiser.publicKey, toRawAmount(tokens), [], TOKEN_2022_PROGRAM_ID)).add(createMemoInstruction(`${MEMO_PREFIX}:DONATE:PAID:${code}:${tokens}:${donorWallet}`, [organiser.publicKey]));
       signature = await sendAndConfirmTransaction(connection, tx, [organiser]);
     } catch (mintErr) {
       await sheetsUpdateRange({ spreadsheetId, range: `F${rowNum}`, values: ["validated"] }).catch(() => {

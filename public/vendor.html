@@ -192,7 +192,7 @@
   <div class="wallet-card">
     <div class="wallet-card-label">Scan to Pay</div>
     <div id="qr-wrap"><div id="qr-canvas"></div></div>
-    <div class="qr-hint">Scan with Solflare → send TUC tokens</div>
+    <div class="qr-hint">Scan with Solflare → send wTUC tokens</div>
     <div class="wallet-card-label" style="margin-top:16px">On-Chain Memo</div>
     <div class="wallet-addr" id="memo-value" style="font-size:15px;font-weight:700;opacity:1;color:#7fff7f;">—</div>
     <div class="wallet-card-label" style="margin-top:16px">Vendor Wallet Address</div>
@@ -212,7 +212,7 @@
     </div>
     <div class="total-row" id="total-row" style="display:none">
       <div class="total-label">Total received (this session)</div>
-      <div class="total-value" id="total-value">0 TUC</div>
+      <div class="total-value" id="total-value">0.00 wTUC</div>
     </div>
   </div>
 
@@ -220,15 +220,15 @@
     const BASE_URL = 'https://upcycle-collective.vercel.app';
     const REFRESH_INTERVAL = 30000;
 
-    const TOKEN_MINT   = '2hgWyBDWgw4xesu8NpwTAhHgy2gnAo5iBhsBNSasngRj';
+    const TOKEN_MINT   = 'AQbA6U1aHJen4Y85Skn8GYJgYcqKWT6atBaH8JQX87yz'; // wTUC
     const VENDOR_WALLET = 'HGPiNcN1kUUbAbpWg15hvgzNaa5b931DmC8q4YDqw1GC';
 
     const VENDORS = {
-      'landik':       { name: 'Landik 🛍️',      cost: 20, memo: 'TUC:landik' },
-      'uitm':         { name: 'UiTM 🎓',         cost: 20, memo: 'TUC:uitm' },
-      'beer':         { name: 'Beer 🍺',         cost: 5,  memo: 'TUC:beer' },
-      'clothes-swap': { name: 'Clothes Swap 👕', cost: 5,  memo: 'TUC:clothes-swap' },
-      'creative':     { name: 'Creative 🎨',     cost: 5,  memo: 'TUC:creative' },
+      'landik':       { name: 'Landik 🛍️',      cost: 20, memo: 'wTUC:landik' },
+      'uitm':         { name: 'UiTM 🎓',         cost: 20, memo: 'wTUC:uitm' },
+      'beer':         { name: 'Beer 🍺',         cost: 5,  memo: 'wTUC:beer' },
+      'clothes-swap': { name: 'Clothes Swap 👕', cost: 5,  memo: 'wTUC:clothes-swap' },
+      'creative':     { name: 'Creative 🎨',     cost: 5,  memo: 'wTUC:creative' },
     };
 
     const params   = new URLSearchParams(window.location.search);
@@ -307,7 +307,7 @@
           row.innerHTML = `
             <div class="tx-dot"></div>
             <div class="tx-body">
-              <div class="tx-amount">+${tx.amount} TUC</div>
+              <div class="tx-amount">+${tx.amount} wTUC</div>
               <div class="tx-memo">${tx.memo || '—'}</div>
             </div>
             <div class="tx-time">${relativeTime(tx.blockTime)}</div>
@@ -318,7 +318,7 @@
 
         const totalTUC = txs.reduce((s, t) => s + t.amount, 0);
         document.getElementById('total-row').style.display = 'flex';
-        document.getElementById('total-value').textContent = `${totalTUC} TUC`;
+        document.getElementById('total-value').textContent = `${totalTUC.toFixed(2)} wTUC`;
 
         isFirstLoad = false;
         setRefreshBadge();

@@ -177,8 +177,8 @@
   <div class="qr-label">Scan to Check In</div>
   <div id="qr-wrap"><div id="qr-canvas"></div></div>
   <div class="qr-hint">Open Solflare → tap scan → approve</div>
-  <div class="qr-reward">+50 TUC on check-in</div>
-  <div class="memo-row">On-chain memo: TUC:CHECKIN · once per 24 hours</div>
+  <div class="qr-reward">+50 wTUC on check-in</div>
+  <div class="memo-row">On-chain memo: wTUC:CHECKIN · once per 24 hours</div>
 </div>
 
 <!-- Recent check-ins feed -->
@@ -211,8 +211,8 @@
       <button type="button" onclick="setAmount(15)">+15</button>
       <button type="button" onclick="setAmount(20)">+20</button>
     </div>
-    <input id="reward-amount" class="amount-input" type="number" inputmode="numeric" placeholder="Or type an amount" min="1" max="200" />
-    <button class="send-reward-btn" id="send-reward-btn" onclick="sendManualReward()">Send TUC</button>
+    <input id="reward-amount" class="amount-input" type="number" inputmode="decimal" placeholder="Or type an amount" min="0.01" step="0.01" max="200" />
+    <button class="send-reward-btn" id="send-reward-btn" onclick="sendManualReward()">Send wTUC</button>
     <button class="rescan-btn" onclick="rescanWallet()">Scan a different wallet</button>
   </div>
 
@@ -223,7 +223,7 @@
   const BASE_URL     = 'https://upcycle-collective.vercel.app';
   const CHECKIN_URL  = `${BASE_URL}/api/checkin`;
   const HELIUS_RPC   = 'https://mainnet.helius-rpc.com/?api-key=a353da56-f27a-4a7a-9091-bdc6f8d66f27';
-  const MINT         = '2hgWyBDWgw4xesu8NpwTAhHgy2gnAo5iBhsBNSasngRj';
+  const MINT         = 'AQbA6U1aHJen4Y85Skn8GYJgYcqKWT6atBaH8JQX87yz'; // wTUC
   const MEMO_PROGRAM = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
   const REFRESH_MS   = 20000;
 
@@ -266,7 +266,7 @@
           const pid = ix.programId ?? ix.program ?? '';
           if (pid === MEMO_PROGRAM && ix.parsed && typeof ix.parsed === 'string') memo = ix.parsed;
         }
-        if (memo !== 'TUC:CHECKIN') continue;
+        if (memo !== 'wTUC:CHECKIN') continue;
 
         const keys = (tx.transaction?.message?.accountKeys ?? []).map(k => k.pubkey ?? k);
         const pre  = tx.meta?.preTokenBalances  ?? [];
@@ -392,7 +392,7 @@
 
   async function sendManualReward() {
     if (!scannedWallet) { showRewardResult('err', 'Scan a wallet first.'); return; }
-    const amount = parseInt(document.getElementById('reward-amount').value, 10);
+    const amount = Math.round(parseFloat(document.getElementById('reward-amount').value) * 100) / 100;
     if (!amount || amount < 1) { showRewardResult('err', 'Enter a valid amount.'); return; }
 
     const btn = document.getElementById('send-reward-btn');
@@ -404,7 +404,7 @@
       });
       const data = await res.json();
       if (data.success) {
-        showRewardResult('ok', `✅ +${data.tokensAwarded} TUC → ${scannedWallet.slice(0, 10)}…`);
+        showRewardResult('ok', `✅ +${data.tokensAwarded} wTUC → ${scannedWallet.slice(0, 10)}…`);
         document.getElementById('reward-amount-wrap').style.display = 'none';
         document.getElementById('scan-reward-btn').style.display = 'block';
         scannedWallet = null;
