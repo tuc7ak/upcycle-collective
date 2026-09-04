@@ -105,7 +105,7 @@
     .t-price sup { font-size: 16px; font-weight: 700; margin-right: 2px; top: -1.2em; }
     .t-price small { font-size: 14px; font-weight: 500; color: var(--muted); }
     .t-desc { font-size: 14px; color: var(--muted); margin: 12px 0 20px; min-height: 42px; }
-    .t-features { list-style: none; margin-bottom: 28px; flex: 1; }
+    .t-features { list-style: none; margin: 20px 0 28px; flex: 1; }
     .t-features li { font-size: 13px; color: var(--cream); padding: 7px 0 7px 22px; position: relative; border-top: 1px solid var(--border); }
     .t-features li:first-child { border-top: none; }
     .t-features li::before { content: '✓'; position: absolute; left: 0; color: var(--green); font-weight: 800; }
@@ -143,7 +143,8 @@
   <div class="hero-pill"><div class="dot"></div> Tickets on sale</div>
   <h1>The Spring <span class="accent">·</span> The WAK <span class="accent">·</span> TUC Event</h1>
   <div class="hero-meta">
-    <span>📅 Date &amp; venue — to be announced</span>
+    <span>📅 October 24 &amp; 25</span>
+    <span>📍 Level 2, The Spring Mall, Kuching, Sarawak</span>
     <span>🎟️ Secure checkout via Stripe</span>
   </div>
 </div>
@@ -152,42 +153,40 @@
 
 <div class="tickets">
   <div class="ticket-card">
-    <div class="t-tier">Student</div>
+    <div class="t-tier">Next Gen</div>
     <div class="t-price"><sup>RM</sup>15</div>
-    <div class="t-desc">Valid student ID required at check-in.</div>
     <ul class="t-features">
-      <li>Full event entry</li>
-      <li>Access to all general sessions</li>
-      <li>Digital QR ticket via email</li>
+      <li>1x Upcycled Charms Keychain</li>
+      <li>Eligible for door gifts</li>
+      <li>TUC Marketplace</li>
+      <li>TUC Experience Floor</li>
     </ul>
-    <button class="buy-btn" onclick="buyTicket('student', this)">Buy Student Ticket</button>
+    <button class="buy-btn" onclick="buyTicket('student', this)">Buy Next Gen Ticket</button>
   </div>
 
   <div class="ticket-card featured">
-    <div class="t-tier">Normal</div>
+    <div class="t-tier">Circular Pass</div>
     <div class="t-price"><sup>RM</sup>35</div>
-    <div class="t-desc">The standard ticket for general attendees.</div>
     <ul class="t-features">
-      <li>Full event entry</li>
-      <li>Access to all general sessions</li>
-      <li>Digital QR ticket via email</li>
-      <li>Event goodie bag</li>
+      <li>1x Workshop (Upcycled Charms Keychain / Landik Patch It / Upcycled Pouch/Wallet)</li>
+      <li>Eligible for door gifts</li>
+      <li>TUC Marketplace</li>
+      <li>TUC Experience Floor</li>
     </ul>
-    <button class="buy-btn" onclick="buyTicket('normal', this)">Buy Normal Ticket</button>
+    <button class="buy-btn" onclick="buyTicket('normal', this)">Buy Circular Pass</button>
   </div>
 
   <div class="ticket-card">
-    <div class="t-tier">Premium</div>
+    <div class="t-tier">Patron Pass</div>
     <div class="t-price"><sup>RM</sup>100</div>
-    <div class="t-desc">Priority access and extra perks.</div>
     <ul class="t-features">
-      <li>Full event entry</li>
-      <li>Priority / fast-lane check-in</li>
-      <li>Digital QR ticket via email</li>
-      <li>Event goodie bag</li>
-      <li>Reserved seating</li>
+      <li>Eligible for any workshops on Saturday and Sunday — 3 times only</li>
+      <li>Figurine Workshop included</li>
+      <li>Eligible for door gifts</li>
+      <li>TUC Marketplace</li>
+      <li>TUC Experience Floor</li>
     </ul>
-    <button class="buy-btn" onclick="buyTicket('premium', this)">Buy Premium Ticket</button>
+    <button class="buy-btn" onclick="buyTicket('premium', this)">Buy Patron Pass</button>
   </div>
 </div>
 
