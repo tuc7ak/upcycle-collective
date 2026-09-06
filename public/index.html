@@ -1050,6 +1050,17 @@ function fmtDateTime(iso) {
   return new Date(iso).toLocaleString('en-MY', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
 }
 
+// Scanning is newest-first, but a code's lifecycle (pending -> validated ->
+// paid) isn't scanned in that order — the newest memo is whichever stage
+// happened last, so it's seen FIRST, then older memos for the same code are
+// seen after and must not be allowed to downgrade the status back.
+const DONATION_STATUS_RANK = { pending: 0, validated: 1, paid: 2 };
+function upgradeDonationStatus(entry, status) {
+  if (DONATION_STATUS_RANK[status] > DONATION_STATUS_RANK[entry.status || 'pending']) {
+    entry.status = status;
+  }
+}
+
 async function loadLiveDonations() {
   if (!walletPubkey) return [];
   try {
@@ -1096,7 +1107,7 @@ async function loadLiveDonations() {
           if (parts[6] !== walletPubkey) continue;
           const code  = parts[3];
           const entry = codeMap.get(code) || { code, type: parts[4] };
-          entry.status = 'validated';
+          upgradeDonationStatus(entry, 'validated');
           entry.type   = parts[4] || entry.type;
           entry.kg     = (parts[5] || '').replace('KG', '');
           entry.validatedSig = s.signature;
@@ -1107,7 +1118,7 @@ async function loadLiveDonations() {
           if (parts[5] !== walletPubkey) continue;
           const code  = parts[3];
           const entry = codeMap.get(code) || { code };
-          entry.status = 'paid';
+          upgradeDonationStatus(entry, 'paid');
           entry.tokensSent = parts[4];
           entry.airdropSig = s.signature;
           entry.airdropBlockTime = tx.blockTime;
