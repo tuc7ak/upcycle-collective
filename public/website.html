@@ -167,5 +167,76 @@
   }, true);
 })();
 </script>
+
+<script>
+(function(){
+  function insertWorkshopsSection(){
+    if (document.getElementById('workshops')) return; // already inserted
+    var anchor = document.getElementById('how');
+    if (!anchor) return;
+    anchor.insertAdjacentHTML('beforebegin', `<style>
+  .wsx-section { padding: 96px 40px; max-width: 1160px; margin: 0 auto; }
+  .wsx-head { text-align: center; max-width: 620px; margin: 0 auto 56px; }
+  .wsx-eyebrow { display: inline-block; background: #163B24; color: #FFFDF4; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 12.5px; letter-spacing: 0.08em; text-transform: uppercase; padding: 7px 16px; border-radius: 100px; margin-bottom: 16px; }
+  .wsx-head h2 { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 40px; color: #163B24; margin: 0 0 14px; line-height: 1.05; }
+  .wsx-head p { font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 16.5px; color: rgba(22,59,36,0.72); margin: 0; line-height: 1.5; }
+  .wsx-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+  .wsx-card { background: #FFFDF4; border: 2.5px solid #163B24; border-radius: 22px; box-shadow: 5px 5px 0 #163B24; padding: 26px 22px; display: flex; flex-direction: column; gap: 12px; transition: transform .12s ease, box-shadow .12s ease; }
+  .wsx-card:hover { transform: translate(2.5px, 2.5px); box-shadow: 2.5px 2.5px 0 #163B24; }
+  .wsx-icon { width: 52px; height: 52px; border-radius: 14px; background: #DDF6C8; display: flex; align-items: center; justify-content: center; font-size: 26px; border: 2px solid #163B24; }
+  .wsx-card h3 { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 19px; color: #163B24; margin: 4px 0 0; }
+  .wsx-card p { font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 13.5px; color: rgba(22,59,36,0.68); margin: 0; line-height: 1.5; flex: 1; }
+  .wsx-status { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: #2E7D32; }
+  @media (max-width: 900px) {
+    .wsx-grid { grid-template-columns: 1fr 1fr; }
+    .wsx-section { padding: 64px 24px; }
+    .wsx-head h2 { font-size: 30px; }
+  }
+  @media (max-width: 560px) {
+    .wsx-grid { grid-template-columns: 1fr; }
+  }
+</style>
+<section class="wsx-section" id="workshops">
+  <div class="wsx-head">
+    <span class="wsx-eyebrow">Make something</span>
+    <h2>Choose your workshop.</h2>
+    <p>Workshop selection happens after you choose an eligible ticket — seats are limited.</p>
+  </div>
+  <div class="wsx-grid">
+    <div class="wsx-card">
+      <div class="wsx-icon">🧵</div>
+      <h3>Landik Patch It</h3>
+      <p>Turn worn pieces into something worth keeping.</p>
+      <span class="wsx-status">Workshop · Limited seats</span>
+    </div>
+    <div class="wsx-card">
+      <div class="wsx-icon">👝</div>
+      <h3>Stinablis Plastic Pouch</h3>
+      <p>Transform plastic material into a useful everyday piece.</p>
+      <span class="wsx-status">Workshop · Limited seats</span>
+    </div>
+    <div class="wsx-card">
+      <div class="wsx-icon">🧸</div>
+      <h3>UiTM Owl Plushie</h3>
+      <p>Create a playful new object from reused materials.</p>
+      <span class="wsx-status">Workshop · Limited seats</span>
+    </div>
+    <div class="wsx-card">
+      <div class="wsx-icon">🔧</div>
+      <h3>PSJM Repair Station</h3>
+      <p>Learn practical repair instead of throwing it away.</p>
+      <span class="wsx-status">Experience · Repair</span>
+    </div>
+  </div>
+</section>
+`);
+  }
+  if (document.readyState === 'complete') {
+    setTimeout(insertWorkshopsSection, 50);
+  } else {
+    window.addEventListener('load', function(){ setTimeout(insertWorkshopsSection, 50); });
+  }
+})();
+</script>
 </body>
 </html>
