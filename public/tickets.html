@@ -188,6 +188,12 @@
     var anchor = document.getElementById('overlay');
     if (!anchor) return;
     anchor.insertAdjacentHTML('beforebegin', `<style>
+  .terms-notice { text-align: center; padding: 4px 24px 0; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 13px; color: rgba(22,59,36,0.6); }
+  .terms-notice a { color: #2E7D32; font-weight: 800; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+  .terms-notice a:hover { color: #163B24; }
+</style>
+<p class="terms-notice">By purchasing a ticket, you agree to our <a onclick="document.getElementById('tuc-terms').scrollIntoView({behavior:'smooth'})">Terms &amp; Conditions</a>.</p>
+<style>
   .scroll-hint { position: fixed; left: 0; right: 0; bottom: 28px; display: flex; justify-content: center; z-index: 60; pointer-events: none; opacity: 1; transition: opacity .25s ease; }
   .scroll-hint.is-hidden { opacity: 0; pointer-events: none; }
   .scroll-hint-badge { pointer-events: auto; width: 46px; height: 46px; border-radius: 50%; background: #FFFDF4; border: 2.5px solid #163B24; box-shadow: 3px 3px 0 #163B24; display: flex; align-items: center; justify-content: center; animation: scroll-hint-bounce 1.8s ease-in-out infinite; cursor: pointer; padding: 0; transition: transform .12s ease, box-shadow .12s ease; }
@@ -313,6 +319,291 @@
       <p class="faq-answer">Reach out to the TUC team through our socials or email — we're happy to help before you buy.</p>
     </details>
   </div>
+</section>
+<style>
+  .terms-section { padding: 24px 40px 100px; max-width: 820px; margin: 0 auto; }
+  .terms-toggle { background: #FFFDF4; border: 2.5px solid #163B24; border-radius: 20px; box-shadow: 4px 4px 0 #163B24; }
+  .terms-toggle summary { list-style: none; cursor: pointer; padding: 22px 26px; display: flex; align-items: center; gap: 16px; }
+  .terms-toggle summary::-webkit-details-marker { display: none; }
+  .terms-toggle-title { flex: 1; }
+  .terms-toggle-title .terms-eyebrow { display: block; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #2E7D32; margin-bottom: 4px; }
+  .terms-toggle-title h2 { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 22px; color: #163B24; margin: 0; }
+  .terms-toggle-title .terms-updated { display: block; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 12px; color: rgba(22,59,36,0.5); margin-top: 4px; }
+  .terms-chev { flex: none; width: 26px; height: 26px; color: #2E7D32; transition: transform .18s ease; }
+  .terms-toggle[open] .terms-chev { transform: rotate(180deg); }
+  .terms-body { padding: 4px 26px 28px; border-top: 2px solid rgba(22,59,36,0.1); margin-top: 2px; max-height: 70vh; overflow-y: auto; }
+  .terms-h3 { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 16.5px; color: #163B24; margin: 26px 0 4px; }
+  .terms-h3:first-child { margin-top: 20px; }
+  .terms-clause { font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 13.5px; color: rgba(22,59,36,0.72); line-height: 1.6; margin: 8px 0; }
+  .terms-clause .terms-num { color: #163B24; font-weight: 800; }
+  .terms-clause .terms-label { color: #163B24; font-weight: 800; }
+  .terms-body ul.terms-sub-ul { margin: 6px 0 6px 0; padding-left: 20px; }
+  .terms-body ul.terms-sub-ul li { font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 13.5px; color: rgba(22,59,36,0.72); line-height: 1.6; margin-bottom: 4px; }
+  .terms-table-wrap { overflow-x: auto; margin: 10px 0; }
+  .terms-table { width: 100%; border-collapse: collapse; font-family: 'Nunito', sans-serif; font-size: 13px; }
+  .terms-table th, .terms-table td { border: 1.5px solid rgba(22,59,36,0.18); padding: 8px 10px; text-align: left; color: rgba(22,59,36,0.8); }
+  .terms-table th { background: #DDF6C8; font-weight: 800; color: #163B24; }
+  .terms-note { margin-top: 24px; padding: 16px 18px; background: #DDF6C8; border: 2px solid #163B24; border-radius: 14px; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 13px; color: #163B24; line-height: 1.6; }
+  .terms-hr { border: none; border-top: 1.5px solid rgba(22,59,36,0.12); margin: 20px 0; }
+  @media (max-width: 620px) {
+    .terms-section { padding: 16px 24px 72px; }
+    .terms-toggle-title h2 { font-size: 19px; }
+    .terms-body { max-height: 60vh; }
+  }
+</style>
+<section class="terms-section" id="tuc-terms">
+  <details class="terms-toggle">
+    <summary>
+      <div class="terms-toggle-title">
+        <span class="terms-eyebrow">Please read before purchasing</span>
+        <h2>Terms &amp; Conditions</h2>
+        <span class="terms-updated">Last updated: 12 September 2026</span>
+      </div>
+      <svg class="terms-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </summary>
+    <div class="terms-body">
+
+      <div class="terms-h3">1. Definitions</div>
+      <ul class="terms-sub-ul">
+        <li><strong>"Event"</strong> means the TUC event stated on the ticket or purchase confirmation, including all activities, workshops, talks, markets, installations, and programmes organised by TUC.</li>
+        <li><strong>"Ticket"</strong> means a valid ticket for the Event, including Next Gen, Circular Pass, or Patron Pass.</li>
+        <li><strong>"Ticket Holder"</strong> or <strong>"you"</strong> means the person who purchases the ticket or the person named on the ticket, as applicable.</li>
+        <li><strong>"Attendee"</strong> means any person admitted to the Event using a valid ticket.</li>
+        <li><strong>"TUC"</strong>, <strong>"we"</strong>, <strong>"us"</strong> or <strong>"our"</strong> means the organiser of the Event operating under the name TUC (The Upcycle Collective).</li>
+        <li><strong>"Venue"</strong> means the venue stated on the ticket, purchase confirmation, or official Event information, and any premises used for the Event.</li>
+        <li><strong>"Workshop"</strong> means any workshop, class, demonstration, or activity included in a ticket tier or available at the Event.</li>
+      </ul>
+
+      <div class="terms-h3">2. Ticket Purchase and Acceptance</div>
+      <p class="terms-clause"><span class="terms-num">2.1</span> By purchasing a Ticket, you confirm that you have read, understood, and agreed to these Terms &amp; Conditions.</p>
+      <p class="terms-clause"><span class="terms-num">2.2</span> You must be at least 18 years old to purchase a Ticket. If you are under 18, a parent or legal guardian must purchase the Ticket on your behalf and accept these Terms &amp; Conditions.</p>
+      <p class="terms-clause"><span class="terms-num">2.3</span> You agree to provide accurate, current, and complete information at the time of purchase, including your name, email address, phone number, and any other details reasonably requested.</p>
+      <p class="terms-clause"><span class="terms-num">2.4</span> TUC may refuse, cancel, or void any Ticket if information provided is false, incomplete, misleading, or if the Ticket was obtained fraudulently or in breach of these Terms &amp; Conditions.</p>
+      <p class="terms-clause"><span class="terms-num">2.5</span> Tickets are valid only for the Event, date, and ticket tier stated at the time of purchase. Tickets do not provide access to any other event, date, venue area, or activity unless expressly stated.</p>
+
+      <div class="terms-h3">3. Ticket Tiers and Inclusions</div>
+      <p class="terms-clause"><span class="terms-num">3.1</span> The available ticket tiers, prices, and inclusions are as follows, and remain subject to change before purchase as set out in clause 3.3:</p>
+      <div class="terms-table-wrap">
+        <table class="terms-table">
+          <tr><th>Ticket Tier</th><th>Price</th><th>Inclusions</th></tr>
+          <tr><td>Next Gen</td><td>RM 15</td><td>Workshop access ×1, door gift, TUC Marketplace, Experience Floor</td></tr>
+          <tr><td>Circular Pass</td><td>RM 35</td><td>Workshop access ×1, door gift, TUC Marketplace, Experience Floor</td></tr>
+          <tr><td>Patron Pass</td><td>RM 100</td><td>Workshop access ×3, Figurine Workshop, Patron entry, door gift, TUC Marketplace, Experience Floor</td></tr>
+        </table>
+      </div>
+      <p class="terms-clause"><span class="terms-num">3.2</span> Workshop access included in your ticket tier is subject to availability, booking, and the Event schedule. It does not guarantee a specific workshop, facilitator, session, or time slot unless expressly stated at the time of purchase.</p>
+      <p class="terms-clause"><span class="terms-num">3.3</span> TUC may add, remove, or change ticket tiers, inclusions, prices, and benefits before purchase. The ticket tier and inclusions stated at the time of your purchase will apply, subject to these Terms &amp; Conditions.</p>
+      <p class="terms-clause"><span class="terms-num">3.4</span> Any additional items, merchandise, food, drinks, or paid activities not expressly included in your ticket tier are not included and must be paid for separately.</p>
+
+      <div class="terms-h3">4. Payment, Pricing, Taxes, and Fees</div>
+      <p class="terms-clause"><span class="terms-num">4.1</span> Payments are processed securely through Stripe or another payment provider designated by TUC. TUC does not see or store your full card details. The payment provider's own terms and privacy policy may apply to your payment.</p>
+      <p class="terms-clause"><span class="terms-num">4.2</span> You will receive a payment or ticket confirmation after successful payment. If you do not receive a confirmation, please contact TUC at tucswk@gmail.com.</p>
+      <p class="terms-clause"><span class="terms-num">4.3</span> All ticket prices are stated in Malaysian Ringgit (MYR) unless otherwise stated. Any applicable taxes, service fees, payment processing fees, or other charges will be stated at checkout where applicable.</p>
+      <p class="terms-clause"><span class="terms-num">4.4</span> TUC may correct pricing errors before accepting your purchase. If a pricing error is discovered after payment, TUC may cancel the affected Ticket and refund the amount paid, unless prohibited by law.</p>
+      <p class="terms-clause"><span class="terms-num">4.5</span> You are responsible for any bank charges or currency conversion fees charged by your bank or card issuer.</p>
+
+      <div class="terms-h3">5. Ticket Delivery and Confirmation</div>
+      <p class="terms-clause"><span class="terms-num">5.1</span> Tickets are typically delivered electronically to the email address provided at purchase.</p>
+      <p class="terms-clause"><span class="terms-num">5.2</span> You must bring your valid ticket confirmation, QR code, or other proof of purchase as required by TUC for check-in.</p>
+      <p class="terms-clause"><span class="terms-num">5.3</span> TUC may request photo identification at check-in in certain circumstances, such as ticket transfers, concession tickets, Patron Passes, or where fraud or ticket misuse is suspected. Identification checks are not conducted as a matter of routine for every Attendee.</p>
+      <p class="terms-clause"><span class="terms-num">5.4</span> It is your responsibility to ensure that your email address and contact details are correct and that you can receive the ticket confirmation.</p>
+
+      <div class="terms-h3">6. Ticket Validity and Admission</div>
+      <p class="terms-clause"><span class="terms-num">6.1</span> Each Ticket admits one Attendee according to the access included in the purchased ticket tier.</p>
+      <p class="terms-clause"><span class="terms-num">6.2</span> Tickets are valid only for the Event, date, time, and ticket tier stated on the Ticket or purchase confirmation.</p>
+      <p class="terms-clause"><span class="terms-num">6.3</span> TUC reserves the right to refuse admission where a Ticket is invalid, duplicated, altered, counterfeit, or obtained fraudulently or in breach of these Terms &amp; Conditions.</p>
+      <p class="terms-clause"><span class="terms-num">6.4</span> TUC may refuse admission or remove any Attendee who fails to comply with these Terms &amp; Conditions, Venue rules, safety instructions, or reasonable directions from TUC staff, Venue personnel, or Workshop facilitators.</p>
+      <p class="terms-clause"><span class="terms-num">6.5</span> Refusal of admission or removal for breach of these Terms &amp; Conditions, Venue rules, or safety instructions does not entitle you to a refund, except where required by law.</p>
+      <p class="terms-clause"><span class="terms-num">6.6</span> Late arrival may result in reduced access to the Event, Workshops, or activities. TUC is not obliged to admit late attendees or provide refunds or credits for late arrival.</p>
+
+      <div class="terms-h3">7. Ticket Transfer and Resale</div>
+      <p class="terms-clause"><span class="terms-num">7.1</span> Tickets are intended for the person named at purchase.</p>
+      <p class="terms-clause"><span class="terms-num">7.2</span> Ticket transfers are permitted up to 7 days before the Event by emailing tucswk@gmail.com.</p>
+      <p class="terms-clause"><span class="terms-num">7.3</span> A transfer request should include:</p>
+      <ul class="terms-sub-ul">
+        <li>the original purchaser's name and email address;</li>
+        <li>the Ticket reference or order number; and</li>
+        <li>the full name and email address of the new Attendee.</li>
+      </ul>
+      <p class="terms-clause"><span class="terms-num">7.4</span> TUC may require Attendee details to be updated before the Event. A Ticket is not considered transferred until TUC confirms the change.</p>
+      <p class="terms-clause"><span class="terms-num">7.5</span> No administrative fee applies to approved Ticket transfers.</p>
+      <p class="terms-clause"><span class="terms-num">7.6</span> Tickets may not be resold above their original purchase price without TUC's written approval.</p>
+      <p class="terms-clause"><span class="terms-num">7.7</span> Unauthorised resale, attempted resale above face value, or transfer outside this clause may result in the Ticket being voided without refund.</p>
+      <p class="terms-clause"><span class="terms-num">7.8</span> TUC is not responsible for Tickets purchased from unauthorised resellers, scalpers, or third-party platforms.</p>
+
+      <div class="terms-h3">8. Refunds, Cancellations, Rescheduling, and Material Changes</div>
+      <p class="terms-clause"><span class="terms-num">8.1</span> All ticket sales are final except as set out in this clause or as required by applicable law.</p>
+      <p class="terms-clause"><span class="terms-label">8.2 Change of mind / inability to attend.</span> TUC does not provide refunds if you change your mind, cannot attend, arrive late, lose your Ticket, or are otherwise unable to use your Ticket for personal reasons.</p>
+      <p class="terms-clause"><span class="terms-label">8.3 Duplicate purchases.</span> If you accidentally purchase duplicate Tickets, contact tucswk@gmail.com within 7 days of purchase. TUC may refund the duplicate unused Ticket, subject to verification and any non-refundable payment processing fees.</p>
+      <p class="terms-clause"><span class="terms-label">8.4 TUC cancellation without rescheduling.</span> If TUC cancels the Event and does not reschedule it, TUC will refund the ticket price paid to the original payment method within 30 days, subject to applicable payment-provider processing times.</p>
+      <p class="terms-clause"><span class="terms-label">8.5 Material change.</span> If TUC materially changes the date, Venue, or format of the Event, TUC will communicate the available options to Ticket Holders. Depending on the circumstances, options may include:</p>
+      <ul class="terms-sub-ul">
+        <li>a refund of the ticket price paid;</li>
+        <li>a credit for a future TUC event; or</li>
+        <li>continued validity of the Ticket for the changed Event.</li>
+      </ul>
+      <p class="terms-clause"><span class="terms-label">8.6 Rescheduling.</span> If the Event is rescheduled, Tickets will remain valid for the new date unless TUC states otherwise. If you cannot attend the rescheduled date, you may request a refund within 14 days of TUC's rescheduling notice, subject to applicable law.</p>
+      <p class="terms-clause"><span class="terms-label">8.7 Force majeure.</span> If the Event is cancelled, rescheduled, or materially changed due to an event beyond TUC's reasonable control, including weather, Venue closure, government restrictions, public health measures, safety concerns, or other force majeure events, TUC will communicate the available options as soon as reasonably practicable. Any refunds, credits, or alternatives will be provided in accordance with applicable law.</p>
+      <p class="terms-clause"><span class="terms-label">8.8 No refund for removal or refusal.</span> No refund will be given if you are refused admission or removed from the Event for breaching these Terms &amp; Conditions, Venue rules, safety instructions, or reasonable directions.</p>
+      <p class="terms-clause"><span class="terms-label">8.9 Statutory rights.</span> Nothing in this clause excludes, restricts, or modifies any right you may have under the Consumer Protection Act 1999 or any other applicable Malaysian law that cannot lawfully be excluded.</p>
+
+      <div class="terms-h3">9. Workshop Access and Scheduling</div>
+      <p class="terms-clause"><span class="terms-num">9.1</span> Workshop access included in your ticket tier is subject to availability and does not guarantee a specific session, facilitator, time slot, or Workshop.</p>
+      <p class="terms-clause"><span class="terms-num">9.2</span> Workshop booking or registration may be required. Details will be communicated through official TUC channels before the Event.</p>
+      <p class="terms-clause"><span class="terms-num">9.3</span> If TUC cannot provide Workshop access included in your ticket tier due to circumstances within TUC's control, TUC may, at its discretion:</p>
+      <ul class="terms-sub-ul">
+        <li>offer an alternative Workshop or session;</li>
+        <li>provide a credit; or</li>
+        <li>provide a partial refund for the unavailable Workshop access.</li>
+      </ul>
+      <p class="terms-clause"><span class="terms-num">9.4</span> If you fail to attend a booked Workshop, arrive late, or do not meet any Workshop-specific requirements, TUC is not obliged to provide a replacement, refund, or credit.</p>
+      <p class="terms-clause"><span class="terms-num">9.5</span> Workshop-specific age requirements, safety requirements, and material restrictions will be communicated before participation.</p>
+
+      <div class="terms-h3">10. Event Programme and Changes</div>
+      <p class="terms-clause"><span class="terms-num">10.1</span> The published programme, activities, makers, vendors, facilitators, speakers, Workshops, and schedules are subject to change due to operational, safety, Venue, weather, or other circumstances.</p>
+      <p class="terms-clause"><span class="terms-num">10.2</span> TUC will make reasonable efforts to communicate significant changes to Ticket Holders through the contact details provided at purchase or through official TUC channels.</p>
+      <p class="terms-clause"><span class="terms-num">10.3</span> TUC does not guarantee the appearance or participation of any specific maker, vendor, facilitator, speaker, or performer.</p>
+
+      <div class="terms-h3">11. Materials Brought to the Event</div>
+      <p class="terms-clause"><span class="terms-num">11.1</span> Only materials listed as accepted by TUC may be submitted for donation, repair, upcycling, or related activities.</p>
+      <p class="terms-clause"><span class="terms-num">11.2</span> TUC may decline any materials that are unsafe, contaminated, hazardous, dirty, infested, outside the accepted scope, or otherwise unsuitable.</p>
+      <p class="terms-clause"><span class="terms-num">11.3</span> You remain responsible for your own items until they are accepted by TUC staff. TUC is not responsible for loss, theft, or damage to materials before acceptance, except where liability cannot lawfully be excluded.</p>
+      <p class="terms-clause"><span class="terms-num">11.4</span> Once materials are accepted by TUC, ownership transfers to TUC unless TUC states otherwise in writing.</p>
+      <p class="terms-clause"><span class="terms-num">11.5</span> Accepted materials may be sorted, dismantled, repaired, modified, repurposed, recycled, displayed, transferred, or otherwise used by TUC in connection with its activities.</p>
+      <p class="terms-clause"><span class="terms-num">11.6</span> You must not bring hazardous, flammable, toxic, medical, or prohibited materials to the Event. You are responsible for any loss, damage, injury, or claim arising from materials you bring, to the extent permitted by law.</p>
+
+      <div class="terms-h3">12. Safety and Participation</div>
+      <p class="terms-clause"><span class="terms-num">12.1</span> Attendees must follow reasonable instructions from TUC staff, Venue personnel, and Workshop facilitators.</p>
+      <p class="terms-clause"><span class="terms-num">12.2</span> TUC may restrict, suspend, or stop participation in any activity where safety instructions are not followed or where an Attendee poses a risk to themselves, others, or property.</p>
+      <p class="terms-clause"><span class="terms-num">12.3</span> You participate in Event activities at your own risk, except where liability cannot lawfully be excluded.</p>
+      <p class="terms-clause"><span class="terms-num">12.4</span> If you have any medical, accessibility, allergy, or other condition that may affect your safe participation in a particular Workshop or activity, please inform TUC or the relevant facilitator in advance where reasonably necessary.</p>
+
+      <div class="terms-h3">13. Children and Young Participants</div>
+      <p class="terms-clause"><span class="terms-num">13.1</span> All attendees under 18 must have parent or legal guardian consent to attend.</p>
+      <p class="terms-clause"><span class="terms-num">13.2</span> Attendees under 16 must be accompanied by a responsible adult Ticket Holder at all times, unless TUC states otherwise for a specific activity.</p>
+      <p class="terms-clause"><span class="terms-num">13.3</span> Some Workshops or activities may have age restrictions, supervision requirements, or capacity limits. These will be communicated before participation.</p>
+      <p class="terms-clause"><span class="terms-num">13.4</span> A parent or legal guardian is responsible for the behaviour, safety, and supervision of any minor in their care.</p>
+      <p class="terms-clause"><span class="terms-num">13.5</span> Tickets for minors must be purchased by a parent or legal guardian who accepts these Terms &amp; Conditions on the minor's behalf.</p>
+
+      <div class="terms-h3">14. Photography, Video, and Media</div>
+      <p class="terms-clause"><span class="terms-num">14.1</span> The Event may be photographed, filmed, or recorded for documentation, reporting, and future TUC communications.</p>
+      <p class="terms-clause"><span class="terms-num">14.2</span> By attending, you acknowledge that you may appear incidentally in general Event photography or recordings.</p>
+      <p class="terms-clause"><span class="terms-num">14.3</span> If you do not wish to appear in general Event photography or recordings, you may:</p>
+      <ul class="terms-sub-ul">
+        <li>inform check-in staff on the day; and/or</li>
+        <li>email tucswk@gmail.com before the Event with your name and Ticket reference.</li>
+      </ul>
+      <p class="terms-clause"><span class="terms-num">14.4</span> TUC will make reasonable efforts to respect opt-out requests but cannot guarantee that you will not appear incidentally in the background of photographs or recordings.</p>
+      <p class="terms-clause"><span class="terms-num">14.5</span> Where TUC intends to use a focused image, interview, or identifiable feature of an Attendee specifically for marketing or promotional purposes, TUC will seek appropriate consent where practicable.</p>
+      <p class="terms-clause"><span class="terms-num">14.6</span> For minors, TUC will seek parent or legal guardian consent where required and practicable.</p>
+
+      <div class="terms-h3">15. Personal Information and Privacy</div>
+      <p class="terms-clause"><span class="terms-num">15.1</span> TUC processes personal information in accordance with the Personal Data Protection Act 2010, as amended, and other applicable Malaysian privacy requirements.</p>
+      <p class="terms-clause"><span class="terms-num">15.2</span> Information collected at purchase may include your name, email address, phone number, ticket tier, Workshop bookings, payment-related information processed by payment providers, check-in records, and relevant media or consent records.</p>
+      <p class="terms-clause"><span class="terms-num">15.3</span> TUC may use your personal information for:</p>
+      <ul class="terms-sub-ul">
+        <li>ticket administration and order processing;</li>
+        <li>Event communication and updates;</li>
+        <li>check-in and admission;</li>
+        <li>Workshop booking and scheduling;</li>
+        <li>safety, security, and incident management;</li>
+        <li>customer support and complaints handling;</li>
+        <li>legal, accounting, and compliance purposes; and</li>
+        <li>marketing where you have given separate consent or where permitted by law.</li>
+      </ul>
+      <p class="terms-clause"><span class="terms-num">15.4</span> TUC may share personal information with:</p>
+      <ul class="terms-sub-ul">
+        <li>Stripe and other payment processors;</li>
+        <li>Event partners, Venue personnel, and Workshop facilitators;</li>
+        <li>IT, email, and ticketing service providers;</li>
+        <li>professional advisers, insurers, and auditors; and</li>
+        <li>regulators, courts, or law enforcement where required by law.</li>
+      </ul>
+      <p class="terms-clause"><span class="terms-num">15.5</span> Some service providers may process data outside Malaysia. Where required, TUC will take reasonable steps to ensure appropriate safeguards are in place.</p>
+      <p class="terms-clause"><span class="terms-num">15.6</span> TUC retains personal information only for as long as reasonably necessary for the purposes stated above, legal compliance, dispute resolution, and record-keeping.</p>
+      <p class="terms-clause"><span class="terms-num">15.7</span> You may have rights under applicable law to request access to, correction of, or withdrawal of consent for your personal information, subject to applicable legal limitations.</p>
+      <p class="terms-clause"><span class="terms-num">15.8</span> Further information about how TUC collects, uses, stores, and protects personal information will be provided through TUC's applicable Privacy Notice.</p>
+
+      <div class="terms-h3">16. Lost, Stolen, or Compromised Ticket Confirmation</div>
+      <p class="terms-clause"><span class="terms-num">16.1</span> If you lose access to your confirmation email, or believe your Ticket has been shared, stolen, or compromised without your permission, contact tucswk@gmail.com as soon as possible.</p>
+      <p class="terms-clause"><span class="terms-num">16.2</span> TUC may require proof of identity and purchase before reissuing or replacing a Ticket.</p>
+      <p class="terms-clause"><span class="terms-num">16.3</span> TUC is not responsible for losses caused by your failure to keep your Ticket confirmation secure.</p>
+
+      <div class="terms-h3">17. Venue Rules and Personal Property</div>
+      <p class="terms-clause"><span class="terms-num">17.1</span> All Attendees must comply with the Venue's rules and reasonable directions from Venue personnel.</p>
+      <p class="terms-clause"><span class="terms-num">17.2</span> TUC and the Venue are not responsible for loss, theft, or damage to personal belongings, except where liability cannot lawfully be excluded.</p>
+      <p class="terms-clause"><span class="terms-num">17.3</span> You bring personal belongings to the Event at your own risk.</p>
+      <p class="terms-clause"><span class="terms-num">17.4</span> TUC may refuse entry to, or remove, any person carrying prohibited, dangerous, or unsafe items.</p>
+
+      <div class="terms-h3">18. Liability</div>
+      <p class="terms-clause"><span class="terms-num">18.1</span> To the fullest extent permitted by law, TUC is not liable for:</p>
+      <ul class="terms-sub-ul">
+        <li>indirect, incidental, special, or consequential loss;</li>
+        <li>loss of profit, opportunity, goodwill, or anticipated savings;</li>
+        <li>loss, theft, or damage to personal property;</li>
+        <li>loss arising from Attendee materials brought to the Event;</li>
+        <li>loss arising from changes to the programme, Workshops, vendors, or schedule; or</li>
+        <li>loss arising from events beyond TUC's reasonable control.</li>
+      </ul>
+      <p class="terms-clause"><span class="terms-num">18.2</span> Where permitted by law, TUC's total aggregate liability to you in connection with the Event or these Terms &amp; Conditions is limited to the amount you paid for your Ticket.</p>
+      <p class="terms-clause"><span class="terms-num">18.3</span> Nothing in these Terms &amp; Conditions excludes, restricts, or modifies any liability that cannot lawfully be excluded, including liability for:</p>
+      <ul class="terms-sub-ul">
+        <li>death or personal injury caused by negligence;</li>
+        <li>fraud or fraudulent misrepresentation; or</li>
+        <li>any statutory rights under the Consumer Protection Act 1999 or other applicable Malaysian law.</li>
+      </ul>
+      <p class="terms-clause"><span class="terms-num">18.4</span> You are responsible for your own safety and for following all safety instructions, Workshop rules, and Venue rules.</p>
+
+      <div class="terms-h3">19. Indemnity</div>
+      <p class="terms-clause"><span class="terms-num">19.1</span> To the extent permitted by law, you agree to indemnify and hold harmless TUC, its officers, employees, agents, Event partners, and Venue from claims, losses, damages, liabilities, costs, and expenses arising from:</p>
+      <ul class="terms-sub-ul">
+        <li>your breach of these Terms &amp; Conditions;</li>
+        <li>your breach of Venue rules or safety instructions;</li>
+        <li>materials you bring to the Event;</li>
+        <li>your negligent or wrongful acts or omissions; or</li>
+        <li>your infringement of any third-party rights.</li>
+      </ul>
+      <p class="terms-clause"><span class="terms-num">19.2</span> This indemnity does not apply to the extent the claim is caused by TUC's own negligence, fraud, or wilful misconduct.</p>
+
+      <div class="terms-h3">20. Force Majeure</div>
+      <p class="terms-clause"><span class="terms-num">20.1</span> TUC is not liable for any failure or delay in performing its obligations caused by events beyond its reasonable control, including:</p>
+      <ul class="terms-sub-ul">
+        <li>natural disasters, weather, fire, flood, or earthquake;</li>
+        <li>public health emergencies, pandemics, or government restrictions;</li>
+        <li>Venue closure, power failure, or infrastructure failure;</li>
+        <li>strikes, labour disputes, or civil unrest;</li>
+        <li>safety incidents, security threats, or terrorism; or</li>
+        <li>any other event beyond TUC's reasonable control.</li>
+      </ul>
+      <p class="terms-clause"><span class="terms-num">20.2</span> If a force majeure event occurs, TUC may cancel, reschedule, relocate, or materially change the Event. TUC will communicate available options to Ticket Holders as soon as reasonably practicable, in accordance with applicable law.</p>
+
+      <div class="terms-h3">21. Complaints and Disputes</div>
+      <p class="terms-clause"><span class="terms-num">21.1</span> If you have a complaint about the Event, your Ticket, or these Terms &amp; Conditions, please contact tucswk@gmail.com within 14 days of the Event or the issue arising.</p>
+      <p class="terms-clause"><span class="terms-num">21.2</span> TUC will use reasonable efforts to resolve complaints in good faith.</p>
+      <p class="terms-clause"><span class="terms-num">21.3</span> If a dispute cannot be resolved informally, the parties may mutually agree to attempt mediation in Malaysia before commencing court proceedings.</p>
+      <p class="terms-clause"><span class="terms-num">21.4</span> Nothing in this clause prevents either party from seeking urgent injunctive or other legal relief where necessary.</p>
+
+      <div class="terms-h3">22. Governing Law and Jurisdiction</div>
+      <p class="terms-clause"><span class="terms-num">22.1</span> These Terms &amp; Conditions are governed by the laws of Malaysia.</p>
+      <p class="terms-clause"><span class="terms-num">22.2</span> Subject to any mandatory consumer protection rights, the courts of Malaysia shall have jurisdiction over any dispute arising from or in connection with these Terms &amp; Conditions or the Event.</p>
+
+      <div class="terms-h3">23. Changes to These Terms &amp; Conditions</div>
+      <p class="terms-clause"><span class="terms-num">23.1</span> TUC may update these Terms &amp; Conditions to reflect operational, legal, safety, or programme changes.</p>
+      <p class="terms-clause"><span class="terms-num">23.2</span> The version applicable to your purchase will be made available to you. Changes will not apply retrospectively unless required by law or agreed by you.</p>
+      <p class="terms-clause"><span class="terms-num">23.3</span> Any rights that cannot legally be excluded will remain unaffected.</p>
+
+      <div class="terms-h3">24. General</div>
+      <p class="terms-clause"><span class="terms-label">24.1 Severability.</span> If any provision of these Terms &amp; Conditions is found to be invalid or unenforceable, the remaining provisions will continue in full force and effect.</p>
+      <p class="terms-clause"><span class="terms-label">24.2 Entire Agreement.</span> These Terms &amp; Conditions, together with your purchase confirmation, applicable Privacy Notice, and Event-specific rules, constitute the agreement between you and TUC regarding the Event.</p>
+      <p class="terms-clause"><span class="terms-label">24.3 Assignment.</span> TUC may assign or transfer its rights and obligations under these Terms &amp; Conditions. You may not assign your rights without TUC's written consent.</p>
+      <p class="terms-clause"><span class="terms-label">24.4 Notices.</span> Notices to TUC should be sent to tucswk@gmail.com. Notices to you may be sent to the email address provided at purchase.</p>
+      <p class="terms-clause"><span class="terms-label">24.5 No Waiver.</span> If TUC does not enforce any provision of these Terms &amp; Conditions, that does not waive TUC's right to enforce it later.</p>
+      <p class="terms-clause"><span class="terms-label">24.6 Headings.</span> Headings are for convenience only and do not affect interpretation.</p>
+
+      <hr class="terms-hr" />
+      <div class="terms-note">This document is a working draft prepared with AI assistance and has not been reviewed by a lawyer. It is provided in good faith to give attendees clear information before purchase.</div>
+    </div>
+  </details>
 </section>`);
     setupScrollHintFade();
   }
