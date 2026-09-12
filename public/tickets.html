@@ -194,7 +194,7 @@
   .terms-notice a { color: #2E7D32; font-weight: 800; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
   .terms-notice a:hover { color: #163B24; }
 </style>
-<div class="day-notice-wrap"><span class="day-notice">One ticket = one day. Valid for either 24 or 25 October.</span></div>
+<div class="day-notice-wrap"><span class="day-notice">Next Gen &amp; Circular: 1-day pass. Patron Pass: 2-day pass.</span></div>
 <p class="terms-notice">By purchasing a ticket, you agree to our <a onclick="document.getElementById('tuc-terms').scrollIntoView({behavior:'smooth'})">Terms &amp; Conditions</a>.</p>
 <style>
   .scroll-hint { position: fixed; left: 0; right: 0; bottom: 28px; display: flex; justify-content: center; z-index: 60; pointer-events: none; opacity: 1; transition: opacity .25s ease; }
@@ -287,7 +287,7 @@
         <span class="faq-q">What's the difference between the passes?</span>
         <svg class="faq-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
       </summary>
-      <p class="faq-answer">Next Gen gets you a door gift and TUC Marketplace + Experience Floor access. Circular Pass adds a workshop of your choice. Patron Pass includes three workshops, the Figurine Workshop, and Patron entry.</p>
+      <p class="faq-answer">Next Gen (discounted for students &amp; children) and Circular Pass each include one workshop of your choice, a door gift, TUC Marketplace and Experience Floor access. Patron Pass includes two workshops of your choice, the Figurine Painting Workshop, and admits you on both event days.</p>
     </details>
     <details class="faq-item">
       <summary>
@@ -295,7 +295,7 @@
         <span class="faq-q">Can I use my ticket on both days?</span>
         <svg class="faq-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
       </summary>
-      <p class="faq-answer">Each ticket is valid for one day only. TUC runs 24–25 October — pick whichever day works for you at check-in. Once your ticket is scanned for entry, it's used for that day and won't work for the other.</p>
+      <p class="faq-answer">Next Gen and Circular Pass are valid for one day only — pick 24 or 25 October at check-in. Patron Pass covers both days: you'll get a wristband at your first check-in so you don't need to re-scan on day two.</p>
     </details>
     <details class="faq-item">
       <summary>
@@ -440,7 +440,7 @@
       <p class="terms-clause"><span class="terms-num">6.3</span> The Organiser may require presentation of a valid QR code, Ticket, confirmation email or other proof of purchase at entry.</p>
       <p class="terms-clause"><span class="terms-num">6.4</span> The Organiser reserves the right to refuse admission where a Ticket is invalid, duplicated, cancelled, obtained fraudulently or otherwise improperly used.</p>
       <p class="terms-clause"><span class="terms-num">6.5</span> Attendees must comply with reasonable entry, security and identification procedures imposed by the Organiser or Venue.</p>
-      <p class="terms-clause"><span class="terms-num">6.6</span> The Event takes place across two days. Unless a Ticket expressly states a specific date, it is valid for entry on either day, at the Ticket Holder's choice, but for one day only. Once a Ticket has been scanned and used for admission, it is no longer valid for admission on the other day.</p>
+      <p class="terms-clause"><span class="terms-num">6.6</span> The Event takes place across two days. Unless a Ticket expressly states otherwise, Next Gen and Circular Pass Tickets admit the Ticket Holder to one day only (24 or 25 October, at their choice). Patron Pass Tickets admit the Ticket Holder to both days. As Tickets are validated by a single-use QR code, Patron Pass Ticket Holders will receive a wristband or other marker at their first check-in to confirm admission on the second day without requiring a second scan.</p>
 
       <div class="terms-h3">7. Ticket Transfer and Resale</div>
       <p class="terms-clause"><span class="terms-num">7.1</span> Unless otherwise stated on the applicable ticketing page, a Ticket may be transferred to another person at the Purchaser's own responsibility.</p>
@@ -586,6 +586,81 @@
     setTimeout(insertTicketExtras, 50);
   } else {
     window.addEventListener('load', function(){ setTimeout(insertTicketExtras, 50); });
+  }
+})();
+</script>
+<script>
+(function(){
+  function insertTierCardsV2(){
+    if (document.getElementById('tuc-tier-cards-v2')) return;
+    var oldSection = document.querySelector('.framer-1t0vfb3');
+    if (!oldSection) return;
+    oldSection.style.display = 'none';
+    oldSection.insertAdjacentHTML('afterend', `<div id="tuc-tier-cards-v2"><style>
+  .free-entry-wrap { max-width: 720px; margin: 0 auto 32px; padding: 0 40px; text-align: center; }
+  .free-entry-badge { display: inline-block; background: #FAD85D; border: 2px solid #163B24; color: #163B24; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 12.5px; letter-spacing: 0.08em; padding: 6px 18px; border-radius: 100px; margin-bottom: 14px; }
+  .free-entry-headline { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 21px; color: #163B24; margin: 0 0 8px; line-height: 1.3; }
+  .free-entry-sub { font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 14.5px; color: rgba(22,59,36,0.68); margin: 0; line-height: 1.5; }
+
+  .tuc-tickets-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 1080px; margin: 0 auto 40px; padding: 0 40px; align-items: stretch; }
+  .tuc-tier-card { display: flex; flex-direction: column; background: #FFFDF4; border: 2.5px solid #163B24; border-radius: 24px; box-shadow: 6px 6px 0 #163B24; padding: 28px 26px; }
+  .tuc-tier-card.is-popular { background: #FAD85D; }
+  .tuc-tier-eyebrow { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 13px; letter-spacing: 0.6px; color: #2E7D32; margin-bottom: 6px; }
+  .tuc-tier-card.is-popular .tuc-tier-eyebrow { color: #163B24; }
+  .tuc-tier-price { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 44px; color: #163B24; line-height: 1; margin-bottom: 10px; }
+  .tuc-day-badge { display: inline-block; background: #DDF6C8; border: 1.5px solid rgba(22,59,36,0.3); border-radius: 100px; padding: 4px 14px; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 11.5px; color: #163B24; margin-bottom: 14px; align-self: flex-start; }
+  .tuc-tier-card.is-popular .tuc-day-badge { background: #FFFDF4; }
+  .tuc-tier-desc { font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 14.5px; color: #2E7D32; line-height: 1.45; margin-bottom: 14px; }
+  .tuc-tier-card.is-popular .tuc-tier-desc { color: #163B24; }
+  .tuc-tier-features { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13.5px; color: #163B24; line-height: 1.6; margin-bottom: 12px; flex-grow: 1; }
+  .tuc-tier-note { font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 12.5px; font-style: italic; color: rgba(22,59,36,0.62); line-height: 1.5; margin-bottom: 18px; }
+  .tuc-tier-card.is-popular .tuc-tier-note { color: rgba(22,59,36,0.72); }
+  .tuc-buy-btn { border: none; cursor: pointer; border-radius: 100px; padding: 15px 20px; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 14px; text-align: center; }
+  .tuc-buy-btn.outline { background: #FFFDF4; border: 2px solid #163B24; color: #163B24; }
+  .tuc-buy-btn.solid { background: #163B24; color: #FFFDF4; }
+  @media (max-width: 900px) {
+    .tuc-tickets-grid { grid-template-columns: 1fr; padding: 0 24px; }
+    .free-entry-wrap { padding: 0 24px; }
+  }
+</style>
+<div class="free-entry-wrap">
+  <span class="free-entry-badge">FREE ENTRY</span>
+  <p class="free-entry-headline">Everyone is welcome to explore TUC Experience Floor.</p>
+  <p class="free-entry-sub">Want to join a workshop? Get a TUC Pass to unlock workshop access &amp; perks!</p>
+</div>
+<div class="tuc-tickets-grid">
+  <div class="tuc-tier-card">
+    <div class="tuc-tier-eyebrow">NEXT GEN</div>
+    <div class="tuc-tier-price">RM 15</div>
+    <span class="tuc-day-badge">1-DAY PASS</span>
+    <p class="tuc-tier-desc">For students &amp; children, discount applies. A bright entry into the TUC Experience.</p>
+    <p class="tuc-tier-features">Eligible for TUC Charms Keychain Workshop &middot; TUC Door Gift &middot; TUC Marketplace &middot; TUC Experience Floor</p>
+    <p class="tuc-tier-note">Student ID required at registration.</p>
+    <button class="tuc-buy-btn outline" onclick="buyTicket('student', this)">Buy Next Gen ticket</button>
+  </div>
+  <div class="tuc-tier-card is-popular">
+    <div class="tuc-tier-eyebrow">MOST POPULAR &middot; CIRCULAR PASS</div>
+    <div class="tuc-tier-price">RM 35</div>
+    <span class="tuc-day-badge">1-DAY PASS</span>
+    <p class="tuc-tier-desc">For everyone who wants the full TUC Experience.</p>
+    <p class="tuc-tier-features">1x Workshop of Your Choice &middot; TUC Door Gift &middot; TUC Marketplace &middot; TUC Experience Floor</p>
+    <p class="tuc-tier-note">Come for one day. Come back for more.</p>
+    <button class="tuc-buy-btn solid" onclick="buyTicket('normal', this)">Buy Circular Pass</button>
+  </div>
+  <div class="tuc-tier-card">
+    <div class="tuc-tier-eyebrow">PATRON PASS</div>
+    <div class="tuc-tier-price">RM 100</div>
+    <span class="tuc-day-badge">2-DAY PASS</span>
+    <p class="tuc-tier-desc">For loop champions who want to support TUC.</p>
+    <p class="tuc-tier-features">2x Workshop of Your Choice &middot; 1x TUC Eco-Warrior Figurine Painting Workshop &middot; TUC Door Gift &middot; TUC Marketplace &middot; TUC Experience Floor</p>
+    <button class="tuc-buy-btn outline" onclick="buyTicket('premium', this)">Buy Patron Pass</button>
+  </div>
+</div></div>`);
+  }
+  if (document.readyState === 'complete') {
+    setTimeout(insertTierCardsV2, 50);
+  } else {
+    window.addEventListener('load', function(){ setTimeout(insertTierCardsV2, 50); });
   }
 })();
 </script>
