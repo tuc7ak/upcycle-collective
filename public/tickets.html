@@ -625,5 +625,67 @@
   }
 })();
 </script>
+<script>
+(function(){
+  function closeOverlay(){
+    var overlay = document.getElementById('tuc-purchase-overlay');
+    if (overlay) overlay.remove();
+    var url = new URL(window.location.href);
+    url.searchParams.delete('status');
+    url.searchParams.delete('session_id');
+    var newUrl = url.pathname + (url.search ? url.search : '');
+    window.history.replaceState({}, '', newUrl);
+  }
+  function showPurchaseOverlay(){
+    var params = new URLSearchParams(window.location.search);
+    var status = params.get('status');
+    if (status !== 'success' && status !== 'cancelled') return;
+    if (document.getElementById('tuc-purchase-overlay')) return;
+
+    document.body.insertAdjacentHTML('beforeend', `<style>
+  .tuc-overlay-backdrop { position: fixed; inset: 0; background: rgba(22,59,36,0.45); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .tuc-overlay-card { background: #FFFDF4; border: 2.5px solid #163B24; border-radius: 26px; box-shadow: 8px 8px 0 #163B24; max-width: 420px; width: 100%; padding: 36px 30px 30px; text-align: center; }
+  .tuc-overlay-icon { width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 18px; display: flex; align-items: center; justify-content: center; }
+  .tuc-overlay-card.success .tuc-overlay-icon { background: #DDF6C8; border: 2px solid #163B24; }
+  .tuc-overlay-card.cancelled .tuc-overlay-icon { background: #FDE2E2; border: 2px solid #163B24; }
+  .tuc-overlay-title { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 22px; color: #163B24; margin: 0 0 10px; }
+  .tuc-overlay-text { font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 14.5px; color: rgba(22,59,36,0.72); line-height: 1.55; margin: 0 0 24px; }
+  .tuc-overlay-btn { border: 2px solid #163B24; border-radius: 100px; padding: 13px 28px; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 14px; cursor: pointer; background: #163B24; color: #FFFDF4; }
+  @media (max-width: 480px) {
+    .tuc-overlay-card { padding: 28px 22px 24px; }
+  }
+</style>
+<div class="tuc-overlay-backdrop" id="tuc-purchase-overlay">
+  <div class="tuc-overlay-card success" id="tuc-overlay-card">
+    <div class="tuc-overlay-icon">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#163B24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h2 class="tuc-overlay-title">Thank you for your purchase!</h2>
+    <p class="tuc-overlay-text">Check your email for your ticket QR code — and your workshop registration link if your pass includes one.</p>
+    <button class="tuc-overlay-btn" id="tuc-overlay-close">Back to tickets</button>
+  </div>
+</div>`);
+
+    var card = document.getElementById('tuc-overlay-card');
+    if (status === 'cancelled') {
+      card.classList.remove('success');
+      card.classList.add('cancelled');
+      card.querySelector('.tuc-overlay-icon').innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#163B24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+      card.querySelector('.tuc-overlay-title').textContent = 'Payment cancelled';
+      card.querySelector('.tuc-overlay-text').textContent = "No worries \u2014 your payment didn't go through. You can try again anytime.";
+    }
+
+    document.getElementById('tuc-overlay-close').addEventListener('click', closeOverlay);
+    document.getElementById('tuc-purchase-overlay').addEventListener('click', function(e){
+      if (e.target.id === 'tuc-purchase-overlay') closeOverlay();
+    });
+  }
+  if (document.readyState === 'complete') {
+    setTimeout(showPurchaseOverlay, 50);
+  } else {
+    window.addEventListener('load', function(){ setTimeout(showPurchaseOverlay, 50); });
+  }
+})();
+</script>
 </body>
 </html>
