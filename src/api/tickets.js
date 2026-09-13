@@ -35,7 +35,14 @@ module.exports = async function handler(req, res) {
       // not credit cards; Stripe has no DuitNow QR support so this is the
       // closest local option it offers.
       payment_method_types: ['card', 'fpx'],
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: [{
+        price: priceId,
+        quantity: 1,
+        // Lets buyers adjust quantity on Stripe's own Checkout page. Not yet
+        // confirmed whether Lomeo issues one QR per unit or one QR for the
+        // whole line item — test with quantity 2+ before relying on this.
+        adjustable_quantity: { enabled: true, minimum: 1, maximum: 10 },
+      }],
       success_url: `${origin}/tickets.html?status=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url:  `${origin}/tickets.html?status=cancelled`,
       metadata: { event: 'The Spring - The WAK - TUC Event', tier: tierKey },
