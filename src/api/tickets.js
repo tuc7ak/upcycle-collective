@@ -31,10 +31,10 @@ module.exports = async function handler(req, res) {
     const stripe = new Stripe(secretKey);
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      // fpx alongside card — most Malaysian attendees pay via online banking,
-      // not credit cards; Stripe has no DuitNow QR support so this is the
-      // closest local option it offers.
-      payment_method_types: ['card', 'fpx'],
+      // fpx temporarily disabled — not activated on the live Stripe account
+      // yet (likely needs a Business Registration Number TUC doesn't have as
+      // an unregistered entity). Re-add 'fpx' here once it's enabled live.
+      payment_method_types: ['card'],
       line_items: [{
         price: priceId,
         quantity: 1,
