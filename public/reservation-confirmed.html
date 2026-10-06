@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reservation — The Upcycle Collective</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: #DDF6C8; font-family: 'Nunito', sans-serif; padding: 24px;
+  }
+  .card {
+    max-width: 440px; width: 100%; background: #FFFDF4; border: 2.5px solid #163B24;
+    border-radius: 26px; box-shadow: 8px 8px 0 #163B24; padding: 36px 30px; text-align: center;
+  }
+  .icon { width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 18px; display: flex; align-items: center; justify-content: center; border: 2px solid #163B24; }
+  .icon.success { background: #DDF6C8; }
+  .icon.error { background: #FDE2E2; }
+  h1 { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 22px; color: #163B24; margin: 0 0 10px; }
+  p { font-weight: 700; font-size: 14.5px; color: rgba(22,59,36,0.72); line-height: 1.55; margin: 0 0 10px; }
+  .highlight { color: #163B24; font-weight: 900; }
+  a.btn {
+    display: inline-block; margin-top: 18px; border: 2px solid #163B24; border-radius: 100px;
+    padding: 13px 28px; font-weight: 900; font-size: 14px; text-decoration: none;
+    background: #163B24; color: #FFFDF4;
+  }
+  #loading { font-weight: 700; color: rgba(22,59,36,0.6); }
+</style>
+</head>
+<body>
+  <div class="card" id="card">
+    <p id="loading">Confirming your reservation…</p>
+  </div>
+
+  <script>
+    (function(){
+      var params = new URLSearchParams(window.location.search);
+      var sessionId = params.get('session_id');
+      var card = document.getElementById('card');
+
+      function render(success, title, lines) {
+        var iconSvg = success
+          ? '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#163B24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+          : '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#163B24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+        var html = '<div class="icon ' + (success ? 'success' : 'error') + '">' + iconSvg + '</div>';
+        html += '<h1>' + title + '</h1>';
+        lines.forEach(function(l){ html += '<p>' + l + '</p>'; });
+        html += '<a class="btn" href="/tickets.html">Back to tickets</a>';
+        card.innerHTML = html;
+      }
+
+      if (!sessionId) {
+        render(false, 'Something went wrong', ["We couldn't find your reservation details in the link. Please try reserving again, or contact us if this keeps happening."]);
+        return;
+      }
+
+      fetch('/api/tickets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'confirm', session_id: sessionId }),
+      })
+        .then(function(r){ return r.json().then(function(data){ return { ok: r.ok, data: data }; }); })
+        .then(function(res){
+          if (!res.ok) {
+            render(false, 'Reservation not confirmed', [res.data.error || 'Something went wrong confirming your reservation.']);
+            return;
+          }
+          render(true, "You're reserved!", [
+            'Your <span class="highlight">' + (res.data.tierLabel || 'ticket') + '</span> spot is held.',
+            'Your card will be charged automatically after <span class="highlight">' + (res.data.chargeDate || '20 October 2026') + '</span>.',
+            'Want to cancel? Just email <span class="highlight">tucswk@gmail.com</span> before then — it\'s free.',
+          ]);
+        })
+        .catch(function(err){
+          render(false, 'Something went wrong', [err.message || 'Please contact support.']);
+        });
+    })();
+  </script>
+</body>
+</html>

@@ -159,6 +159,32 @@
       btn.textContent = original;
     }
   }
+  async function reserveTicket(tier, btn) {
+    const original = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Setting up reservation…';
+    try {
+      const r = await fetch('/api/tickets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reserve', tier }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Something went wrong');
+      window.location.href = data.url;
+    } catch (err) {
+      showBanner('error', `❌ ${err.message}`);
+      btn.disabled = false;
+      btn.textContent = original;
+    }
+  }
+  function setTicketMode(mode) {
+    var grid = document.getElementById('tuc-tier-cards-v2');
+    if (!grid) return;
+    grid.setAttribute('data-mode', mode);
+    var btns = grid.querySelectorAll('.tuc-mode-btn');
+    btns.forEach(function(b){ b.classList.toggle('is-active', b.dataset.mode === mode); });
+  }
   function showBanner(type, text) {
     const el = document.getElementById('banner');
     el.style.display = 'block';
@@ -557,11 +583,18 @@
     var oldSection = document.querySelector('.framer-1t0vfb3');
     if (!oldSection) return;
     oldSection.style.display = 'none';
-    oldSection.insertAdjacentHTML('afterend', `<div id="tuc-tier-cards-v2"><style>
+    oldSection.insertAdjacentHTML('afterend', `<div id="tuc-tier-cards-v2" data-mode="buy"><style>
   .free-entry-wrap { max-width: 720px; margin: 0 auto 32px; padding: 0 40px; text-align: center; }
   .free-entry-badge { display: inline-block; background: #FAD85D; border: 2px solid #163B24; color: #163B24; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 12.5px; letter-spacing: 0.08em; padding: 6px 18px; border-radius: 100px; margin-bottom: 14px; }
   .free-entry-headline { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 21px; color: #163B24; margin: 0 0 8px; line-height: 1.3; }
   .free-entry-sub { font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 14.5px; color: rgba(22,59,36,0.68); margin: 0; line-height: 1.5; }
+
+  .tuc-mode-toggle-wrap { display: flex; justify-content: center; margin: 0 0 10px; }
+  .tuc-mode-toggle { display: inline-flex; background: #FFFDF4; border: 2.5px solid #163B24; border-radius: 100px; padding: 4px; gap: 4px; box-shadow: 4px 4px 0 #163B24; }
+  .tuc-mode-btn { border: none; background: transparent; cursor: pointer; padding: 9px 20px; border-radius: 100px; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px; color: rgba(22,59,36,0.55); }
+  .tuc-mode-btn.is-active { background: #163B24; color: #FFFDF4; }
+  .tuc-reserve-note { max-width: 600px; margin: 0 auto 28px; padding: 0 40px; text-align: center; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 13px; color: rgba(22,59,36,0.65); line-height: 1.6; display: none; }
+  #tuc-tier-cards-v2[data-mode="reserve"] .tuc-reserve-note { display: block; }
 
   .tuc-tickets-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 1080px; margin: 0 auto 40px; padding: 0 40px; align-items: stretch; }
   .tuc-tier-card { display: flex; flex-direction: column; background: #FFFDF4; border: 2.5px solid #163B24; border-radius: 24px; box-shadow: 6px 6px 0 #163B24; padding: 28px 26px; }
@@ -579,6 +612,9 @@
   .tuc-buy-btn { border: none; cursor: pointer; border-radius: 100px; padding: 15px 20px; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 14px; text-align: center; }
   .tuc-buy-btn.outline { background: #FFFDF4; border: 2px solid #163B24; color: #163B24; }
   .tuc-buy-btn.solid { background: #163B24; color: #FFFDF4; }
+  .tuc-buy-only, .tuc-reserve-only { display: none; }
+  #tuc-tier-cards-v2[data-mode="buy"] .tuc-buy-only { display: block; }
+  #tuc-tier-cards-v2[data-mode="reserve"] .tuc-reserve-only { display: block; }
   @media (max-width: 900px) {
     .tuc-tickets-grid { grid-template-columns: 1fr; padding: 0 24px; }
     .free-entry-wrap { padding: 0 24px; }
@@ -589,6 +625,13 @@
   <p class="free-entry-headline">Everyone is welcome to explore TUC Experience Floor.</p>
   <p class="free-entry-sub">Want to join a workshop? Get a TUC Pass to unlock workshop access &amp; perks!</p>
 </div>
+<div class="tuc-mode-toggle-wrap">
+  <div class="tuc-mode-toggle">
+    <button class="tuc-mode-btn is-active" data-mode="buy" onclick="setTicketMode('buy')">Buy Now</button>
+    <button class="tuc-mode-btn" data-mode="reserve" onclick="setTicketMode('reserve')">Reserve</button>
+  </div>
+</div>
+<p class="tuc-reserve-note">Reserve your spot for RM0 today. Your card will be charged automatically after <strong>7 October 2026</strong> &mdash; cancel anytime before then for free. (TEST MODE DATE)</p>
 <div class="tuc-tickets-grid">
   <div class="tuc-tier-card">
     <div class="tuc-tier-eyebrow">NEXT GEN</div>
@@ -597,7 +640,8 @@
     <p class="tuc-tier-desc">For students &amp; children, discount applies. A bright entry into the TUC Experience.</p>
     <p class="tuc-tier-features">Eligible for TUC Charms Keychain Workshop &middot; TUC Door Gift &middot; TUC Marketplace &middot; TUC Experience Floor</p>
     <p class="tuc-tier-note">Student ID required at registration.</p>
-    <button class="tuc-buy-btn outline" onclick="buyTicket('student', this)">Buy Next Gen ticket</button>
+    <button class="tuc-buy-btn outline tuc-buy-only" onclick="buyTicket('student', this)">Buy Next Gen ticket</button>
+    <button class="tuc-buy-btn outline tuc-reserve-only" onclick="reserveTicket('student', this)">Reserve Next Gen</button>
   </div>
   <div class="tuc-tier-card is-popular">
     <div class="tuc-tier-eyebrow">MOST POPULAR &middot; CIRCULAR PASS</div>
@@ -606,7 +650,8 @@
     <p class="tuc-tier-desc">For everyone who wants the full TUC Experience.</p>
     <p class="tuc-tier-features">1x Workshop of Your Choice &middot; TUC Door Gift &middot; TUC Marketplace &middot; TUC Experience Floor</p>
     <p class="tuc-tier-note">Come for one day. Come back for more.</p>
-    <button class="tuc-buy-btn solid" onclick="buyTicket('normal', this)">Buy Circular Pass</button>
+    <button class="tuc-buy-btn solid tuc-buy-only" onclick="buyTicket('normal', this)">Buy Circular Pass</button>
+    <button class="tuc-buy-btn solid tuc-reserve-only" onclick="reserveTicket('normal', this)">Reserve Circular Pass</button>
   </div>
   <div class="tuc-tier-card">
     <div class="tuc-tier-eyebrow">PATRON PASS</div>
@@ -614,7 +659,8 @@
     <span class="tuc-day-badge">2-DAY PASS</span>
     <p class="tuc-tier-desc">For loop champions who want to support TUC.</p>
     <p class="tuc-tier-features">2x Workshop of Your Choice &middot; 1x TUC Eco-Warrior Figurine Painting Workshop &middot; TUC Door Gift &middot; TUC Marketplace &middot; TUC Experience Floor</p>
-    <button class="tuc-buy-btn outline" onclick="buyTicket('premium', this)">Buy Patron Pass</button>
+    <button class="tuc-buy-btn outline tuc-buy-only" onclick="buyTicket('premium', this)">Buy Patron Pass</button>
+    <button class="tuc-buy-btn outline tuc-reserve-only" onclick="reserveTicket('premium', this)">Reserve Patron Pass</button>
   </div>
 </div></div>`);
   }
