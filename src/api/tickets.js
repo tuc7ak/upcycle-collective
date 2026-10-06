@@ -225,6 +225,30 @@ async function actionCharge(req, res) {
   }
 }
 
+// ── action: setup-sheet-header — one-time admin helper, writes the header
+// row into a freshly-created, empty Reservations tab. Gated by CRON_SECRET
+// since it's a write action with no other auth — remove once used.
+async function actionSetupSheetHeader(req, res) {
+  const authHeader = req.headers['authorization'] || '';
+  const expected = `Bearer ${process.env.CRON_SECRET || ''}`;
+  if (!process.env.CRON_SECRET || authHeader !== expected) {
+    return jsonErr(res, 401, 'Unauthorized');
+  }
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+  if (!spreadsheetId) return jsonErr(res, 500, 'Google Sheet not configured');
+  try {
+    const { sheetsAppendRow } = require('./_google');
+    await sheetsAppendRow({
+      spreadsheetId, range: RESERVATIONS_SHEET_RANGE_APPEND,
+      values: ['session_id', 'email', 'tier', 'customer_id', 'payment_method_id', 'status', 'reserved_at', 'charged_at', 'failure_reason'],
+    });
+    return jsonOk(res, { success: true });
+  } catch (err) {
+    console.error('[tickets:setup-sheet-header]', err);
+    return jsonErr(res, 500, err.message);
+  }
+}
+
 module.exports = async function handler(req, res) {
   if (req.method === 'GET') return actionCharge(req, res);
   if (req.method !== 'POST') return jsonErr(res, 405, 'POST only');
@@ -233,6 +257,7 @@ module.exports = async function handler(req, res) {
   switch (action) {
     case 'buy':     return actionBuy(req, res);
     case 'reserve': return actionReserve(req, res);
+    case 'setup-sheet-header': return actionSetupSheetHeader(req, res);
     case 'confirm': return actionConfirm(req, res);
     default:        return jsonErr(res, 400, `unknown action: ${action}`);
   }
