@@ -115530,7 +115530,7 @@ async function actionCharge(req, res) {
       const priceId = tier ? process.env[tier.envVar] : null;
       try {
         if (!priceId) throw new Error(`Unknown tier "${tierKey}" or price not configured`);
-        await stripe.invoiceItems.create({ customer: customerId, price: priceId });
+        await stripe.invoiceItems.create({ customer: customerId, pricing: { price: priceId } });
         const invoice = await stripe.invoices.create({
           customer: customerId,
           collection_method: "charge_automatically",

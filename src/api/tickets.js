@@ -195,7 +195,10 @@ async function actionCharge(req, res) {
       try {
         if (!priceId) throw new Error(`Unknown tier "${tierKey}" or price not configured`);
 
-        await stripe.invoiceItems.create({ customer: customerId, price: priceId });
+        // Stripe's 2025-03-31 API version replaced the top-level `price`
+        // param with a nested `pricing.price` — the old form now 400s with
+        // "Received unknown parameter: price. Did you mean pricing?"
+        await stripe.invoiceItems.create({ customer: customerId, pricing: { price: priceId } });
         const invoice = await stripe.invoices.create({
           customer: customerId,
           collection_method: 'charge_automatically',
