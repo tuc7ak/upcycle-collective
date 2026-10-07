@@ -115502,23 +115502,6 @@ async function actionConfirm(req, res) {
     return jsonErr(res, 500, err.message);
   }
 }
-async function actionDebugSheetRead(req, res) {
-  const authHeader = req.headers["authorization"] || "";
-  const expected = `Bearer ${process.env.ADMIN_SECRET || ""}`;
-  if (!process.env.ADMIN_SECRET || authHeader !== expected) {
-    return jsonErr(res, 401, "Unauthorized");
-  }
-  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-  if (!spreadsheetId) return jsonErr(res, 500, "Google Sheet not configured");
-  try {
-    const { sheetsGetValues } = require_google();
-    const rows = await sheetsGetValues({ spreadsheetId, range: "Deposits!A1:F10" });
-    return jsonOk(res, { success: true, rows });
-  } catch (err) {
-    console.error("[tickets:debug-sheet-read]", err);
-    return jsonErr(res, 500, err.message);
-  }
-}
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return jsonErr(res, 405, "POST only");
   const action = req.body?.action || "buy";
@@ -115529,8 +115512,6 @@ module.exports = async function handler(req, res) {
       return actionReserve(req, res);
     case "confirm":
       return actionConfirm(req, res);
-    case "debug-sheet-read":
-      return actionDebugSheetRead(req, res);
     default:
       return jsonErr(res, 400, `unknown action: ${action}`);
   }
