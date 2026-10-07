@@ -118,7 +118,10 @@ async function actionRegister(req, res) {
         const { sheetsAppendRow } = require('./_google');
         await sheetsAppendRow({
           spreadsheetId, range: REGISTRATIONS_SHEET_RANGE_APPEND,
-          values: [new Date().toISOString(), name, email, contact, tierKey, mode, String(date || ''), workshopsStr, session.id],
+          // Contact is prefixed with ' — Sheets' USER_ENTERED mode otherwise
+          // parses a phone number as a plain number and silently drops the
+          // leading 0 (confirmed: "0123456789" became "123456789").
+          values: [new Date().toISOString(), name, email, `'${contact}`, tierKey, mode, String(date || ''), workshopsStr, session.id],
         });
       } catch (sheetErr) {
         console.error('[tickets:register] sheet append failed', sheetErr);
