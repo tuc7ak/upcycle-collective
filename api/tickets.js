@@ -115350,10 +115350,11 @@ var require_google = __commonJS({
       if (!res.ok) throw new Error(data.error?.message || "Sheets read failed");
       return data.values || [];
     }
-    async function sheetsAppendRow({ spreadsheetId, range, values }) {
+    async function sheetsAppendRow({ spreadsheetId, range, values, valueInputOption }) {
       const token = await googleAccessToken();
+      const vio = valueInputOption || "USER_ENTERED";
       const res = await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
+        `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=${vio}&insertDataOption=INSERT_ROWS`,
         {
           method: "POST",
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
@@ -115493,10 +115494,9 @@ async function actionRegister(req, res) {
         await sheetsAppendRow({
           spreadsheetId,
           range: REGISTRATIONS_SHEET_RANGE_APPEND,
-          // Contact is prefixed with ' — Sheets' USER_ENTERED mode otherwise
-          // parses a phone number as a plain number and silently drops the
-          // leading 0 (confirmed: "0123456789" became "123456789").
-          values: [(/* @__PURE__ */ new Date()).toISOString(), name, email, `'${contact}`, tierKey, mode, String(date || ""), workshopsStr, session.id]
+          valueInputOption: "RAW",
+          // preserves the contact number's leading 0
+          values: [(/* @__PURE__ */ new Date()).toISOString(), name, email, contact, tierKey, mode, String(date || ""), workshopsStr, session.id]
         });
       } catch (sheetErr) {
         console.error("[tickets:register] sheet append failed", sheetErr);

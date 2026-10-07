@@ -44,10 +44,17 @@ async function sheetsGetValues({ spreadsheetId, range }) {
   return data.values || [];
 }
 
-async function sheetsAppendRow({ spreadsheetId, range, values }) {
+async function sheetsAppendRow({ spreadsheetId, range, values, valueInputOption }) {
   const token = await googleAccessToken();
+  // Defaults to USER_ENTERED (existing behavior, e.g. donate.js's numeric kg/
+  // tokensOwed columns). Pass valueInputOption: 'RAW' to store values exactly
+  // as given with zero auto-parsing — needed for things like phone numbers,
+  // where USER_ENTERED silently drops a leading 0 by treating it as a number
+  // (confirmed: "'0123456789" still became "123456789" even with the
+  // apostrophe-as-text-marker trick — RAW is the only reliable fix).
+  const vio = valueInputOption || 'USER_ENTERED';
   const res = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
+    `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=${vio}&insertDataOption=INSERT_ROWS`,
     {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
