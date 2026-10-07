@@ -625,13 +625,10 @@
   <p class="free-entry-headline">Everyone is welcome to explore TUC Experience Floor.</p>
   <p class="free-entry-sub">Want to join a workshop? Get a TUC Pass to unlock workshop access &amp; perks!</p>
 </div>
-<div class="tuc-mode-toggle-wrap">
-  <div class="tuc-mode-toggle">
-    <button class="tuc-mode-btn is-active" data-mode="buy" onclick="setTicketMode('buy')">Buy Now</button>
-    <button class="tuc-mode-btn" data-mode="reserve" onclick="setTicketMode('reserve')">Reserve</button>
-  </div>
-</div>
-<p class="tuc-reserve-note">Reserve your spot for RM0 today. Your card will be charged automatically after <strong>7 October 2026</strong> &mdash; cancel anytime before then for free.</p>
+<!-- Buy/Reserve toggle temporarily removed from live view while the
+     reservation charge flow is still being verified — backend (tickets.js
+     reserve/confirm/charge actions, cron, Sheet) left intact for continued
+     testing via direct API calls, just not customer-reachable right now. -->
 <div class="tuc-tickets-grid">
   <div class="tuc-tier-card">
     <div class="tuc-tier-eyebrow">NEXT GEN</div>
