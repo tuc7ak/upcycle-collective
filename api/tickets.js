@@ -115382,6 +115382,34 @@ var require_google = __commonJS({
   }
 });
 
+// src/api/_resend.js
+var require_resend = __commonJS({
+  "src/api/_resend.js"(exports2, module2) {
+    async function sendEmail({ to, subject, html, from, replyTo }) {
+      const apiKey = process.env.RESEND_API_KEY;
+      if (!apiKey) throw new Error("RESEND_API_KEY not set");
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          from: from || "TUC <onboarding@resend.dev>",
+          to: [to],
+          subject,
+          html,
+          ...replyTo ? { reply_to: replyTo } : {}
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Resend send failed");
+      return data;
+    }
+    module2.exports = { sendEmail };
+  }
+});
+
 // src/api/tickets.js
 var Stripe = require_stripe_cjs_node();
 var { jsonOk, jsonErr } = require_utils5();
@@ -115395,8 +115423,17 @@ var DEPOSIT_TIERS = {
   normal: { label: "Normal Ticket \u2014 50% Deposit", envVar: "STRIPE_PRICE_NORMAL_DEPOSIT" },
   premium: { label: "Premium Ticket \u2014 50% Deposit", envVar: "STRIPE_PRICE_PREMIUM_DEPOSIT" }
 };
-var DEPOSITS_SHEET_RANGE_ALL = "Deposits!A2:F";
-var DEPOSITS_SHEET_RANGE_APPEND = "Deposits!A:F";
+var DEPOSITS_SHEET_RANGE_ALL = "Deposits!A2:G";
+var DEPOSITS_SHEET_RANGE_APPEND = "Deposits!A:G";
+var CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+var CODE_LENGTH = 6;
+function generateCode() {
+  const crypto5 = require("crypto");
+  const bytes = crypto5.randomBytes(CODE_LENGTH);
+  let code = "";
+  for (let i2 = 0; i2 < CODE_LENGTH; i2++) code += CODE_ALPHABET[bytes[i2] % CODE_ALPHABET.length];
+  return code;
+}
 function getStripe() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   if (!secretKey) throw new Error("STRIPE_SECRET_KEY not set");
@@ -115482,20 +115519,53 @@ async function actionConfirm(req, res) {
     const amountPaid = (session.amount_total || 0) / 100;
     const { sheetsGetValues, sheetsAppendRow } = require_google();
     const existing = await sheetsGetValues({ spreadsheetId, range: DEPOSITS_SHEET_RANGE_ALL });
-    const already = existing.some((r2) => r2[0] === sessionId);
-    if (!already) {
+    const existingRow = existing.find((r2) => r2[0] === sessionId);
+    let code = existingRow?.[6];
+    if (!existingRow) {
+      code = generateCode();
       await sheetsAppendRow({
         spreadsheetId,
         range: DEPOSITS_SHEET_RANGE_APPEND,
-        values: [sessionId, email, tierKey, amountPaid, (/* @__PURE__ */ new Date()).toISOString(), ""]
+        values: [sessionId, email, tierKey, amountPaid, (/* @__PURE__ */ new Date()).toISOString(), "", code]
       });
+      if (email) {
+        try {
+          const { sendEmail } = require_resend();
+          await sendEmail({
+            to: email,
+            subject: "Your TUC Reservation Code",
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; background-color: #FFFDF4; border: 2px solid #163B24; border-radius: 16px;">
+                <h2 style="color: #163B24; margin-top: 0;">You're reserved!</h2>
+                <p style="color: #163B24; font-size: 15px; line-height: 1.6;">
+                  Your <strong>${tier.label}</strong> deposit of RM${amountPaid.toFixed(2)} has been received (non-refundable).
+                </p>
+                <div style="background-color: #DDF6C8; border: 1.5px dashed #163B24; border-radius: 12px; padding: 16px; text-align: center; margin: 20px 0;">
+                  <p style="color: #163B24; font-size: 13px; font-weight: bold; margin: 0 0 6px;">YOUR CODE</p>
+                  <p style="color: #163B24; font-size: 28px; font-weight: bold; letter-spacing: 4px; margin: 0;">${code}</p>
+                </div>
+                <p style="color: #163B24; font-size: 15px; line-height: 1.6;">
+                  Present this code at the registration counter on event day, along with the remaining 50% in cash, to receive your ticket.
+                </p>
+                <p style="color: rgba(22,59,36,0.6); font-size: 12px; margin-top: 24px;">
+                  Questions? Reply to this email or contact tucswk@gmail.com.
+                </p>
+              </div>
+            `,
+            replyTo: "tucswk@gmail.com"
+          });
+        } catch (emailErr) {
+          console.error("[tickets:confirm] email send failed", emailErr);
+        }
+      }
     }
     return jsonOk(res, {
       success: true,
       tier: tierKey,
       tierLabel: tier.label,
       email,
-      amountPaid
+      amountPaid,
+      code
     });
   } catch (err) {
     console.error("[tickets:confirm]", err);

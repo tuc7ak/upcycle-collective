@@ -26,9 +26,21 @@ const DEPOSIT_TIERS = {
   premium: { label: 'Premium Ticket — 50% Deposit', envVar: 'STRIPE_PRICE_PREMIUM_DEPOSIT' },
 };
 
-const DEPOSITS_SHEET_RANGE_ALL    = 'Deposits!A2:F';
-const DEPOSITS_SHEET_RANGE_APPEND = 'Deposits!A:F';
-// Columns: A session_id | B email | C tier | D amount_paid | E paid_at | F checked_in
+const DEPOSITS_SHEET_RANGE_ALL    = 'Deposits!A2:G';
+const DEPOSITS_SHEET_RANGE_APPEND = 'Deposits!A:G';
+// Columns: A session_id | B email | C tier | D amount_paid | E paid_at | F checked_in | G code
+
+// Same alphabet as the donate flow's codes — no 0/O/1/I, clear to hand-write
+// or read aloud at the door.
+const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const CODE_LENGTH = 6;
+function generateCode() {
+  const crypto = require('crypto');
+  const bytes = crypto.randomBytes(CODE_LENGTH);
+  let code = '';
+  for (let i = 0; i < CODE_LENGTH; i++) code += CODE_ALPHABET[bytes[i] % CODE_ALPHABET.length];
+  return code;
+}
 
 function getStripe() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -138,18 +150,57 @@ async function actionConfirm(req, res) {
 
     const { sheetsGetValues, sheetsAppendRow } = require('./_google');
 
-    // Idempotent — reloading the confirmation page shouldn't log a duplicate row.
+    // Idempotent — reloading the confirmation page shouldn't log a duplicate
+    // row or send a second email. Re-uses the SAME code on a reload, since
+    // the code is only generated the first time this session is confirmed.
     const existing = await sheetsGetValues({ spreadsheetId, range: DEPOSITS_SHEET_RANGE_ALL });
-    const already = existing.some(r => r[0] === sessionId);
-    if (!already) {
+    const existingRow = existing.find(r => r[0] === sessionId);
+    let code = existingRow?.[6];
+
+    if (!existingRow) {
+      code = generateCode();
       await sheetsAppendRow({
         spreadsheetId, range: DEPOSITS_SHEET_RANGE_APPEND,
-        values: [sessionId, email, tierKey, amountPaid, new Date().toISOString(), ''],
+        values: [sessionId, email, tierKey, amountPaid, new Date().toISOString(), '', code],
       });
+
+      // Best-effort — the Sheet row above is the real record; email delivery
+      // failing shouldn't fail this confirmation (the code is still shown
+      // on-screen right after this call either way).
+      if (email) {
+        try {
+          const { sendEmail } = require('./_resend');
+          await sendEmail({
+            to: email,
+            subject: 'Your TUC Reservation Code',
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; background-color: #FFFDF4; border: 2px solid #163B24; border-radius: 16px;">
+                <h2 style="color: #163B24; margin-top: 0;">You're reserved!</h2>
+                <p style="color: #163B24; font-size: 15px; line-height: 1.6;">
+                  Your <strong>${tier.label}</strong> deposit of RM${amountPaid.toFixed(2)} has been received (non-refundable).
+                </p>
+                <div style="background-color: #DDF6C8; border: 1.5px dashed #163B24; border-radius: 12px; padding: 16px; text-align: center; margin: 20px 0;">
+                  <p style="color: #163B24; font-size: 13px; font-weight: bold; margin: 0 0 6px;">YOUR CODE</p>
+                  <p style="color: #163B24; font-size: 28px; font-weight: bold; letter-spacing: 4px; margin: 0;">${code}</p>
+                </div>
+                <p style="color: #163B24; font-size: 15px; line-height: 1.6;">
+                  Present this code at the registration counter on event day, along with the remaining 50% in cash, to receive your ticket.
+                </p>
+                <p style="color: rgba(22,59,36,0.6); font-size: 12px; margin-top: 24px;">
+                  Questions? Reply to this email or contact tucswk@gmail.com.
+                </p>
+              </div>
+            `,
+            replyTo: 'tucswk@gmail.com',
+          });
+        } catch (emailErr) {
+          console.error('[tickets:confirm] email send failed', emailErr);
+        }
+      }
     }
 
     return jsonOk(res, {
-      success: true, tier: tierKey, tierLabel: tier.label, email, amountPaid,
+      success: true, tier: tierKey, tierLabel: tier.label, email, amountPaid, code,
     });
   } catch (err) {
     console.error('[tickets:confirm]', err);
