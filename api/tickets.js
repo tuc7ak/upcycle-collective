@@ -115425,6 +115425,7 @@ var DEPOSIT_TIERS = {
 };
 var DEPOSITS_SHEET_RANGE_ALL = "Deposits!A2:G";
 var DEPOSITS_SHEET_RANGE_APPEND = "Deposits!A:G";
+var REGISTRATIONS_SHEET_RANGE_APPEND = "Registrations!A:I";
 var CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 var CODE_LENGTH = 6;
 function generateCode() {
@@ -115442,62 +115443,65 @@ function getStripe() {
 function getOrigin(req) {
   return process.env.PUBLIC_SITE_URL || req.headers.origin || `https://${req.headers.host}`;
 }
-async function actionBuy(req, res) {
-  const tierKey = String(req.body?.tier || "").toLowerCase();
-  const tier = TIERS[tierKey];
-  if (!tier) return jsonErr(res, 400, `tier must be one of ${Object.keys(TIERS).join(", ")}`);
+async function actionRegister(req, res) {
+  const { mode, tier: rawTier, name, email, contact, date, workshops } = req.body || {};
+  if (!name || !email || !contact) return jsonErr(res, 400, "name, email and contact are required");
+  if (mode !== "buy" && mode !== "reserve") return jsonErr(res, 400, "mode must be buy or reserve");
+  const tierKey = String(rawTier || "").toLowerCase();
+  const tierMap = mode === "reserve" ? DEPOSIT_TIERS : TIERS;
+  const tier = tierMap[tierKey];
+  if (!tier) return jsonErr(res, 400, `tier must be one of ${Object.keys(tierMap).join(", ")}`);
   const priceId = process.env[tier.envVar];
-  if (!priceId) return jsonErr(res, 500, `${tier.envVar} not set \u2014 run npm run setup-tickets first`);
+  if (!priceId) return jsonErr(res, 500, `${tier.envVar} not set \u2014 run npm run setup-${mode === "reserve" ? "deposits" : "tickets"} first`);
   const origin = getOrigin(req);
+  const workshopsStr = Array.isArray(workshops) ? workshops.join(" | ") : String(workshops || "");
   try {
     const stripe = getStripe();
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams = {
       mode: "payment",
       // fpx temporarily disabled — not activated on the live Stripe account
       // yet (likely needs a Business Registration Number TUC doesn't have as
       // an unregistered entity). Re-add 'fpx' here once it's enabled live.
       payment_method_types: ["card"],
-      line_items: [{
-        price: priceId,
-        quantity: 1,
-        // Lets buyers adjust quantity on Stripe's own Checkout page. Not yet
-        // confirmed whether Lomeo issues one QR per unit or one QR for the
-        // whole line item — test with quantity 2+ before relying on this.
-        adjustable_quantity: { enabled: true, minimum: 1, maximum: 10 }
-      }],
-      success_url: `${origin}/tickets.html?status=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/tickets.html?status=cancelled`,
-      metadata: { event: "The Spring - The WAK - TUC Event", tier: tierKey, type: "full" }
-    });
-    return jsonOk(res, { url: session.url });
-  } catch (err) {
-    console.error("[tickets:buy]", err);
-    return jsonErr(res, 500, err.message);
-  }
-}
-async function actionReserve(req, res) {
-  const tierKey = String(req.body?.tier || "").toLowerCase();
-  const tier = DEPOSIT_TIERS[tierKey];
-  if (!tier) return jsonErr(res, 400, `tier must be one of ${Object.keys(DEPOSIT_TIERS).join(", ")}`);
-  const priceId = process.env[tier.envVar];
-  if (!priceId) return jsonErr(res, 500, `${tier.envVar} not set \u2014 run npm run setup-deposits first`);
-  const origin = getOrigin(req);
-  try {
-    const stripe = getStripe();
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      payment_method_types: ["card"],
+      customer_email: email,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${origin}/reservation-confirmed.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/tickets.html?status=cancelled`,
-      // type: 'deposit' is what your Make.com filter should exclude, in
-      // addition to the existing payment_status = paid check — otherwise a
-      // deposit would also trigger the full-purchase branded email.
-      metadata: { event: "The Spring - The WAK - TUC Event", tier: tierKey, type: "deposit" }
-    });
+      metadata: {
+        event: "The Spring - The WAK - TUC Event",
+        tier: tierKey,
+        // type: 'deposit' is what the Make.com filter excludes, alongside
+        // the existing payment_status = paid check — otherwise a deposit
+        // would also trigger the full-purchase branded email.
+        type: mode === "reserve" ? "deposit" : "full",
+        name,
+        contact,
+        date: String(date || ""),
+        workshops: workshopsStr
+      }
+    };
+    if (mode === "reserve") {
+      sessionParams.success_url = `${origin}/reservation-confirmed.html?session_id={CHECKOUT_SESSION_ID}`;
+      sessionParams.cancel_url = `${origin}/tickets.html?status=cancelled`;
+    } else {
+      sessionParams.success_url = `${origin}/tickets.html?status=success&session_id={CHECKOUT_SESSION_ID}`;
+      sessionParams.cancel_url = `${origin}/tickets.html?status=cancelled`;
+    }
+    const session = await stripe.checkout.sessions.create(sessionParams);
+    const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+    if (spreadsheetId) {
+      try {
+        const { sheetsAppendRow } = require_google();
+        await sheetsAppendRow({
+          spreadsheetId,
+          range: REGISTRATIONS_SHEET_RANGE_APPEND,
+          values: [(/* @__PURE__ */ new Date()).toISOString(), name, email, contact, tierKey, mode, String(date || ""), workshopsStr, session.id]
+        });
+      } catch (sheetErr) {
+        console.error("[tickets:register] sheet append failed", sheetErr);
+      }
+    }
     return jsonOk(res, { url: session.url });
   } catch (err) {
-    console.error("[tickets:reserve]", err);
+    console.error("[tickets:register]", err);
     return jsonErr(res, 500, err.message);
   }
 }
@@ -115574,12 +115578,10 @@ async function actionConfirm(req, res) {
 }
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return jsonErr(res, 405, "POST only");
-  const action = req.body?.action || "buy";
+  const action = req.body?.action || "register";
   switch (action) {
-    case "buy":
-      return actionBuy(req, res);
-    case "reserve":
-      return actionReserve(req, res);
+    case "register":
+      return actionRegister(req, res);
     case "confirm":
       return actionConfirm(req, res);
     default:

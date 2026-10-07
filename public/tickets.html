@@ -140,43 +140,14 @@
 
 <div id="banner" style="position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:9999;padding:14px 22px;border-radius:12px;font-family:'Nunito',sans-serif;font-weight:800;font-size:14px;display:none;box-shadow:0 8px 24px rgba(0,0,0,.15);"></div>
 <script>
-  async function buyTicket(tier, btn) {
-    const original = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = 'Redirecting to checkout…';
-    try {
-      const r = await fetch('/api/tickets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier }),
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.error || 'Something went wrong');
-      window.location.href = data.url;
-    } catch (err) {
-      showBanner('error', `❌ ${err.message}`);
-      btn.disabled = false;
-      btn.textContent = original;
-    }
+  // Buy/Reserve no longer go straight to Stripe — both now route through
+  // the workshop-selection form first, which collects name/email/contact
+  // and the date/workshop choice before creating the Checkout Session.
+  function buyTicket(tier) {
+    window.location.href = `/workshop-selection.html?tier=${encodeURIComponent(tier)}&mode=buy`;
   }
-  async function reserveTicket(tier, btn) {
-    const original = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = 'Setting up reservation…';
-    try {
-      const r = await fetch('/api/tickets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'reserve', tier }),
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.error || 'Something went wrong');
-      window.location.href = data.url;
-    } catch (err) {
-      showBanner('error', `❌ ${err.message}`);
-      btn.disabled = false;
-      btn.textContent = original;
-    }
+  function reserveTicket(tier) {
+    window.location.href = `/workshop-selection.html?tier=${encodeURIComponent(tier)}&mode=reserve`;
   }
   function setTicketMode(mode) {
     var grid = document.getElementById('tuc-tier-cards-v2');

@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Complete Your Registration — The Upcycle Collective</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #DDF6C8; font-family: 'Nunito', sans-serif; color: #163B24;
+    padding: 24px 16px 60px;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  .card {
+    background: #FFFDF4; border: 2.5px solid #163B24; border-radius: 24px;
+    box-shadow: 6px 6px 0 #163B24; padding: 28px 24px; margin-bottom: 20px;
+  }
+  h1 { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 26px; margin: 0 0 6px; text-align: center; }
+  .subtitle { text-align: center; font-weight: 700; font-size: 14px; color: rgba(22,59,36,0.65); margin: 0 0 24px; }
+  .poster { width: 100%; border-radius: 16px; border: 2px solid #163B24; display: block; margin-bottom: 20px; }
+  label { display: block; font-weight: 800; font-size: 13px; margin-bottom: 6px; margin-top: 16px; }
+  label:first-child { margin-top: 0; }
+  input[type="text"], input[type="email"], input[type="tel"] {
+    width: 100%; padding: 12px 14px; border: 2px solid #163B24; border-radius: 12px;
+    font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 14px; background: #FFFDF4; color: #163B24;
+  }
+  .section-title { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 18px; margin: 0 0 4px; }
+  .section-note { font-weight: 700; font-size: 13px; color: rgba(22,59,36,0.6); margin: 0 0 14px; }
+  .locked-box {
+    background: #DDF6C8; border: 1.5px dashed #163B24; border-radius: 12px; padding: 14px 16px;
+    font-weight: 800; font-size: 14px;
+  }
+  .date-options { display: flex; gap: 10px; margin-bottom: 16px; }
+  .date-btn {
+    flex: 1; padding: 14px; border: 2px solid #163B24; border-radius: 100px; background: #FFFDF4;
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 14px; color: #163B24; cursor: pointer;
+  }
+  .date-btn.is-active { background: #163B24; color: #FFFDF4; }
+  .workshop-option {
+    display: flex; align-items: center; gap: 12px; border: 2px solid #163B24; border-radius: 14px;
+    padding: 12px 14px; margin-bottom: 10px; cursor: pointer; background: #FFFDF4;
+  }
+  .workshop-option.is-selected { background: #FAD85D; }
+  .workshop-option input { width: 18px; height: 18px; flex: none; }
+  .workshop-option .meta { flex: 1; }
+  .workshop-option .vendor { font-weight: 900; font-size: 11px; letter-spacing: 0.04em; color: #2E7D32; text-transform: uppercase; }
+  .workshop-option.is-selected .vendor { color: #163B24; }
+  .workshop-option .name { font-weight: 800; font-size: 14.5px; }
+  .workshop-option .day-tag {
+    flex: none; font-weight: 800; font-size: 11px; background: #DDF6C8; border: 1.5px solid #163B24;
+    border-radius: 100px; padding: 3px 10px;
+  }
+  .included-badge {
+    display: flex; align-items: center; gap: 10px; background: #FAD85D; border: 2px solid #163B24;
+    border-radius: 14px; padding: 12px 14px; margin-bottom: 14px; font-weight: 800; font-size: 14px;
+  }
+  .summary-box {
+    background: #DDF6C8; border: 2px solid #163B24; border-radius: 14px; padding: 14px 16px; margin-top: 16px;
+  }
+  .summary-box .label { font-weight: 900; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: #163B24; margin-bottom: 8px; }
+  .summary-box ul { margin: 0; padding-left: 18px; font-weight: 700; font-size: 13.5px; }
+  .submit-btn {
+    width: 100%; padding: 16px; border: none; border-radius: 100px; background: #163B24; color: #FFFDF4;
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 15px; cursor: pointer; margin-top: 10px;
+  }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .error-text { color: #C0392B; font-weight: 800; font-size: 13px; margin-top: 10px; display: none; }
+  #banner {
+    position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 999;
+    padding: 12px 20px; border-radius: 12px; font-weight: 800; font-size: 13.5px; display: none;
+    background: #FDE2E2; color: #163B24; box-shadow: 0 8px 24px rgba(0,0,0,.15);
+  }
+</style>
+</head>
+<body>
+<div id="banner"></div>
+<div class="wrap">
+  <div class="card">
+    <h1>Complete Your Registration</h1>
+    <p class="subtitle" id="tierSubtitle">Loading your pass details…</p>
+    <img src="/workshop-poster.jpg" alt="Workshop schedule poster" class="poster">
+
+    <label>Full Name</label>
+    <input type="text" id="fName" required>
+    <label>Email</label>
+    <input type="email" id="fEmail" required>
+    <label>Contact Number</label>
+    <input type="tel" id="fContact" required>
+  </div>
+
+  <div class="card" id="studentSection" hidden>
+    <div class="section-title">Your Workshop</div>
+    <p class="section-note">Next Gen Pass is fixed to the following — no changes needed.</p>
+    <div class="locked-box">📅 24 October 2026 — TUC: Charms Keychain Workshop</div>
+  </div>
+
+  <div class="card" id="normalSection" hidden>
+    <div class="section-title">Choose Your Date</div>
+    <p class="section-note">Your Circular Pass is valid for one day — pick which one.</p>
+    <div class="date-options">
+      <button type="button" class="date-btn" data-date="24">24 October</button>
+      <button type="button" class="date-btn" data-date="25">25 October</button>
+    </div>
+    <div id="normalWorkshops"></div>
+  </div>
+
+  <div class="card" id="premiumSection" hidden>
+    <div class="section-title">Your Workshops</div>
+    <p class="section-note">Your Patron Pass includes the Figurine Painting Workshop, plus pick 2 more from either day.</p>
+    <div class="included-badge">✓ Included: TUC — Figurine Painting Workshop (25 Oct)</div>
+    <div id="premiumWorkshops"></div>
+    <div class="summary-box">
+      <div class="label">Your 3 workshops</div>
+      <ul id="premiumSummary"><li>Figurine Painting Workshop — 25 Oct (included)</li></ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <button class="submit-btn" id="submitBtn" disabled>Continue to Payment</button>
+    <p class="error-text" id="errorText"></p>
+  </div>
+</div>
+
+<script>
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  var tier = params.get('tier');
+  var mode = params.get('mode') || 'buy'; // 'buy' or 'reserve'
+
+  var TIER_LABELS = { student: 'Next Gen Pass', normal: 'Circular Pass', premium: 'Patron Pass' };
+  var WORKSHOPS_24 = [
+    { id: 'patch_it',  vendor: 'Landik',    name: 'Patch It Workshop' },
+    { id: 'plastic',   vendor: 'Stinablis', name: 'Upcycled Plastic Workshop' },
+    { id: 'charms',    vendor: 'TUC',       name: 'Charms Keychain Workshop' },
+  ];
+  var WORKSHOPS_25 = [
+    { id: 'owl_plushie', vendor: 'PEWANI', name: 'Owl Plushie Workshop' },
+  ];
+  var FIGURINE = { id: 'figurine', vendor: 'TUC', name: 'Figurine Painting Workshop' };
+
+  var state = { date: null, workshopsNormal: null, workshopsPremium: [] };
+
+  var subtitleEl = document.getElementById('tierSubtitle');
+  var submitBtn = document.getElementById('submitBtn');
+  var errorText = document.getElementById('errorText');
+
+  if (!tier || !TIER_LABELS[tier]) {
+    subtitleEl.textContent = 'Missing or invalid ticket type — please go back and click Buy/Reserve again.';
+    submitBtn.disabled = true;
+  } else {
+    subtitleEl.textContent = TIER_LABELS[tier] + ' — ' + (mode === 'reserve' ? '50% Deposit Reservation' : 'Full Payment');
+    if (tier === 'student') {
+      document.getElementById('studentSection').hidden = false;
+      state.date = '24';
+      state.workshopsNormal = [{ id: 'charms', vendor: 'TUC', name: 'Charms Keychain Workshop' }];
+    } else if (tier === 'normal') {
+      document.getElementById('normalSection').hidden = false;
+      setupNormalSection();
+    } else if (tier === 'premium') {
+      document.getElementById('premiumSection').hidden = false;
+      setupPremiumSection();
+    }
+  }
+
+  function renderWorkshopOption(w, dayTag, checked, name) {
+    var div = document.createElement('label');
+    div.className = 'workshop-option' + (checked ? ' is-selected' : '');
+    div.innerHTML =
+      '<input type="' + (name === 'premium' ? 'checkbox' : 'radio') + '" name="' + name + '" value="' + w.id + '" ' + (checked ? 'checked' : '') + '>' +
+      '<div class="meta"><div class="vendor">' + w.vendor + '</div><div class="name">' + w.name + '</div></div>' +
+      (dayTag ? '<div class="day-tag">' + dayTag + '</div>' : '');
+    return div;
+  }
+
+  function setupNormalSection() {
+    var dateButtons = document.querySelectorAll('#normalSection .date-btn');
+    var workshopsContainer = document.getElementById('normalWorkshops');
+
+    dateButtons.forEach(function(btn){
+      btn.addEventListener('click', function(){
+        dateButtons.forEach(function(b){ b.classList.remove('is-active'); });
+        btn.classList.add('is-active');
+        state.date = btn.dataset.date;
+        state.workshopsNormal = null;
+        renderNormalWorkshops();
+        updateSubmitState();
+      });
+    });
+
+    function renderNormalWorkshops() {
+      workshopsContainer.innerHTML = '';
+      var list = state.date === '24' ? WORKSHOPS_24 : (state.date === '25' ? WORKSHOPS_25 : []);
+      if (state.date === '25' && list.length === 1) {
+        // Only one option — auto-select it, still show it for clarity.
+        state.workshopsNormal = [list[0]];
+      }
+      list.forEach(function(w){
+        var el = renderWorkshopOption(w, state.date + ' Oct', state.date === '25', 'normal');
+        el.querySelector('input').addEventListener('change', function(){
+          document.querySelectorAll('#normalWorkshops .workshop-option').forEach(function(o){ o.classList.remove('is-selected'); });
+          el.classList.add('is-selected');
+          state.workshopsNormal = [w];
+          updateSubmitState();
+        });
+        workshopsContainer.appendChild(el);
+      });
+    }
+  }
+
+  function setupPremiumSection() {
+    var container = document.getElementById('premiumWorkshops');
+    var pool = WORKSHOPS_24.map(function(w){ return { w: w, day: '24' }; })
+      .concat(WORKSHOPS_25.map(function(w){ return { w: w, day: '25' }; }));
+
+    pool.forEach(function(item){
+      var el = renderWorkshopOption(item.w, item.day + ' Oct', false, 'premium');
+      el.querySelector('input').addEventListener('change', function(e){
+        if (e.target.checked) {
+          if (state.workshopsPremium.length >= 2) {
+            e.target.checked = false;
+            showError('You can only choose 2 additional workshops.');
+            return;
+          }
+          state.workshopsPremium.push(item.w);
+          el.classList.add('is-selected');
+        } else {
+          state.workshopsPremium = state.workshopsPremium.filter(function(x){ return x.id !== item.w.id; });
+          el.classList.remove('is-selected');
+        }
+        renderPremiumSummary();
+        updateSubmitState();
+      });
+      container.appendChild(el);
+    });
+  }
+
+  function renderPremiumSummary() {
+    var ul = document.getElementById('premiumSummary');
+    ul.innerHTML = '<li>Figurine Painting Workshop — 25 Oct (included)</li>';
+    state.workshopsPremium.forEach(function(w){
+      var day = WORKSHOPS_24.some(function(x){ return x.id === w.id; }) ? '24' : '25';
+      ul.innerHTML += '<li>' + w.name + ' (' + w.vendor + ') — ' + day + ' Oct</li>';
+    });
+  }
+
+  function showError(msg) {
+    errorText.textContent = msg;
+    errorText.style.display = 'block';
+    setTimeout(function(){ errorText.style.display = 'none'; }, 3000);
+  }
+
+  function updateSubmitState() {
+    var name = document.getElementById('fName').value.trim();
+    var email = document.getElementById('fEmail').value.trim();
+    var contact = document.getElementById('fContact').value.trim();
+    var basicsOk = name && email && contact;
+
+    var workshopsOk = false;
+    if (tier === 'student') workshopsOk = true;
+    else if (tier === 'normal') workshopsOk = !!state.date && !!state.workshopsNormal;
+    else if (tier === 'premium') workshopsOk = state.workshopsPremium.length === 2;
+
+    submitBtn.disabled = !(basicsOk && workshopsOk);
+  }
+
+  ['fName','fEmail','fContact'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', updateSubmitState);
+  });
+
+  submitBtn.addEventListener('click', function(){
+    var name = document.getElementById('fName').value.trim();
+    var email = document.getElementById('fEmail').value.trim();
+    var contact = document.getElementById('fContact').value.trim();
+
+    var date, workshops;
+    if (tier === 'student') {
+      date = '24';
+      workshops = ['TUC: Charms Keychain Workshop'];
+    } else if (tier === 'normal') {
+      date = state.date;
+      workshops = state.workshopsNormal.map(function(w){ return w.vendor + ': ' + w.name; });
+    } else {
+      date = '24 & 25';
+      workshops = [FIGURINE.vendor + ': ' + FIGURINE.name + ' (included)']
+        .concat(state.workshopsPremium.map(function(w){ return w.vendor + ': ' + w.name; }));
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Processing…';
+
+    fetch('/api/tickets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'register',
+        mode: mode, tier: tier,
+        name: name, email: email, contact: contact,
+        date: date, workshops: workshops,
+      }),
+    })
+      .then(function(r){ return r.json().then(function(data){ return { ok: r.ok, data: data }; }); })
+      .then(function(res){
+        if (!res.ok) throw new Error(res.data.error || 'Something went wrong');
+        window.location.href = res.data.url;
+      })
+      .catch(function(err){
+        showError(err.message);
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Continue to Payment';
+      });
+  });
+})();
+</script>
+</body>
+</html>
