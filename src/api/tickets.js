@@ -155,6 +155,9 @@ async function actionConfirm(req, res) {
 
     const email = session.customer_details?.email || '';
     const amountPaid = (session.amount_total || 0) / 100;
+    const date = session.metadata?.date || '';
+    const workshopsStr = session.metadata?.workshops || '';
+    const workshopsList = workshopsStr ? workshopsStr.split(' | ') : [];
 
     const { sheetsGetValues, sheetsAppendRow } = require('./_google');
 
@@ -178,6 +181,12 @@ async function actionConfirm(req, res) {
       if (email) {
         try {
           const { sendEmail } = require('./_resend');
+          const workshopsHtml = workshopsList.length
+            ? `<div style="background-color: #FFFDF4; border: 1.5px solid #163B24; border-radius: 12px; padding: 14px 16px; margin: 0 0 20px;">
+                 <p style="color: #163B24; font-size: 13px; font-weight: bold; margin: 0 0 8px;">YOUR WORKSHOP${workshopsList.length > 1 ? 'S' : ''}${date ? ' — ' + date + ' OCT' : ''}</p>
+                 ${workshopsList.map(w => `<p style="color: #163B24; font-size: 14px; font-weight: 700; margin: 0 0 4px;">• ${w}</p>`).join('')}
+               </div>`
+            : '';
           await sendEmail({
             to: email,
             subject: 'Your TUC Reservation Code',
@@ -191,6 +200,7 @@ async function actionConfirm(req, res) {
                   <p style="color: #163B24; font-size: 13px; font-weight: bold; margin: 0 0 6px;">YOUR CODE</p>
                   <p style="color: #163B24; font-size: 28px; font-weight: bold; letter-spacing: 4px; margin: 0;">${code}</p>
                 </div>
+                ${workshopsHtml}
                 <p style="color: #163B24; font-size: 15px; line-height: 1.6;">
                   Present this code at the registration counter on event day, along with the remaining 50% in cash, to receive your ticket.
                 </p>
@@ -209,6 +219,7 @@ async function actionConfirm(req, res) {
 
     return jsonOk(res, {
       success: true, tier: tierKey, tierLabel: tier.label, email, amountPaid, code,
+      date, workshops: workshopsList,
     });
   } catch (err) {
     console.error('[tickets:confirm]', err);

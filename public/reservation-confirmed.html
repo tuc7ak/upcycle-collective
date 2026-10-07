@@ -77,6 +77,10 @@
           if (res.data.code) {
             lines.push('Your code: <span class="highlight" style="font-size:20px;letter-spacing:3px;">' + res.data.code + '</span> (also emailed to you)');
           }
+          if (res.data.workshops && res.data.workshops.length) {
+            var wsLabel = res.data.date ? ('Your workshop' + (res.data.workshops.length > 1 ? 's' : '') + ' (' + res.data.date + ' Oct): ') : 'Your workshop(s): ';
+            lines.push(wsLabel + '<span class="highlight">' + res.data.workshops.join(', ') + '</span>');
+          }
           lines.push('Present this code and pay the <span class="highlight">remaining 50% in cash</span> at the registration counter on event day.');
           lines.push('Questions? Email <span class="highlight">tucswk@gmail.com</span>.');
           render(true, "You're reserved!", lines);
