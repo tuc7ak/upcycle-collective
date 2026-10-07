@@ -1,7 +1,7 @@
 const Stripe = require('stripe');
 const { jsonOk, jsonErr } = require('./_utils');
 
-// Single dispatcher for ticket purchases AND reservations, kept as one Vercel
+// Single dispatcher for ticket purchases AND deposits, kept as one Vercel
 // function (not several) — the Hobby plan caps a deployment at 12 Serverless
 // Functions, and this project is already exactly at that limit (see build.js).
 //
@@ -16,16 +16,19 @@ const TIERS = {
   premium: { label: 'Premium Ticket', envVar: 'STRIPE_PRICE_PREMIUM' },
 };
 
-// Reservations: pay RM0 now (card saved via a `setup` Checkout Session),
-// charged automatically after this cutoff via a Stripe Invoice (not a raw
-// PaymentIntent — Lomeo only watches Checkout Sessions, Payment Links, and
-// Invoices, so Invoicing is the only way a reservation's eventual charge can
-// still trigger the normal QR-ticket flow).
-const RESERVATION_CUTOFF = new Date('2026-10-07T00:00:00+08:00'); // Asia/Kuala_Lumpur — TEST VALUE, change back to 20 Oct before real launch
-const RESERVATIONS_SHEET_RANGE_ALL    = 'Reservations!A2:I';
-const RESERVATIONS_SHEET_RANGE_APPEND = 'Reservations!A:I';
-// Columns: A session_id | B email | C tier | D customer_id | E payment_method_id
-//          F status | G reserved_at | H charged_at | I failure_reason
+// 50% deposit tiers — separate Stripe products (scripts/setup-stripe-deposits.mjs),
+// deliberately NOT marked as tickets in Lomeo, so no QR auto-issues after just
+// the deposit. The remaining 50% is paid in cash at the door on event day —
+// no card is saved, no later auto-charge, no cron job needed at all.
+const DEPOSIT_TIERS = {
+  student: { label: 'Student Ticket — 50% Deposit', envVar: 'STRIPE_PRICE_STUDENT_DEPOSIT' },
+  normal:  { label: 'Normal Ticket — 50% Deposit',  envVar: 'STRIPE_PRICE_NORMAL_DEPOSIT' },
+  premium: { label: 'Premium Ticket — 50% Deposit', envVar: 'STRIPE_PRICE_PREMIUM_DEPOSIT' },
+};
+
+const DEPOSITS_SHEET_RANGE_ALL    = 'Deposits!A2:F';
+const DEPOSITS_SHEET_RANGE_APPEND = 'Deposits!A:F';
+// Columns: A session_id | B email | C tier | D amount_paid | E paid_at | F checked_in
 
 function getStripe() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -37,7 +40,7 @@ function getOrigin(req) {
   return process.env.PUBLIC_SITE_URL || req.headers.origin || `https://${req.headers.host}`;
 }
 
-// ── action: buy (default) — existing one-time ticket purchase, unchanged ──
+// ── action: buy (default) — existing one-time full-price ticket purchase ──
 async function actionBuy(req, res) {
   const tierKey = String(req.body?.tier || '').toLowerCase();
   const tier = TIERS[tierKey];
@@ -66,7 +69,7 @@ async function actionBuy(req, res) {
       }],
       success_url: `${origin}/tickets.html?status=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url:  `${origin}/tickets.html?status=cancelled`,
-      metadata: { event: 'The Spring - The WAK - TUC Event', tier: tierKey },
+      metadata: { event: 'The Spring - The WAK - TUC Event', tier: tierKey, type: 'full' },
     });
     return jsonOk(res, { url: session.url });
   } catch (err) {
@@ -75,29 +78,33 @@ async function actionBuy(req, res) {
   }
 }
 
-// ── action: reserve — save a card for RM0, charge it later via Invoice ──
+// ── action: reserve — pay a 50% deposit now, real card charge (not RM0),
+// non-refundable; the remaining 50% is cash at the door on event day. No
+// Lomeo ticket, no Make.com purchase email — deliberately silent beyond
+// Stripe's own payment receipt, since the real ticket only exists once the
+// door staff collect the balance and check this person in.
 async function actionReserve(req, res) {
   const tierKey = String(req.body?.tier || '').toLowerCase();
-  const tier = TIERS[tierKey];
-  if (!tier) return jsonErr(res, 400, `tier must be one of ${Object.keys(TIERS).join(', ')}`);
+  const tier = DEPOSIT_TIERS[tierKey];
+  if (!tier) return jsonErr(res, 400, `tier must be one of ${Object.keys(DEPOSIT_TIERS).join(', ')}`);
 
   const priceId = process.env[tier.envVar];
-  if (!priceId) return jsonErr(res, 500, `${tier.envVar} not set — run npm run setup-tickets first`);
+  if (!priceId) return jsonErr(res, 500, `${tier.envVar} not set — run npm run setup-deposits first`);
 
   const origin = getOrigin(req);
 
   try {
     const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
-      mode: 'setup',
+      mode: 'payment',
       payment_method_types: ['card'],
-      // Required — setup mode does NOT create a Customer by default the way
-      // payment mode sometimes does. Without this, session.customer would be
-      // null and the later Invoice-based charge would have nothing to bill.
-      customer_creation: 'always',
-      metadata: { event: 'The Spring - The WAK - TUC Event', tier: tierKey, type: 'reservation' },
+      line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${origin}/reservation-confirmed.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url:  `${origin}/tickets.html?status=cancelled`,
+      // type: 'deposit' is what your Make.com filter should exclude, in
+      // addition to the existing payment_status = paid check — otherwise a
+      // deposit would also trigger the full-purchase branded email.
+      metadata: { event: 'The Spring - The WAK - TUC Event', tier: tierKey, type: 'deposit' },
     });
     return jsonOk(res, { url: session.url });
   } catch (err) {
@@ -107,8 +114,8 @@ async function actionReserve(req, res) {
 }
 
 // ── action: confirm — called by reservation-confirmed.html on load; verifies
-// the setup actually completed server-side (the redirect alone isn't proof)
-// and logs one row to the Reservations sheet ──
+// the deposit payment actually completed server-side and logs one row to the
+// Deposits sheet for door staff to check against on event day ──
 async function actionConfirm(req, res) {
   const sessionId = String(req.body?.session_id || '');
   if (!sessionId) return jsonErr(res, 400, 'session_id required');
@@ -118,42 +125,31 @@ async function actionConfirm(req, res) {
 
   try {
     const stripe = getStripe();
-    const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ['setup_intent'],
-    });
-    if (session.status !== 'complete') {
-      return jsonErr(res, 400, 'This reservation was not completed.');
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    if (session.payment_status !== 'paid') {
+      return jsonErr(res, 400, 'This deposit payment was not completed.');
     }
     const tierKey = session.metadata?.tier;
-    const tier = TIERS[tierKey];
-    if (!tier) return jsonErr(res, 400, 'Could not determine ticket type for this reservation.');
+    const tier = DEPOSIT_TIERS[tierKey];
+    if (!tier) return jsonErr(res, 400, 'Could not determine ticket type for this deposit.');
 
-    const setupIntent = session.setup_intent;
-    const paymentMethodId = typeof setupIntent?.payment_method === 'string'
-      ? setupIntent.payment_method
-      : setupIntent?.payment_method?.id;
-    const customerId = typeof session.customer === 'string' ? session.customer : session.customer?.id;
     const email = session.customer_details?.email || '';
-
-    if (!paymentMethodId || !customerId) {
-      return jsonErr(res, 400, 'Reservation is missing payment details — please contact support.');
-    }
+    const amountPaid = (session.amount_total || 0) / 100;
 
     const { sheetsGetValues, sheetsAppendRow } = require('./_google');
 
     // Idempotent — reloading the confirmation page shouldn't log a duplicate row.
-    const existing = await sheetsGetValues({ spreadsheetId, range: RESERVATIONS_SHEET_RANGE_ALL });
+    const existing = await sheetsGetValues({ spreadsheetId, range: DEPOSITS_SHEET_RANGE_ALL });
     const already = existing.some(r => r[0] === sessionId);
     if (!already) {
       await sheetsAppendRow({
-        spreadsheetId, range: RESERVATIONS_SHEET_RANGE_APPEND,
-        values: [sessionId, email, tierKey, customerId, paymentMethodId, 'Reserved', new Date().toISOString(), '', ''],
+        spreadsheetId, range: DEPOSITS_SHEET_RANGE_APPEND,
+        values: [sessionId, email, tierKey, amountPaid, new Date().toISOString(), ''],
       });
     }
 
     return jsonOk(res, {
-      success: true, tier: tierKey, tierLabel: tier.label, email,
-      chargeDate: '7 October 2026', // TEST VALUE, change back to 20 October before real launch
+      success: true, tier: tierKey, tierLabel: tier.label, email, amountPaid,
     });
   } catch (err) {
     console.error('[tickets:confirm]', err);
@@ -161,169 +157,13 @@ async function actionConfirm(req, res) {
   }
 }
 
-// ── GET (cron only) — charges every still-"Reserved" row once the cutoff has
-// passed. Verified via CRON_SECRET so this can't be triggered by anyone who
-// just finds the URL (that would let someone force-charge reservations early).
-async function actionCharge(req, res) {
-  const authHeader = req.headers['authorization'] || '';
-  const expected = `Bearer ${process.env.CRON_SECRET || ''}`;
-  if (!process.env.CRON_SECRET || authHeader !== expected) {
-    return jsonErr(res, 401, 'Unauthorized');
-  }
-
-  if (new Date() < RESERVATION_CUTOFF) {
-    return jsonOk(res, { success: true, message: 'Cutoff not reached yet — nothing to charge.' });
-  }
-
-  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-  if (!spreadsheetId) return jsonErr(res, 500, 'Google Sheet not configured');
-
-  try {
-    const stripe = getStripe();
-    const { sheetsGetValues, sheetsUpdateRange } = require('./_google');
-    const rows = await sheetsGetValues({ spreadsheetId, range: RESERVATIONS_SHEET_RANGE_ALL });
-
-    const results = [];
-    for (let i = 0; i < rows.length; i++) {
-      const [, email, tierKey, customerId, paymentMethodId, status] = rows[i];
-      if (status !== 'Reserved') continue;
-      const rowNum = i + 2; // header is row 1
-
-      const tier = TIERS[tierKey];
-      const priceId = tier ? process.env[tier.envVar] : null;
-
-      try {
-        if (!priceId) throw new Error(`Unknown tier "${tierKey}" or price not configured`);
-
-        // Stripe's 2025-03-31 API version replaced the top-level `price`
-        // param with a nested `pricing.price` — the old form now 400s with
-        // "Received unknown parameter: price. Did you mean pricing?"
-        await stripe.invoiceItems.create({ customer: customerId, pricing: { price: priceId } });
-        const invoice = await stripe.invoices.create({
-          customer: customerId,
-          collection_method: 'charge_automatically',
-          default_payment_method: paymentMethodId,
-          // Defaults to 'exclude' if omitted — Stripe would otherwise create
-          // an EMPTY draft invoice ignoring the item just created above,
-          // which then trivially "pays" at $0 with no real charge at all.
-          // This is exactly what happened on the first attempt.
-          pending_invoice_items_behavior: 'include',
-          metadata: { event: 'The Spring - The WAK - TUC Event', tier: tierKey, type: 'reservation-charge' },
-        });
-        const finalized = await stripe.invoices.finalizeInvoice(invoice.id);
-        // finalizeInvoice already attempts payment when collection_method is
-        // charge_automatically; this call is a safety net in case it didn't.
-        const paid = finalized.status === 'paid' ? finalized : await stripe.invoices.pay(finalized.id);
-
-        await sheetsUpdateRange({ spreadsheetId, range: `Reservations!F${rowNum}`, values: ['Charged'] });
-        await sheetsUpdateRange({ spreadsheetId, range: `Reservations!H${rowNum}`, values: [new Date().toISOString()] });
-        results.push({ email, tier: tierKey, status: 'charged', invoiceId: paid.id });
-      } catch (err) {
-        console.error('[tickets:charge] row', rowNum, err);
-        await sheetsUpdateRange({ spreadsheetId, range: `Reservations!F${rowNum}`, values: ['Failed'] }).catch(() => {});
-        await sheetsUpdateRange({ spreadsheetId, range: `Reservations!I${rowNum}`, values: [err.message] }).catch(() => {});
-        results.push({ email, tier: tierKey, status: 'failed', error: err.message });
-      }
-    }
-
-    return jsonOk(res, { success: true, processed: results.length, results });
-  } catch (err) {
-    console.error('[tickets:charge]', err);
-    return jsonErr(res, 500, err.message);
-  }
-}
-
-// ── action: setup-sheet-header — one-time admin helper, writes the header
-// row into a freshly-created, empty Reservations tab. Gated by CRON_SECRET
-// since it's a write action with no other auth — remove once used.
-async function actionSetupSheetHeader(req, res) {
-  const authHeader = req.headers['authorization'] || '';
-  const expected = `Bearer ${process.env.CRON_SECRET || ''}`;
-  if (!process.env.CRON_SECRET || authHeader !== expected) {
-    return jsonErr(res, 401, 'Unauthorized');
-  }
-  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-  if (!spreadsheetId) return jsonErr(res, 500, 'Google Sheet not configured');
-  try {
-    const { sheetsAppendRow } = require('./_google');
-    await sheetsAppendRow({
-      spreadsheetId, range: RESERVATIONS_SHEET_RANGE_APPEND,
-      values: ['session_id', 'email', 'tier', 'customer_id', 'payment_method_id', 'status', 'reserved_at', 'charged_at', 'failure_reason'],
-    });
-    return jsonOk(res, { success: true });
-  } catch (err) {
-    console.error('[tickets:setup-sheet-header]', err);
-    return jsonErr(res, 500, err.message);
-  }
-}
-
-// ── action: debug-invoice — one-time admin helper to inspect what an
-// invoice actually looks like in Stripe. Remove once used.
-async function actionDebugInvoice(req, res) {
-  const authHeader = req.headers['authorization'] || '';
-  const expected = `Bearer ${process.env.CRON_SECRET || ''}`;
-  if (!process.env.CRON_SECRET || authHeader !== expected) {
-    return jsonErr(res, 401, 'Unauthorized');
-  }
-  const invoiceId = String(req.body?.invoice_id || '');
-  if (!invoiceId) return jsonErr(res, 400, 'invoice_id required');
-  try {
-    const stripe = getStripe();
-    const invoice = await stripe.invoices.retrieve(invoiceId, { expand: ['lines', 'payment_intent'] });
-    return jsonOk(res, {
-      id: invoice.id,
-      status: invoice.status,
-      livemode: invoice.livemode,
-      amount_due: invoice.amount_due,
-      amount_paid: invoice.amount_paid,
-      amount_remaining: invoice.amount_remaining,
-      currency: invoice.currency,
-      collection_method: invoice.collection_method,
-      customer: invoice.customer,
-      lines: invoice.lines?.data?.map(l => ({ description: l.description, amount: l.amount, pricing: l.pricing })),
-      payment_intent: invoice.payment_intent ? {
-        id: typeof invoice.payment_intent === 'string' ? invoice.payment_intent : invoice.payment_intent.id,
-        status: typeof invoice.payment_intent === 'object' ? invoice.payment_intent.status : undefined,
-      } : null,
-      hosted_invoice_url: invoice.hosted_invoice_url,
-    });
-  } catch (err) {
-    console.error('[tickets:debug-invoice]', err);
-    return jsonErr(res, 500, err.message);
-  }
-}
-
-// ── action: debug-sheet-read — one-time admin helper to verify the
-// Reservations tab's current contents. Remove once used.
-async function actionDebugSheetRead(req, res) {
-  const authHeader = req.headers['authorization'] || '';
-  const expected = `Bearer ${process.env.CRON_SECRET || ''}`;
-  if (!process.env.CRON_SECRET || authHeader !== expected) {
-    return jsonErr(res, 401, 'Unauthorized');
-  }
-  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-  if (!spreadsheetId) return jsonErr(res, 500, 'Google Sheet not configured');
-  try {
-    const { sheetsGetValues } = require('./_google');
-    const rows = await sheetsGetValues({ spreadsheetId, range: 'Reservations!A1:I20' });
-    return jsonOk(res, { success: true, rows });
-  } catch (err) {
-    console.error('[tickets:debug-sheet-read]', err);
-    return jsonErr(res, 500, err.message);
-  }
-}
-
 module.exports = async function handler(req, res) {
-  if (req.method === 'GET') return actionCharge(req, res);
   if (req.method !== 'POST') return jsonErr(res, 405, 'POST only');
 
   const action = req.body?.action || 'buy';
   switch (action) {
-    case 'debug-sheet-read': return actionDebugSheetRead(req, res);
-    case 'debug-invoice': return actionDebugInvoice(req, res);
     case 'buy':     return actionBuy(req, res);
     case 'reserve': return actionReserve(req, res);
-    case 'setup-sheet-header': return actionSetupSheetHeader(req, res);
     case 'confirm': return actionConfirm(req, res);
     default:        return jsonErr(res, 400, `unknown action: ${action}`);
   }

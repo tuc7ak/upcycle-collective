@@ -10,7 +10,8 @@
     "deploy-token": "node scripts/deploy-token.mjs",
     "deploy-wtuc": "node scripts/deploy-wtuc-token.mjs",
     "upload-logo": "node scripts/upload-logo.mjs",
-    "setup-tickets": "node scripts/setup-stripe-tickets.mjs"
+    "setup-tickets": "node scripts/setup-stripe-tickets.mjs",
+    "setup-deposits": "node scripts/setup-stripe-deposits.mjs"
   },
   "dependencies": {
     "@privy-io/react-auth": "^3.27.1",

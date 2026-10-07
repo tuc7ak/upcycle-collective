@@ -70,10 +70,11 @@
             render(false, 'Reservation not confirmed', [res.data.error || 'Something went wrong confirming your reservation.']);
             return;
           }
+          var amount = res.data.amountPaid != null ? ('RM' + res.data.amountPaid.toFixed(2)) : 'your deposit';
           render(true, "You're reserved!", [
-            'Your <span class="highlight">' + (res.data.tierLabel || 'ticket') + '</span> spot is held.',
-            'Your card will be charged automatically after <span class="highlight">' + (res.data.chargeDate || '20 October 2026') + '</span>.',
-            'Want to cancel? Just email <span class="highlight">tucswk@gmail.com</span> before then — it\'s free.',
+            'Your <span class="highlight">' + (res.data.tierLabel || 'ticket') + '</span> spot is held — <span class="highlight">' + amount + '</span> deposit received (non-refundable).',
+            'Please pay the <span class="highlight">remaining 50% in cash</span> at the registration counter on event day to complete your entry.',
+            'Questions? Email <span class="highlight">tucswk@gmail.com</span>.',
           ]);
         })
         .catch(function(err){
