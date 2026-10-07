@@ -157,6 +157,36 @@ async function actionConfirm(req, res) {
   }
 }
 
+// ── action: setup-deposits — one-time admin helper, creates the 3 deposit
+// products/prices using whatever STRIPE_SECRET_KEY Vercel already has, so no
+// local script/terminal access is needed. Gated by ADMIN_SECRET. Remove this
+// whole action once used.
+async function actionSetupDeposits(req, res) {
+  const authHeader = req.headers['authorization'] || '';
+  const expected = `Bearer ${process.env.ADMIN_SECRET || ''}`;
+  if (!process.env.ADMIN_SECRET || authHeader !== expected) {
+    return jsonErr(res, 401, 'Unauthorized');
+  }
+  const DEPOSIT_PRODUCTS = [
+    { key: 'student', productName: 'TUC Next Gen Pass — 50% Deposit', amount: 750 },
+    { key: 'normal',  productName: 'TUC Circular Pass — 50% Deposit', amount: 1750 },
+    { key: 'premium', productName: 'TUC Patron Pass — 50% Deposit',   amount: 5000 },
+  ];
+  try {
+    const stripe = getStripe();
+    const created = [];
+    for (const p of DEPOSIT_PRODUCTS) {
+      const product = await stripe.products.create({ name: p.productName });
+      const price = await stripe.prices.create({ product: product.id, currency: 'myr', unit_amount: p.amount });
+      created.push({ envVar: `STRIPE_PRICE_${p.key.toUpperCase()}_DEPOSIT`, priceId: price.id, productName: p.productName });
+    }
+    return jsonOk(res, { success: true, created });
+  } catch (err) {
+    console.error('[tickets:setup-deposits]', err);
+    return jsonErr(res, 500, err.message);
+  }
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return jsonErr(res, 405, 'POST only');
 
@@ -165,6 +195,7 @@ module.exports = async function handler(req, res) {
     case 'buy':     return actionBuy(req, res);
     case 'reserve': return actionReserve(req, res);
     case 'confirm': return actionConfirm(req, res);
+    case 'setup-deposits': return actionSetupDeposits(req, res);
     default:        return jsonErr(res, 400, `unknown action: ${action}`);
   }
 };
