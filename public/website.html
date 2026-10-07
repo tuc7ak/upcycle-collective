@@ -183,7 +183,8 @@
   .wsx-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
   .wsx-card { background: #FFFDF4; border: 2.5px solid #163B24; border-radius: 22px; box-shadow: 5px 5px 0 #163B24; padding: 26px 22px; display: flex; flex-direction: column; gap: 12px; transition: transform .12s ease, box-shadow .12s ease; }
   .wsx-card:hover { transform: translate(2.5px, 2.5px); box-shadow: 2.5px 2.5px 0 #163B24; }
-  .wsx-icon { width: 52px; height: 52px; border-radius: 14px; background: #DDF6C8; display: flex; align-items: center; justify-content: center; font-size: 26px; border: 2px solid #163B24; }
+  .wsx-icon { width: 56px; height: 56px; border-radius: 14px; background: #DDF6C8; display: flex; align-items: center; justify-content: center; border: 2px solid #163B24; overflow: hidden; }
+  .wsx-icon img { width: 100%; height: 100%; object-fit: cover; }
   .wsx-card h3 { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 19px; color: #163B24; margin: 4px 0 0; }
   .wsx-card p { font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 13.5px; color: rgba(22,59,36,0.68); margin: 0; line-height: 1.5; flex: 1; }
   .wsx-status { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: #2E7D32; }
@@ -207,33 +208,33 @@
   </div>
   <div class="wsx-grid">
     <div class="wsx-card">
-      <div class="wsx-icon">🧵</div>
+      <div class="wsx-icon"><img src="/ws-icon-patch_it.png" alt="Patch It Workshop"></div>
       <h3>Patch It Workshop</h3>
       <p>Turn worn pieces into something worth keeping.</p>
       <span class="wsx-status">Workshop · Limited seats</span>
     </div>
     <div class="wsx-card">
-      <div class="wsx-icon">👝</div>
-      <h3>Plastic Pouch Workshop</h3>
+      <div class="wsx-icon"><img src="/ws-icon-plastic.png" alt="Upcycled Plastic Pouch Workshop"></div>
+      <h3>Upcycled Plastic Pouch Workshop</h3>
       <p>Transform plastic material into a useful everyday piece.</p>
       <span class="wsx-status">Workshop · Limited seats</span>
     </div>
     <div class="wsx-card">
-      <div class="wsx-icon">🧸</div>
+      <div class="wsx-icon"><img src="/ws-icon-owl.png" alt="Owl Plushie Workshop"></div>
       <h3>Owl Plushie Workshop</h3>
       <p>Create a playful new object from reused materials.</p>
       <span class="wsx-status">Workshop · Limited seats</span>
     </div>
     <div class="wsx-card">
-      <div class="wsx-icon">🔧</div>
-      <h3>Repair Clothing Station</h3>
-      <p>Learn practical repair instead of throwing it away.</p>
-      <span class="wsx-status">Experience · Repair</span>
-    </div>
-    <div class="wsx-card">
-      <div class="wsx-icon">🎨</div>
+      <div class="wsx-icon"><img src="/ws-icon-figurine.png" alt="Figurine Painting Workshop"></div>
       <h3>Figurine Painting Workshop</h3>
       <p>Paint and personalize your own pre-loved figurine.</p>
+      <span class="wsx-status">Workshop · Limited seats</span>
+    </div>
+    <div class="wsx-card">
+      <div class="wsx-icon"><img src="/ws-icon-keychain.png" alt="Charms Keychain Workshop"></div>
+      <h3>Charms Keychain Workshop</h3>
+      <p>String together your own one-of-a-kind charm keychain.</p>
       <span class="wsx-status">Workshop · Limited seats</span>
     </div>
   </div>
