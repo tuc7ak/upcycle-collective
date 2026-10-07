@@ -115578,6 +115578,39 @@ async function actionSetupSheetHeader(req, res) {
     return jsonErr(res, 500, err.message);
   }
 }
+async function actionDebugInvoice(req, res) {
+  const authHeader = req.headers["authorization"] || "";
+  const expected = `Bearer ${process.env.CRON_SECRET || ""}`;
+  if (!process.env.CRON_SECRET || authHeader !== expected) {
+    return jsonErr(res, 401, "Unauthorized");
+  }
+  const invoiceId = String(req.body?.invoice_id || "");
+  if (!invoiceId) return jsonErr(res, 400, "invoice_id required");
+  try {
+    const stripe = getStripe();
+    const invoice = await stripe.invoices.retrieve(invoiceId, { expand: ["lines", "payment_intent"] });
+    return jsonOk(res, {
+      id: invoice.id,
+      status: invoice.status,
+      livemode: invoice.livemode,
+      amount_due: invoice.amount_due,
+      amount_paid: invoice.amount_paid,
+      amount_remaining: invoice.amount_remaining,
+      currency: invoice.currency,
+      collection_method: invoice.collection_method,
+      customer: invoice.customer,
+      lines: invoice.lines?.data?.map((l) => ({ description: l.description, amount: l.amount, pricing: l.pricing })),
+      payment_intent: invoice.payment_intent ? {
+        id: typeof invoice.payment_intent === "string" ? invoice.payment_intent : invoice.payment_intent.id,
+        status: typeof invoice.payment_intent === "object" ? invoice.payment_intent.status : void 0
+      } : null,
+      hosted_invoice_url: invoice.hosted_invoice_url
+    });
+  } catch (err) {
+    console.error("[tickets:debug-invoice]", err);
+    return jsonErr(res, 500, err.message);
+  }
+}
 async function actionDebugSheetRead(req, res) {
   const authHeader = req.headers["authorization"] || "";
   const expected = `Bearer ${process.env.CRON_SECRET || ""}`;
@@ -115602,6 +115635,8 @@ module.exports = async function handler(req, res) {
   switch (action) {
     case "debug-sheet-read":
       return actionDebugSheetRead(req, res);
+    case "debug-invoice":
+      return actionDebugInvoice(req, res);
     case "buy":
       return actionBuy(req, res);
     case "reserve":
