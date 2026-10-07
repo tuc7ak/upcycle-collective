@@ -203,6 +203,11 @@ async function actionCharge(req, res) {
           customer: customerId,
           collection_method: 'charge_automatically',
           default_payment_method: paymentMethodId,
+          // Defaults to 'exclude' if omitted — Stripe would otherwise create
+          // an EMPTY draft invoice ignoring the item just created above,
+          // which then trivially "pays" at $0 with no real charge at all.
+          // This is exactly what happened on the first attempt.
+          pending_invoice_items_behavior: 'include',
           metadata: { event: 'The Spring - The WAK - TUC Event', tier: tierKey, type: 'reservation-charge' },
         });
         const finalized = await stripe.invoices.finalizeInvoice(invoice.id);
