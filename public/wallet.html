@@ -33,6 +33,8 @@
   h1.page-title{font-family:'Nunito',-apple-system,sans-serif;font-weight:800;font-size:26px;color:var(--text-primary);letter-spacing:-0.02em;margin-bottom:7px;}
   .eyebrow-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
   .eyebrow{font-family:'Nunito';font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--moss);}
+  .howitworks-link{display:flex;align-items:center;gap:5px;font-family:'Nunito';font-size:11.5px;font-weight:800;color:var(--moss);background:var(--moss-15);border:var(--border-w-thin) solid var(--moss);border-radius:var(--radius-pill);padding:5px 12px;text-decoration:none;white-space:nowrap;transition:transform .12s;}
+  .howitworks-link:hover,.howitworks-link:active{transform:translate(1px,1px);}
   .preview-tag{font-family:'Nunito';font-size:9.5px;letter-spacing:0.05em;text-transform:uppercase;color:var(--text-faint);border:1px solid var(--divider);border-radius:999px;padding:2px 8px;}
   .preview-tag.live{color:var(--gold-dim);border-color:var(--gold-25);}
   .mode-toggle{display:flex;align-items:center;gap:6px;background:var(--bg-surface);border:1px solid var(--divider);border-radius:999px;padding:4px 10px 4px 8px;cursor:pointer;font-family:'Nunito';font-size:9.5px;letter-spacing:0.05em;text-transform:uppercase;color:var(--text-faint);transition:border-color .15s,color .15s;}
@@ -47,6 +49,10 @@
   .loading-spinner{width:22px;height:22px;border-radius:50%;border:2.5px solid var(--divider);border-top-color:var(--gold);animation:ptr-spin .7s linear infinite;}
 
   /* ── Login gate ── */
+  .stmy-footer{display:flex;align-items:center;justify-content:center;gap:10px;padding:18px 0 4px;}
+  .stmy-footer span{font-family:'Nunito';font-size:11.5px;font-weight:700;color:var(--text-muted);}
+  .stmy-footer img{height:20px;width:auto;display:block;}
+  #login-gate .stmy-footer{margin-top:28px;}
   #login-gate{display:flex;flex-direction:column;align-items:center;text-align:center;min-height:100vh;justify-content:center;padding:60px 24px;gap:16px;}
   #login-gate h2{font-family:'Nunito';font-weight:800;font-size:24px;letter-spacing:-0.01em;color:var(--text-primary);}
   #login-gate p{font-size:13.5px;color:var(--text-muted);line-height:1.6;max-width:260px;}
@@ -235,6 +241,8 @@
   <p>Log in to view your wTUC balance, donate, track loops, redeem rewards, and see your full on-chain activity.</p>
   <button class="btn btn-gold" onclick="connectWithEmail()" style="max-width:260px;margin-top:6px;">Continue with Email</button>
   <button class="btn btn-outline-wide" onclick="openWalletPicker()" style="max-width:260px;">Connect Wallet</button>
+  <a class="howitworks-link" href="/how-it-works.pdf" target="_blank" rel="noopener" style="margin-top:8px;">ⓘ How it works</a>
+  <div class="stmy-footer"><span>Supported by</span><img src="/STMY-Logo.png" alt="Solana Superteam Malaysia"></div>
 </div>
 
 <!-- ══ APP SHELL — hidden until login succeeds ══ -->
@@ -245,15 +253,15 @@
 
       <!-- DONATE -->
       <div class="screen" id="screen-donate">
-        <div class="eyebrow-row"><span class="eyebrow">New donation</span></div>
+        <div class="eyebrow-row"><span class="eyebrow">New donation</span><a class="howitworks-link" href="/how-it-works.pdf" target="_blank" rel="noopener">ⓘ How it works</a></div>
         <h1 class="page-title">What are you giving up?</h1>
         <div class="subtext">Generate a code, then seal and label your bag. Staff checks it at the drop-off point and your tokens land automatically.</div>
 
         <div class="field">
           <span class="field-label">Drop-off point</span>
           <div class="map-box"><div class="map-pin"></div></div>
-          <div class="location-name">Padungan Collection Point</div>
-          <div class="location-addr">0.8 km away · open until 6:00 PM</div>
+          <div class="location-name">The Spring Mall</div>
+          <div class="location-addr">Kuching, Sarawak</div>
         </div>
 
         <button class="btn btn-gold" id="donate-generate-btn" onclick="generateDonateCode()">Generate my donation code</button>
@@ -318,26 +326,21 @@
         </div>
       </div>
 
-      <!-- REDEEM (preview) -->
+      <!-- REDEEM (notice) -->
       <div class="screen" id="screen-redeem">
-        <div class="eyebrow-row"><span class="eyebrow">Marketplace</span><span class="preview-tag">Preview</span></div>
-        <h1 class="page-title">Redeem your tokens</h1>
-        <div class="subtext">Spend at partner stores across Kuching. This marketplace isn't live yet — redemptions currently happen at event stations.</div>
-        <div class="partner-card">
-          <div class="partner-top">
-            <div class="partner-thumb"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--moss)" stroke-width="1.6"><path d="M4 9l1-5h14l1 5"/><path d="M4 9h16v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9z"/><path d="M9 13a3 3 0 0 0 6 0"/></svg></div>
-            <div><div class="partner-name">Kertas &amp; Co.</div><div class="partner-meta"><span class="stars">★★★★★</span> 4.9 · Secondhand · 0.8 km</div></div>
+        <div class="eyebrow-row"><span class="eyebrow">Notice</span></div>
+        <div style="background:var(--bg-surface);border:var(--border-w-thin) solid var(--ink);border-radius:var(--radius-md);box-shadow:var(--shadow-hard);overflow:hidden;">
+          <div style="background:var(--ink);color:#FFFDF4;padding:10px 18px;font-family:'Nunito';font-weight:800;font-size:11.5px;letter-spacing:0.12em;text-transform:uppercase;">TUC Weekend · Notice</div>
+          <div style="padding:22px 20px 20px;">
+            <h1 class="page-title" style="margin:0 0 12px;">Spend Your TUC Tokens at TUC Weekend!</h1>
+            <div class="subtext" style="margin:0 0 14px;">The more you donate, the more TUC Tokens you earn — and you can spend them with our participating vendors!</div>
+            <div class="subtext" style="margin:0 0 18px;color:var(--text-primary);font-weight:800;">Redeem your tokens for coffee, keychains, upcycled products and more!</div>
+            <div style="background:var(--bg-surface-2);border:1.5px solid var(--ink);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:18px;">
+              <div style="font-family:'Nunito';font-weight:800;font-size:14px;color:var(--ink);">📅 24–25 October 2026</div>
+              <div style="font-family:'Nunito';font-weight:800;font-size:14px;color:var(--ink);margin-top:6px;">📍 The Spring Shopping Mall, Kuching</div>
+            </div>
+            <div style="background:var(--gold);border:var(--border-w-thin) solid var(--ink);border-radius:var(--radius-pill);padding:11px 14px;text-align:center;font-family:'Nunito';font-weight:800;font-size:14px;color:var(--ink);">Donate → Earn Tokens → Shop &amp; Redeem!</div>
           </div>
-          <div class="redeem-item"><div class="ri-name">Upcycled tote bag</div><div style="display:flex;align-items:center;gap:10px;"><span class="ri-price">8 tokens</span><button class="redeem-btn" onclick="previewToast()">Redeem</button></div></div>
-          <div class="redeem-item"><div class="ri-name">Relisted denim jacket</div><div style="display:flex;align-items:center;gap:10px;"><span class="ri-price">14 tokens</span><button class="redeem-btn" onclick="previewToast()">Redeem</button></div></div>
-        </div>
-        <div class="partner-card">
-          <div class="partner-top">
-            <div class="partner-thumb"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--moss)" stroke-width="1.6"><path d="M14.7 6.3a1 1 0 0 1 1.4 0l1.6 1.6a1 1 0 0 1 0 1.4L8.4 18.6 4 20l1.4-4.4L14.7 6.3z"/></svg></div>
-            <div><div class="partner-name">Simpang Repair Co.</div><div class="partner-meta"><span class="stars">★★★★☆</span> 4.6 · Repair · 1.4 km</div></div>
-          </div>
-          <div class="redeem-item"><div class="ri-name">Zipper repair</div><div style="display:flex;align-items:center;gap:10px;"><span class="ri-price">5 tokens</span><button class="redeem-btn" onclick="previewToast()">Redeem</button></div></div>
-          <div class="redeem-item"><div class="ri-name">Patch &amp; mend, per item</div><div style="display:flex;align-items:center;gap:10px;"><span class="ri-price">4 tokens</span><button class="redeem-btn" onclick="previewToast()">Redeem</button></div></div>
         </div>
       </div>
 
@@ -368,12 +371,7 @@
         </div>
 
         <div class="section-label">Badges</div>
-        <div class="badge-row">
-          <div class="badge"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold-dim)" stroke-width="1.6" style="margin:0 auto;"><path d="M12 2l2.6 6.6L21 9.3l-5 4.6L17.4 21 12 17.3 6.6 21 8 13.9 3 9.3l6.4-.7L12 2z"/></svg><div class="badge-label">First<br>donation</div></div>
-          <div class="badge"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold-dim)" stroke-width="1.6" style="margin:0 auto;"><path d="M4 12a8 8 0 0 1 14-5"/><path d="M18 3v5h-5"/><path d="M20 12a8 8 0 0 1-14 5"/><path d="M6 21v-5h5"/></svg><div class="badge-label">Loop<br>closer</div></div>
-          <div class="badge"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.6" style="margin:0 auto;"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><div class="badge-label">Repeat<br>giver</div></div>
-        </div>
-        <div class="subtext" style="margin-top:-4px;">Badges are a preview — coming soon.</div>
+        <div class="subtext" style="margin-top:0;">Badges are coming soon.</div>
 
         <div id="staff-pin-box" style="display:none;margin-top:14px;">
           <input id="staff-pin-input" type="password" maxlength="10" placeholder="Staff PIN" autocomplete="off"
@@ -484,6 +482,7 @@
         <div class="tx-list" id="tx-list"><div class="loading">Loading…</div></div>
       </div>
 
+      <div class="stmy-footer"><span>Supported by</span><img src="/STMY-Logo.png" alt="Solana Superteam Malaysia"></div>
     </div>
 
     <div class="navbar">
@@ -625,15 +624,6 @@ let scanner        = null;
 let scannerRunning = false;
 let currentIdentity = '';
 
-// Pre-launch test donations — the memos themselves can't be edited on-chain,
-// so this just relabels how they display. Not a general feature; remove
-// once these codes have aged out of anyone's Track view.
-const TEST_DONATION_CODES = new Set([
-  'KLYYTF', '469LBM', 'SJKAT4', 'XESHPM', 'LJWV45', '8ZTEYQ', 'W5Z25X',
-  '3DG5B4', 'EJPGY4', '5EFZ2N', 'L2537R', 'PP89D3', 'EYVTG4', 'XLC9CH', 'VYKJTC',
-  'D6DXS8', 'TZSH6Y', '8JYW2F', 'UYFNLY', 'T6XK9J',
-]);
-function testLabel(code) { return TEST_DONATION_CODES.has(code) ? ' (test)' : ''; }
 
 /* ── Tab navigation ── */
 function go(name) {
@@ -800,18 +790,38 @@ function proceedToSnapPhoto() {
   document.getElementById('donate-photo-input').click();
 }
 
+/* ── Photo compression: phone photos are several MB, but Vercel rejects request bodies over 4.5MB ── */
+function compressImage(file, maxDim = 1600, quality = 0.8) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width  = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Could not read that photo — try taking it again.')); };
+    img.src = url;
+  });
+}
+
 /* ── Donate: photo capture + upload, tied to the generated code ── */
 function handleDonatePhoto(event) {
   const file = event.target.files?.[0];
   if (!file) return;
   if (!currentDonateCode) { toast('Generate a code first.', true); return; }
-  const reader = new FileReader();
-  reader.onload = () => {
+  compressImage(file).then(dataUrl => {
     document.getElementById('donate-photo-box').innerHTML =
-      `<img src="${reader.result}" alt="Selected photo" style="width:100%;height:100%;object-fit:cover;">`;
-    uploadDonatePhoto(reader.result);
-  };
-  reader.readAsDataURL(file);
+      `<img src="${dataUrl}" alt="Selected photo" style="width:100%;height:100%;object-fit:cover;">`;
+    uploadDonatePhoto(dataUrl);
+  }).catch(e => {
+    const st = document.getElementById('donate-photo-status');
+    if (st) st.textContent = '❌ ' + e.message;
+  });
 }
 
 async function uploadDonatePhoto(dataUrl) {
@@ -822,7 +832,7 @@ async function uploadDonatePhoto(dataUrl) {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'photo', code: currentDonateCode, wallet: walletPubkey, type: DONATE_TYPE, photo: dataUrl }),
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => ({ error: res.status === 413 ? 'Photo too large' : 'Upload failed (' + res.status + ')' }));
     if (!data.success) throw new Error(data.error || 'Upload failed');
     statusEl.textContent = `✅ Uploaded — batch #${data.batch}`;
     liveDonationsLoaded = false; // this is the point the donation actually lands on-chain
@@ -892,7 +902,7 @@ async function loadDonateTransactions() {
     return `<a class="tx-item" href="${d.sig ? 'https://solscan.io/tx/' + d.sig : '#'}" target="_blank" rel="noopener">
       ${thumb}
       <div class="tx-info">
-        <div class="tx-type">${titleCase(d.type)} donation${d.code ? ' · ' + d.code : ''}${d.batch ? ' · batch #' + d.batch : ''}${testLabel(d.code)}</div>
+        <div class="tx-type">${titleCase(d.type)} donation${d.code ? ' · ' + d.code : ''}${d.batch ? ' · batch #' + d.batch : ''}</div>
         <div class="tx-time">${fmtShortDate(d.blockTime)}</div>
         <div class="tx-solscan">↗ ${shortSig} · Solscan</div>
         ${statusTag}
@@ -955,7 +965,7 @@ async function renderTrackMode() {
   card.style.display   = 'block';
   select.innerHTML = liveDonations.map((d, i) => {
     const amount = d.status === 'pending' ? 'Pending' : `${d.kg}kg`;
-    const label  = d.code ? `${d.code} — ${titleCase(d.type)} — ${amount}${testLabel(d.code)}` : `${titleCase(d.type)} — ${amount} — ${fmtShortDate(d.blockTime)}`;
+    const label  = d.code ? `${d.code} — ${titleCase(d.type)} — ${amount}` : `${titleCase(d.type)} — ${amount} — ${fmtShortDate(d.blockTime)}`;
     return `<option value="${i}">${label}</option>`;
   }).join('');
   renderLiveItem(0);
@@ -990,7 +1000,7 @@ async function loadTrackItemPhoto(code) {
 function renderLiveItem(idx) {
   const d = liveDonations[idx];
   if (!d) return;
-  document.getElementById('track-item-name').textContent = `${titleCase(d.type)} donation${d.code ? ' · ' + d.code : ''}${testLabel(d.code)}`;
+  document.getElementById('track-item-name').textContent = `${titleCase(d.type)} donation${d.code ? ' · ' + d.code : ''}`;
   document.getElementById('track-item-id').textContent   = d.type;
   document.getElementById('track-item-photo-wrap').style.display = 'none';
   const link = document.getElementById('track-chain-link');
@@ -1168,7 +1178,12 @@ async function loadLiveDonations() {
       photoSig: e.photoSig, photoBlockTime: e.photoBlockTime,
       tokensSent: e.tokensSent, airdropSig: e.airdropSig, airdropBlockTime: e.airdropBlockTime,
     }));
-    return [...codeEntries, ...legacy].sort((a, b) => (b.blockTime || 0) - (a.blockTime || 0));
+    // Pre-launch test donations (batches 1–9, plus legacy staff-logged ones
+    // with no batch) are hidden — only batch 10 onwards is shown.
+    const FIRST_VISIBLE_BATCH = 10;
+    return codeEntries
+      .filter(e => Number(e.batch) >= FIRST_VISIBLE_BATCH)
+      .sort((a, b) => (b.blockTime || 0) - (a.blockTime || 0));
   } catch (e) {
     console.error('[loadLiveDonations]', e);
     // Re-thrown rather than swallowed to [] — a failed fetch (rate limit,
@@ -2023,13 +2038,14 @@ function handleScalePhoto(event) {
   const file = event.target.files?.[0];
   if (!file) return;
   if (!currentValidateCode) { setValidateStatus('err', 'Look up the code first.'); return; }
-  const reader = new FileReader();
-  reader.onload = () => {
+  compressImage(file).then(dataUrl => {
     document.getElementById('scale-photo-box').innerHTML =
-      `<img src="${reader.result}" alt="Scale photo" style="width:100%;height:100%;object-fit:cover;">`;
-    uploadScalePhoto(reader.result);
-  };
-  reader.readAsDataURL(file);
+      `<img src="${dataUrl}" alt="Scale photo" style="width:100%;height:100%;object-fit:cover;">`;
+    uploadScalePhoto(dataUrl);
+  }).catch(e => {
+    const st = document.getElementById('scale-photo-status');
+    if (st) st.textContent = '❌ ' + e.message;
+  });
 }
 
 async function uploadScalePhoto(dataUrl) {

@@ -106990,10 +106990,11 @@ var require_google = __commonJS({
       if (!res.ok) throw new Error(data.error?.message || "Sheets read failed");
       return data.values || [];
     }
-    async function sheetsAppendRow({ spreadsheetId, range, values }) {
+    async function sheetsAppendRow({ spreadsheetId, range, values, valueInputOption }) {
       const token = await googleAccessToken();
+      const vio = valueInputOption || "USER_ENTERED";
       const res = await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
+        `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=${vio}&insertDataOption=INSERT_ROWS`,
         {
           method: "POST",
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },

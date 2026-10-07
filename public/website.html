@@ -246,5 +246,27 @@
   }
 })();
 </script>
+<script>
+(function(){
+  var st=document.createElement('style');st.textContent='@media(min-width:810px){[data-framer-name="TUC Navigation"]{justify-content:flex-start!important;column-gap:16px!important}[data-framer-name="TUC Brand"]{margin-right:6px!important}[data-framer-name="TUC Navigation"]>:last-child{margin-left:auto!important}}@media(max-width:809px){.stmy-badge{gap:6px!important;margin-left:0!important;padding-left:8px!important}.stmy-badge span{display:none}.stmy-badge img{height:14px!important}[data-framer-name="TUC Brand"]{gap:8px!important}[data-framer-name="TUC Brand Name"] p{font-size:13px!important}}';document.head.appendChild(st);
+  function add(){
+    var b=document.querySelector('[data-framer-name="TUC Brand"]');
+    if(!b) return;
+    if(b.querySelector('.stmy-badge')) return;
+    var d=document.createElement('div');
+    d.className='stmy-badge';
+    d.style.cssText='display:flex;align-items:center;gap:10px;margin-left:6px;padding-left:14px;border-left:1.5px solid rgba(22,59,36,.25);white-space:nowrap;flex-shrink:0';
+    d.innerHTML='<span style="font-family:Nunito,sans-serif;font-weight:700;font-size:12px;color:#163B24;opacity:.7">Supported by</span><img src="/STMY-Logo.png" alt="Solana Superteam Malaysia" style="height:20px;width:auto;display:block">';
+    b.appendChild(d);
+  }
+  function start(){
+    setTimeout(function(){
+      add();
+      new MutationObserver(add).observe(document.documentElement,{childList:true,subtree:true});
+    },2500);
+  }
+  if(document.readyState==='complete')start();else window.addEventListener('load',start);
+})();
+</script>
 </body>
 </html>
