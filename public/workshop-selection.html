@@ -137,8 +137,10 @@
     { id: 'plastic',   vendor: 'Stinablis', name: 'Upcycled Plastic Workshop' },
     { id: 'charms',    vendor: 'TUC',       name: 'Charms Keychain Workshop' },
   ];
+  // Charms Keychain also runs on the 25th — same workshop, not a separate one.
   var WORKSHOPS_25 = [
     { id: 'owl_plushie', vendor: 'PEWANI', name: 'Owl Plushie Workshop' },
+    { id: 'charms',      vendor: 'TUC',    name: 'Charms Keychain Workshop' },
   ];
   var FIGURINE = { id: 'figurine', vendor: 'TUC', name: 'Figurine Painting Workshop' };
 
@@ -199,7 +201,8 @@
         state.workshopsNormal = [list[0]];
       }
       list.forEach(function(w){
-        var el = renderWorkshopOption(w, state.date + ' Oct', state.date === '25', 'normal');
+        var isChecked = !!(state.workshopsNormal && state.workshopsNormal[0] && state.workshopsNormal[0].id === w.id);
+        var el = renderWorkshopOption(w, state.date + ' Oct', isChecked, 'normal');
         el.querySelector('input').addEventListener('change', function(){
           document.querySelectorAll('#normalWorkshops .workshop-option').forEach(function(o){ o.classList.remove('is-selected'); });
           el.classList.add('is-selected');
@@ -211,13 +214,26 @@
     }
   }
 
+  function workshopDayLabel(id) {
+    var on24 = WORKSHOPS_24.some(function(x){ return x.id === id; });
+    var on25 = WORKSHOPS_25.some(function(x){ return x.id === id; });
+    if (on24 && on25) return '24 & 25 Oct';
+    return on24 ? '24 Oct' : '25 Oct';
+  }
+
   function setupPremiumSection() {
     var container = document.getElementById('premiumWorkshops');
-    var pool = WORKSHOPS_24.map(function(w){ return { w: w, day: '24' }; })
-      .concat(WORKSHOPS_25.map(function(w){ return { w: w, day: '25' }; }));
+    // De-duplicated by id — Charms Keychain runs both days but should only
+    // appear once in the pick-2 pool, not as two separate slots.
+    var seen = {};
+    var pool = WORKSHOPS_24.concat(WORKSHOPS_25).filter(function(w){
+      if (seen[w.id]) return false;
+      seen[w.id] = true;
+      return true;
+    });
 
-    pool.forEach(function(item){
-      var el = renderWorkshopOption(item.w, item.day + ' Oct', false, 'premium');
+    pool.forEach(function(w){
+      var el = renderWorkshopOption(w, workshopDayLabel(w.id), false, 'premium');
       el.querySelector('input').addEventListener('change', function(e){
         if (e.target.checked) {
           if (state.workshopsPremium.length >= 2) {
@@ -225,10 +241,10 @@
             showError('You can only choose 2 additional workshops.');
             return;
           }
-          state.workshopsPremium.push(item.w);
+          state.workshopsPremium.push(w);
           el.classList.add('is-selected');
         } else {
-          state.workshopsPremium = state.workshopsPremium.filter(function(x){ return x.id !== item.w.id; });
+          state.workshopsPremium = state.workshopsPremium.filter(function(x){ return x.id !== w.id; });
           el.classList.remove('is-selected');
         }
         renderPremiumSummary();
@@ -242,8 +258,7 @@
     var ul = document.getElementById('premiumSummary');
     ul.innerHTML = '<li>Figurine Painting Workshop — 25 Oct (included)</li>';
     state.workshopsPremium.forEach(function(w){
-      var day = WORKSHOPS_24.some(function(x){ return x.id === w.id; }) ? '24' : '25';
-      ul.innerHTML += '<li>' + w.name + ' (' + w.vendor + ') — ' + day + ' Oct</li>';
+      ul.innerHTML += '<li>' + w.name + ' (' + w.vendor + ') — ' + workshopDayLabel(w.id) + '</li>';
     });
   }
 
