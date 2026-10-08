@@ -471,7 +471,7 @@
           <button class="action-btn" onclick="openReceive()"><span class="action-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--moss)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3z"/><path d="M14 21h.01"/><path d="M21 14h.01"/><path d="M21 21h.01"/><path d="M17.5 17.5h.01"/></svg></span>Receive</button>
         </div>
 
-        <div id="nft-section" style="margin-bottom:24px;">
+        <div id="nft-section" style="margin-bottom:24px;" hidden>
           <div class="section-title">NFT</div>
           <div id="nft-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;">
             <div class="loading" style="grid-column:1/-1">Checking for passes…</div>
@@ -1311,7 +1311,7 @@ async function enterApp() {
   document.getElementById('profile-addr').textContent = short;
   document.getElementById('profile-title').textContent = currentIdentity.includes('@') ? currentIdentity : short;
   go('wallet');
-  await Promise.all([loadBalance(), loadTransactions(), loadNFTs()]);
+  await Promise.all([loadBalance(), loadTransactions()]); // NFT section hidden for now — loadNFTs() skipped
 }
 
 /* ── NFT Membership Passes ── */
@@ -2112,7 +2112,7 @@ function toast(msg, isErr=false) {
 
 /* ── Refresh ── */
 async function refresh() {
-  await Promise.all([loadBalance(), loadTransactions(), loadNFTs()]);
+  await Promise.all([loadBalance(), loadTransactions()]); // NFT section hidden for now — loadNFTs() skipped
 }
 
 /* ── Privy email connect ── */
