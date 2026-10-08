@@ -95,15 +95,15 @@
   <div class="card" id="studentSection" hidden>
     <div class="section-title">Your Workshop</div>
     <p class="section-note">Next Gen Pass is fixed to the following — no changes needed.</p>
-    <div class="locked-box">📅 24 October 2026 — TUC: Charms Keychain Workshop</div>
+    <div class="locked-box">📅 24 October 2026 (Saturday) — TUC: Charms Keychain Workshop</div>
   </div>
 
   <div class="card" id="normalSection" hidden>
     <div class="section-title">Choose Your Date</div>
     <p class="section-note">Your Circular Pass is valid for one day — pick which one.</p>
     <div class="date-options">
-      <button type="button" class="date-btn" data-date="24">24 October</button>
-      <button type="button" class="date-btn" data-date="25">25 October</button>
+      <button type="button" class="date-btn" data-date="24">24 October (Saturday)</button>
+      <button type="button" class="date-btn" data-date="25">25 October (Sunday)</button>
     </div>
     <div id="normalWorkshops"></div>
   </div>
@@ -111,11 +111,11 @@
   <div class="card" id="premiumSection" hidden>
     <div class="section-title">Your Workshops</div>
     <p class="section-note">Your Patron Pass includes the Figurine Painting Workshop, plus pick 2 more from either day.</p>
-    <div class="included-badge">✓ Included: TUC — Figurine Painting Workshop (25 Oct)</div>
+    <div class="included-badge">✓ Included: TUC — Figurine Painting Workshop (25 Oct, Sunday)</div>
     <div id="premiumWorkshops"></div>
     <div class="summary-box">
       <div class="label">Your 3 workshops</div>
-      <ul id="premiumSummary"><li>Figurine Painting Workshop — 25 Oct (included)</li></ul>
+      <ul id="premiumSummary"><li>Figurine Painting Workshop — 25 Oct, Sunday (included)</li></ul>
     </div>
   </div>
 
@@ -202,7 +202,7 @@
       }
       list.forEach(function(w){
         var isChecked = !!(state.workshopsNormal && state.workshopsNormal[0] && state.workshopsNormal[0].id === w.id);
-        var el = renderWorkshopOption(w, state.date + ' Oct', isChecked, 'normal');
+        var el = renderWorkshopOption(w, state.date + ' Oct (' + dayName(state.date) + ')', isChecked, 'normal');
         el.querySelector('input').addEventListener('change', function(){
           document.querySelectorAll('#normalWorkshops .workshop-option').forEach(function(o){ o.classList.remove('is-selected'); });
           el.classList.add('is-selected');
@@ -214,11 +214,15 @@
     }
   }
 
+  function dayName(date) {
+    return date === '24' ? 'Saturday' : 'Sunday';
+  }
+
   function workshopDayLabel(id) {
     var on24 = WORKSHOPS_24.some(function(x){ return x.id === id; });
     var on25 = WORKSHOPS_25.some(function(x){ return x.id === id; });
-    if (on24 && on25) return '24 & 25 Oct';
-    return on24 ? '24 Oct' : '25 Oct';
+    if (on24 && on25) return '24 (Sat) & 25 (Sun) Oct';
+    return on24 ? '24 Oct (Saturday)' : '25 Oct (Sunday)';
   }
 
   function setupPremiumSection() {
@@ -256,7 +260,7 @@
 
   function renderPremiumSummary() {
     var ul = document.getElementById('premiumSummary');
-    ul.innerHTML = '<li>Figurine Painting Workshop — 25 Oct (included)</li>';
+    ul.innerHTML = '<li>Figurine Painting Workshop — 25 Oct, Sunday (included)</li>';
     state.workshopsPremium.forEach(function(w){
       ul.innerHTML += '<li>' + w.name + ' (' + w.vendor + ') — ' + workshopDayLabel(w.id) + '</li>';
     });
