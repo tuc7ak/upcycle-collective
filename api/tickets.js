@@ -115589,27 +115589,6 @@ async function actionConfirm(req, res) {
     return jsonErr(res, 500, err.message);
   }
 }
-async function actionDebugEmailTest(req, res) {
-  const authHeader = req.headers["authorization"] || "";
-  const expected = `Bearer ${process.env.ADMIN_SECRET || ""}`;
-  if (!process.env.ADMIN_SECRET || authHeader !== expected) {
-    return jsonErr(res, 401, "Unauthorized");
-  }
-  const to = String(req.body?.to || "");
-  if (!to) return jsonErr(res, 400, "to required");
-  try {
-    const { sendEmail } = require_resend();
-    const result = await sendEmail({
-      to,
-      subject: "TUC debug test",
-      html: "<p>test</p>",
-      replyTo: "tucswk@gmail.com"
-    });
-    return jsonOk(res, { success: true, result });
-  } catch (err) {
-    return jsonOk(res, { success: false, error: err.message, stack: err.stack });
-  }
-}
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return jsonErr(res, 405, "POST only");
   const action = req.body?.action || "register";
@@ -115618,8 +115597,6 @@ module.exports = async function handler(req, res) {
       return actionRegister(req, res);
     case "confirm":
       return actionConfirm(req, res);
-    case "debug-email-test":
-      return actionDebugEmailTest(req, res);
     default:
       return jsonErr(res, 400, `unknown action: ${action}`);
   }
