@@ -81,4 +81,24 @@ async function sheetsUpdateRange({ spreadsheetId, range, values }) {
   return data;
 }
 
-module.exports = { blobUploadPhoto, sheetsGetValues, sheetsAppendRow, sheetsUpdateRange };
+// Creates a tab (with a header row) if it doesn't exist yet, so new logs like
+// workshop attendance work without anyone touching the Sheet by hand.
+async function sheetsEnsureTab({ spreadsheetId, title, headers }) {
+  const token = await googleAccessToken();
+  const base = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}`;
+  const metaRes = await fetch(`${base}?fields=sheets.properties.title`, { headers: { Authorization: `Bearer ${token}` } });
+  const meta = await metaRes.json();
+  if (!metaRes.ok) throw new Error(meta.error?.message || 'Sheets metadata read failed');
+  if ((meta.sheets || []).some(sh => sh.properties.title === title)) return false;
+  const addRes = await fetch(`${base}:batchUpdate`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ requests: [{ addSheet: { properties: { title } } }] }),
+  });
+  const addData = await addRes.json();
+  if (!addRes.ok) throw new Error(addData.error?.message || 'Sheets add tab failed');
+  await sheetsUpdateRange({ spreadsheetId, range: `${title}!A1`, values: headers });
+  return true;
+}
+
+module.exports = { blobUploadPhoto, sheetsGetValues, sheetsAppendRow, sheetsUpdateRange, sheetsEnsureTab };

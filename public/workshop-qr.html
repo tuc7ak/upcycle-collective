@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TUC — Workshop QR Codes</title>
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="workshop-list.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Geist', -apple-system, sans-serif; background: #FFFDF4; color: #163B24; padding: 28px 20px 48px; }
+    h1 { text-align: center; font-size: 26px; font-weight: 900; }
+    .sub { text-align: center; font-size: 13px; opacity: .6; margin: 4px 0 8px; }
+    .actions { text-align: center; margin-bottom: 24px; }
+    .actions button { font: inherit; font-weight: 800; padding: 10px 20px; border: 2px solid #163B24; border-radius: 10px; background: #FAD85D; color: #163B24; cursor: pointer; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto; }
+    .qr-card { background: #fff; border: 2px solid #163B24; border-radius: 20px; padding: 24px 18px; text-align: center; break-inside: avoid; }
+    .qr-card .eyebrow { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; opacity: .55; }
+    .qr-card h2 { font-size: 24px; font-weight: 900; margin: 4px 0 14px; }
+    .qr { display: inline-flex; padding: 10px; background: #fff; }
+    .scan { font-size: 13px; font-weight: 700; margin-top: 10px; }
+    .url { font-size: 10px; opacity: .45; font-family: monospace; margin-top: 6px; word-break: break-all; }
+    #pin-gate { position: fixed; inset: 0; background: #FFFDF4; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; }
+    #pin-gate input { font: inherit; font-size: 24px; letter-spacing: .3em; text-align: center; padding: 12px; width: 220px; border: 2px solid #163B24; border-radius: 12px; background: #fff; }
+    #pin-gate button { font: inherit; font-weight: 800; width: 220px; padding: 12px; border: 2px solid #163B24; border-radius: 12px; background: #FAD85D; cursor: pointer; }
+    @media print { .actions, #pin-gate { display: none !important; } body { padding: 0; } .grid { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+<div id="pin-gate">
+  <div style="font-size:20px;font-weight:800">Staff Access</div>
+  <input id="pin-input" type="password" inputmode="numeric" maxlength="10" placeholder="PIN" autocomplete="off" onkeydown="if(event.key==='Enter')checkPin()" />
+  <button onclick="checkPin()">Unlock</button>
+  <div id="pin-err" style="color:#b3261e;font-size:13px;display:none">Incorrect PIN</div>
+</div>
+<script>
+  (function(){ if (sessionStorage.getItem('tuc_pin') === '1990') document.getElementById('pin-gate').style.display = 'none'; })();
+  function checkPin() {
+    if (document.getElementById('pin-input').value === '1990') {
+      sessionStorage.setItem('tuc_pin', '1990');
+      document.getElementById('pin-gate').style.display = 'none';
+    } else { document.getElementById('pin-err').style.display = 'block'; document.getElementById('pin-input').value = ''; }
+  }
+</script>
+
+<h1>Workshop QR Codes</h1>
+<p class="sub">Attendees scan with the TUC wallet · one QR per workshop · logs attendance by wallet</p>
+<div class="actions"><button onclick="window.print()">🖨 Print</button></div>
+<div class="grid" id="grid"></div>
+
+<script>
+  const BASE_URL = 'https://upcycle-collective.vercel.app'; // always the live site, even if this page is opened locally
+  const grid = document.getElementById('grid');
+  TUC_WORKSHOPS.forEach(w => {
+    const url = `${BASE_URL}/attend.html?w=${w.id}`;
+    const card = document.createElement('div');
+    card.className = 'qr-card';
+    card.innerHTML = `<div class="eyebrow">TUC Workshop</div><h2>${w.name}</h2><div class="qr" id="qr-${w.id}"></div><div class="scan">Scan with the TUC wallet</div><div class="url">${url}</div>`;
+    grid.appendChild(card);
+    new QRCode(document.getElementById(`qr-${w.id}`), { text: url, width: 200, height: 200, colorDark: '#163B24', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+  });
+</script>
+</body>
+</html>

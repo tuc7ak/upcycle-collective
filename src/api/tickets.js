@@ -227,6 +227,90 @@ async function actionConfirm(req, res) {
   }
 }
 
+// ── Workshop attendance — scanned from the per-workshop QR codes (attend.html).
+// Scanned from inside the TUC wallet (wallet.html), identity = wallet address. One row per wallet per workshop, logged to
+// the Attendance tab; dashboard.html reads the summary back via 'attendance'.
+// Lives in this dispatcher (not its own file) because of the 12-function cap.
+const WORKSHOPS = {
+  patch_it:    'Patch It',
+  plastic:     'Plastic Pouch',
+  owl_plushie: 'Owl Plushie',
+  figurine:    'Figurine Painting',
+  charms:      'Charms Keychain',
+};
+const ATTENDANCE_TAB = 'Attendance';
+const ATTENDANCE_HEADERS = ['timestamp', 'workshop_id', 'workshop', 'wallet'];
+const DASHBOARD_PIN = process.env.DASHBOARD_PIN || '1990'; // same PIN the staff pages already use
+
+async function actionAttend(req, res) {
+  const { workshop, wallet } = req.body || {};
+  const label = WORKSHOPS[workshop];
+  if (!label) return jsonErr(res, 400, 'Unknown workshop QR');
+  if (!wallet) return jsonErr(res, 400, 'Scan this QR from inside the TUC wallet');
+
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+  if (!spreadsheetId) return jsonErr(res, 500, 'Google Sheet not configured');
+
+  try {
+    // Only wallets that were checked in at the door (i.e. hold a wTUC account)
+    // can log attendance — same gate the vendor payments use.
+    const { PublicKey } = require('@solana/web3.js');
+    const { TOKEN_2022_PROGRAM_ID, getAssociatedTokenAddressSync, getAccount } = require('@solana/spl-token');
+    const { getConnection, getMintPublicKey } = require('./_utils');
+    let owner;
+    try { owner = new PublicKey(wallet); } catch { return jsonErr(res, 400, 'Invalid wallet address'); }
+    try {
+      const ata = getAssociatedTokenAddressSync(getMintPublicKey(), owner, false, TOKEN_2022_PROGRAM_ID);
+      await getAccount(getConnection(), ata, 'confirmed', TOKEN_2022_PROGRAM_ID);
+    } catch {
+      return jsonErr(res, 400, 'Wallet not checked in — visit the check-in desk first.');
+    }
+    const walletStr = owner.toString();
+
+    const { sheetsEnsureTab, sheetsGetValues, sheetsAppendRow } = require('./_google');
+    await sheetsEnsureTab({ spreadsheetId, title: ATTENDANCE_TAB, headers: ATTENDANCE_HEADERS });
+
+    // Idempotent per wallet per workshop — a double scan shouldn't double-count
+    const rows = await sheetsGetValues({ spreadsheetId, range: `${ATTENDANCE_TAB}!A2:D` });
+    const dup = rows.find(r => r[1] === workshop && r[3] === walletStr);
+    if (dup) return jsonOk(res, { success: true, already: true, workshop: label, at: dup[0] });
+
+    const at = new Date().toISOString();
+    await sheetsAppendRow({
+      spreadsheetId, range: `${ATTENDANCE_TAB}!A:D`, valueInputOption: 'RAW',
+      values: [at, workshop, label, walletStr],
+    });
+    return jsonOk(res, { success: true, already: false, workshop: label, at });
+  } catch (err) {
+    console.error('[tickets:attend]', err);
+    return jsonErr(res, 500, err.message);
+  }
+}
+
+// Counts are always returned; attendee wallet addresses only with the staff PIN.
+async function actionAttendance(req, res) {
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+  if (!spreadsheetId) return jsonErr(res, 500, 'Google Sheet not configured');
+  const withWallets = String(req.body?.pin || '') === DASHBOARD_PIN;
+  try {
+    const { sheetsGetValues } = require('./_google');
+    let rows = [];
+    try { rows = await sheetsGetValues({ spreadsheetId, range: `${ATTENDANCE_TAB}!A2:D` }); }
+    catch { rows = []; } // tab not created yet — nobody has scanned
+    const workshops = Object.entries(WORKSHOPS).map(([id, label]) => {
+      const mine = rows.filter(r => r[1] === id);
+      return {
+        id, label, count: mine.length,
+        attendees: withWallets ? mine.map(r => ({ wallet: r[3], at: r[0] })).reverse() : undefined,
+      };
+    });
+    return jsonOk(res, { total: rows.length, workshops });
+  } catch (err) {
+    console.error('[tickets:attendance]', err);
+    return jsonErr(res, 500, err.message);
+  }
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return jsonErr(res, 405, 'POST only');
 
@@ -234,6 +318,8 @@ module.exports = async function handler(req, res) {
   switch (action) {
     case 'register': return actionRegister(req, res);
     case 'confirm':  return actionConfirm(req, res);
+    case 'attend':     return actionAttend(req, res);
+    case 'attendance': return actionAttendance(req, res);
     default:         return jsonErr(res, 400, `unknown action: ${action}`);
   }
 };

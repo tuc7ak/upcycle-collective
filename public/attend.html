@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TUC — Workshop Check-in</title>
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;800;900&display=swap" rel="stylesheet" />
+  <script src="workshop-list.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif; background: #FFFDF4; color: #163B24; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 32px 20px 48px; }
+    .card { width: 100%; max-width: 420px; background: #fff; border: 2px solid #163B24; border-radius: 20px; padding: 28px 22px; text-align: center; }
+    .logo { width: 72px; margin-bottom: 14px; }
+    .eyebrow { font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; opacity: .6; }
+    h1 { font-size: 28px; font-weight: 900; margin: 6px 0 16px; }
+    p { font-size: 15px; line-height: 1.55; margin-bottom: 18px; }
+    a.btn { display: block; font-size: 16px; font-weight: 800; padding: 14px; border: 2px solid #163B24; border-radius: 12px; background: #FAD85D; color: #163B24; text-decoration: none; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <img class="logo" src="/tuc-logo-main.png" alt="TUC" onerror="this.style.display='none'" />
+  <div class="eyebrow">Workshop check-in</div>
+  <h1 id="title">Workshop</h1>
+  <p>To check in, open the <strong>TUC wallet</strong> and tap the <strong>scan</strong> icon, then scan this workshop’s QR code from inside the wallet.</p>
+  <a class="btn" href="/wallet.html">Open TUC Wallet</a>
+</div>
+<script>
+  const ws = TUC_WORKSHOPS.find(w => w.id === new URLSearchParams(location.search).get('w'));
+  if (ws) document.getElementById('title').textContent = ws.name;
+</script>
+</body>
+</html>

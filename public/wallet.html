@@ -1627,6 +1627,13 @@ async function handleScanResult(raw) {
   let payload = raw;
   if (payload.startsWith('solana:')) payload = payload.slice('solana:'.length);
 
+  // Workshop attendance QR — plain https link to attend.html?w=<id>, logged by wallet, no signing/gas
+  const attendMatch = /\/attend\.html\?(?:.*&)?w=([\w-]+)/.exec(payload);
+  if (attendMatch) {
+    await handleWorkshopAttend(attendMatch[1]);
+    return;
+  }
+
   // Transaction Request (check-in or vendor pay endpoint)
   if (payload.startsWith('http')) {
     setScanStatus('info', '⏳ Connecting…');
@@ -1646,6 +1653,25 @@ async function handleScanResult(raw) {
   if (amount) document.getElementById('send-amount').value = amount;
   scannedMemo = memo;
   toast('Scanned! Enter amount to send.');
+}
+
+async function handleWorkshopAttend(workshopId) {
+  setScanStatus('info', '⏳ Checking you in…');
+  try {
+    const res  = await fetch('/api/tickets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'attend', workshop: workshopId, wallet: walletPubkey }),
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) { setScanStatus('err', '❌ ' + (data.error || 'Check-in failed')); return; }
+    setScanStatus('ok', data.already
+      ? `✅ You're already checked in to <b>${data.workshop}</b>.`
+      : `✅ Checked in to <b>${data.workshop}</b>. Enjoy!`);
+    toast('Workshop check-in done');
+  } catch (e) {
+    setScanStatus('err', '❌ ' + (e.message ?? 'Check-in failed'));
+  }
 }
 
 function setScanStatus(type, html) {
