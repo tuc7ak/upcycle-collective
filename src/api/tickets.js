@@ -252,18 +252,20 @@ async function actionAttend(req, res) {
   if (!spreadsheetId) return jsonErr(res, 500, 'Google Sheet not configured');
 
   try {
-    // Only wallets that were checked in at the door (i.e. hold a wTUC account)
-    // can log attendance — same gate the vendor payments use.
     const { PublicKey } = require('@solana/web3.js');
-    const { TOKEN_2022_PROGRAM_ID, getAssociatedTokenAddressSync, getAccount } = require('@solana/spl-token');
-    const { getConnection, getMintPublicKey } = require('./_utils');
     let owner;
     try { owner = new PublicKey(wallet); } catch { return jsonErr(res, 400, 'Invalid wallet address'); }
-    try {
-      const ata = getAssociatedTokenAddressSync(getMintPublicKey(), owner, false, TOKEN_2022_PROGRAM_ID);
-      await getAccount(getConnection(), ata, 'confirmed', TOKEN_2022_PROGRAM_ID);
-    } catch {
-      return jsonErr(res, 400, 'Wallet not checked in — visit the check-in desk first.');
+
+    // Optional gate (off by default): set ATTENDANCE_REQUIRE_CHECKIN=1 to only
+    // accept wallets that did the event check-in. Check-in is memo-only (no
+    // wTUC is minted), so this looks for the wallet's wTUC:CHECKIN memo — the
+    // signature listing already carries each tx's memo, so it's one RPC call.
+    if (process.env.ATTENDANCE_REQUIRE_CHECKIN === '1') {
+      const { getConnection } = require('./_utils');
+      const sigs = await getConnection().getSignaturesForAddress(owner, { limit: 100 }, 'confirmed');
+      if (!sigs.some(sg => !sg.err && /wTUC:CHECKIN/.test(sg.memo || ''))) {
+        return jsonErr(res, 400, 'Wallet not checked in — visit the check-in desk first.');
+      }
     }
     const walletStr = owner.toString();
 
