@@ -297,6 +297,12 @@ async function actionAttendance(req, res) {
     let rows = [];
     try { rows = await sheetsGetValues({ spreadsheetId, range: `${ATTENDANCE_TAB}!A2:D` }); }
     catch { rows = []; } // tab not created yet — nobody has scanned
+    // Optional rolling window (days, e.g. 1 or 7); omitted = all time
+    const days = Number(req.body?.days);
+    if (days > 0) {
+      const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+      rows = rows.filter(r => new Date(r[0]).getTime() >= cutoff);
+    }
     const workshops = Object.entries(WORKSHOPS).map(([id, label]) => {
       const mine = rows.filter(r => r[1] === id);
       return {

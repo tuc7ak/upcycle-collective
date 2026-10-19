@@ -127357,6 +127357,11 @@ async function actionAttendance(req, res) {
     } catch {
       rows = [];
     }
+    const days = Number(req.body?.days);
+    if (days > 0) {
+      const cutoff = Date.now() - days * 24 * 60 * 60 * 1e3;
+      rows = rows.filter((r2) => new Date(r2[0]).getTime() >= cutoff);
+    }
     const workshops = Object.entries(WORKSHOPS).map(([id, label]) => {
       const mine = rows.filter((r2) => r2[1] === id);
       return {

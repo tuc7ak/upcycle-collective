@@ -114,6 +114,14 @@ h1.page-title { font-size: 34px; font-weight: 900; letter-spacing: -0.02em; line
 .ws-who { margin-top: 6px; line-height: 1.6; font-family: monospace; color: var(--muted); }
 .ws-msg { color: var(--muted); font-size: 14px; padding: 12px 0; }
 
+/* range toggle (workshop attendance window) */
+.ws-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.ws-head .section-title { margin: 0; }
+.range-toggle { display: inline-flex; border: 2px solid var(--ink); border-radius: var(--radius-pill); overflow: hidden; background: var(--surface); box-shadow: var(--shadow-sm); }
+.range-toggle button { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px; padding: 7px 16px; border: none; background: transparent; color: var(--ink); cursor: pointer; }
+.range-toggle button + button { border-left: 2px solid var(--ink); }
+.range-toggle button.on { background: var(--gold); }
+
 /* ── FILTER BAR ── */
 .filter-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
 .search-wrap { position: relative; flex: 1; min-width: 220px; }
@@ -299,7 +307,7 @@ tbody td { padding: 12px 16px; font-size: 13px; vertical-align: middle; }
 
   <!-- SUMMARY -->
   <div class="stats-row">
-    <div class="stat-card gold"><div class="stat-label">Workshop check-ins</div><div class="stat-val" id="stat-ws">—</div><div class="stat-sub">across all workshops</div></div>
+    <div class="stat-card gold"><div class="stat-label">Workshop check-ins</div><div class="stat-val" id="stat-ws">—</div><div class="stat-sub" id="stat-ws-sub">last 24 hours</div></div>
     <div class="stat-card mint"><div class="stat-label">wTUC minted</div><div class="stat-val" id="stat-minted">—</div><div class="stat-sub">in loaded transactions</div></div>
     <div class="stat-card"><div class="stat-label">Transactions</div><div class="stat-val" id="stat-txs">—</div><div class="stat-sub">loaded so far</div></div>
     <div class="stat-card"><div class="stat-label">Wallets</div><div class="stat-val" id="stat-wallets">—</div><div class="stat-sub">unique, in loaded transactions</div></div>
@@ -307,7 +315,13 @@ tbody td { padding: 12px 16px; font-size: 13px; vertical-align: middle; }
 
   <!-- WORKSHOP ATTENDANCE (from workshop QR scans in the TUC wallet, logged to the Attendance sheet tab) -->
   <div id="workshop-stats">
-    <div class="section-title">Workshop attendance · <b id="ws-total">—</b> check-ins</div>
+    <div class="ws-head">
+      <div class="section-title">Workshop attendance · <b id="ws-total">—</b> check-ins · <span id="ws-range-label">last 24 hours</span></div>
+      <div class="range-toggle" id="ws-range">
+        <button data-days="1">Last 24h</button>
+        <button data-days="7">7 days</button>
+      </div>
+    </div>
     <div class="ws-grid" id="workshop-grid"><div class="ws-msg">Loading…</div></div>
   </div>
 
@@ -491,12 +505,30 @@ function parseTx(tx) {
    the Attendance sheet tab filled by attend.html QR scans. Wallets (shortened)
    show only because the staff PIN is sent along.
    ═══════════════════════════════════════════ */
+// 1-day / 7-day window, remembered per browser; defaults to 1 day
+let wsDays = 1;
+try { if (localStorage.getItem('tuc_ws_days') === '7') wsDays = 7; } catch {}
+function syncRangeUI() {
+  document.querySelectorAll('#ws-range button').forEach(b => b.classList.toggle('on', Number(b.dataset.days) === wsDays));
+  const label = wsDays === 1 ? 'last 24 hours' : 'last 7 days';
+  document.getElementById('ws-range-label').textContent = label;
+  document.getElementById('stat-ws-sub').textContent = label;
+}
+document.getElementById('ws-range').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  wsDays = Number(b.dataset.days);
+  try { localStorage.setItem('tuc_ws_days', String(wsDays)); } catch {}
+  syncRangeUI();
+  loadWorkshopAttendance();
+});
+syncRangeUI();
+
 async function loadWorkshopAttendance() {
   const grid = document.getElementById('workshop-grid');
   try {
     const res = await fetch('/api/tickets', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'attendance', pin: sessionStorage.getItem('tuc_pin') || '' }),
+      body: JSON.stringify({ action: 'attendance', days: wsDays, pin: sessionStorage.getItem('tuc_pin') || '' }),
     });
     const data = await res.json();
     if (!res.ok || data.error) throw new Error(data.error || 'failed');
