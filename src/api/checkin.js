@@ -19,23 +19,11 @@ function mytMidnightCutoff() {
   return Math.floor((nowSecs + MYT_OFFSET_SECS) / 86400) * 86400 - MYT_OFFSET_SECS;
 }
 
-function vendorSlug(name) {
-  return String(name || '').toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 30);
-}
-
 module.exports = async function handler(req, res) {
-  // ?vendor=POUCH turns this into a vendor-visit stamp instead of the
-  // attendee check-in — same memo-only mechanism, different tag, and no
-  // once-per-day limit (visiting a vendor booth more than once is fine).
-  const vendor     = vendorSlug(req.query?.vendor);
-  const isVendor   = !!vendor;
-  const memo       = isVendor ? `${MEMO_PREFIX}:VENDOR:${vendor}` : CHECKIN_MEMO;
-  const vendorName = isVendor ? req.query.vendor : null;
-
   // ── GET — Solana Pay label/icon ─────────────────────────────────────────
   if (req.method === 'GET') {
     return jsonOk(res, {
-      label: isVendor ? `${vendorName} — The Upcycle Collective` : 'wTUC Check-in — The Upcycle Collective',
+      label: 'wTUC Check-in — The Upcycle Collective',
       icon:  'https://upcycle-collective.vercel.app/tuc-logo.png',
     });
   }
@@ -55,8 +43,8 @@ module.exports = async function handler(req, res) {
     const connection = getConnection();
     const organiser  = getOrganiser();
 
-    // ── Once-per-MYT-calendar-day duplicate check (attendee check-in only) ──
-    if (!isVendor) {
+    // ── Once-per-MYT-calendar-day duplicate check ──
+    {
       const cutoff  = mytMidnightCutoff();
       let alreadyIn = false;
 
@@ -103,14 +91,14 @@ module.exports = async function handler(req, res) {
     const tx = new Transaction({ feePayer: organiser.publicKey, blockhash, lastValidBlockHeight });
 
     // Attendee as co-signer on memo so their wallet shows the approval screen
-    tx.add(createMemoInstruction(memo, [organiser.publicKey, attendeePubkey]));
+    tx.add(createMemoInstruction(CHECKIN_MEMO, [organiser.publicKey, attendeePubkey]));
 
     tx.partialSign(organiser);
 
     const serialised = tx.serialize({ requireAllSignatures: false });
     return jsonOk(res, {
       transaction: Buffer.from(serialised).toString('base64'),
-      message: isVendor ? `Checked in at ${vendorName}!` : `Welcome! You're checked in.`,
+      message: `Welcome! You're checked in.`,
     });
 
   } catch (err) {

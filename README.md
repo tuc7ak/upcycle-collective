@@ -14,7 +14,8 @@ A static frontend (`public/`) plus a set of Vercel serverless API routes (`api/`
 | `tickets.html` | Event ticket purchase (Stripe Checkout) |
 | `wallet.html` | The attendee wallet app — login, balance, donate, track, redeem, profile |
 | `dashboard.html` | Public token activity dashboard |
-| `checkin.html` / `vendor-checkin.html` | Event/vendor check-in (Solana Pay QR) |
+| `checkin.html` | Event check-in (Solana Pay QR) |
+| `workshop-qr.html` / `attend.html` | Workshop attendance QRs, scanned in the TUC wallet |
 | `tokenomics.html` | Token supply / distribution info |
 
 ### API routes (`src/api/` → built to `api/`)
