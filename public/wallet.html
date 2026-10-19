@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.0/lib/index.iife.min.js"></script>
+<script src="/qrcode.min.js"></script>
 <script src="/privy-login.js" defer></script>
 <style>
   :root{
@@ -568,7 +569,7 @@
     <button class="sheet-close" onclick="closeSheet('receive-sheet')">✕</button>
     <h2>📥 Receive wTUC</h2>
     <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Show this QR to anyone who wants to send you wTUC.</p>
-    <div class="qr-box"><img id="receive-qr" width="220" height="220" alt="QR" /></div>
+    <div class="qr-box"><div id="receive-qr"></div></div>
     <div class="addr-box" id="receive-addr"></div>
     <button class="copy-btn" onclick="copyAddress()">⎘ Copy Address</button>
   </div>
@@ -1578,9 +1579,11 @@ function copyAddressInline() {
 function openReceive() {
   document.getElementById('receive-addr').textContent = walletPubkey;
   document.getElementById('receive-sheet').classList.add('open');
-  const encoded = encodeURIComponent(walletPubkey);
-  document.getElementById('receive-qr').src =
-    `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=${encoded}`;
+  // Drawn on the phone itself (self-hosted /qrcode.min.js) — no outside
+  // service, so the QR still shows with poor signal
+  const box = document.getElementById('receive-qr');
+  box.innerHTML = '';
+  new QRCode(box, { text: walletPubkey, width: 220, height: 220, colorDark: '#163B24', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
 }
 
 function copyAddress() {
