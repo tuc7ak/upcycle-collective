@@ -107019,7 +107019,24 @@ var require_google = __commonJS({
       if (!res.ok) throw new Error(data.error?.message || "Sheets update failed");
       return data;
     }
-    module2.exports = { blobUploadPhoto, sheetsGetValues, sheetsAppendRow, sheetsUpdateRange };
+    async function sheetsEnsureTab({ spreadsheetId, title, headers }) {
+      const token = await googleAccessToken();
+      const base = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}`;
+      const metaRes = await fetch(`${base}?fields=sheets.properties.title`, { headers: { Authorization: `Bearer ${token}` } });
+      const meta = await metaRes.json();
+      if (!metaRes.ok) throw new Error(meta.error?.message || "Sheets metadata read failed");
+      if ((meta.sheets || []).some((sh) => sh.properties.title === title)) return false;
+      const addRes = await fetch(`${base}:batchUpdate`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ requests: [{ addSheet: { properties: { title } } }] })
+      });
+      const addData = await addRes.json();
+      if (!addRes.ok) throw new Error(addData.error?.message || "Sheets add tab failed");
+      await sheetsUpdateRange({ spreadsheetId, range: `${title}!A1`, values: headers });
+      return true;
+    }
+    module2.exports = { blobUploadPhoto, sheetsGetValues, sheetsAppendRow, sheetsUpdateRange, sheetsEnsureTab };
   }
 });
 
@@ -107311,8 +107328,30 @@ async function actionValidate(req, res) {
     return jsonErr(res, 500, err.message);
   }
 }
+function airdropMessage(code, tokens, ts) {
+  return `TUC airdrop|${code}|${tokens}|${ts}`;
+}
+function validateAirdropMessage(code, kg, tokens, ts) {
+  return `TUC validate+airdrop|${code}|${kg}|${tokens}|${ts}`;
+}
+function verifyOrganiserSignature(pubkeyBytes, message, sigB64, ts) {
+  const age = Math.abs(Date.now() - Number(ts));
+  if (!Number.isFinite(age) || age > 2 * 60 * 1e3) return false;
+  if (typeof sigB64 !== "string" || !sigB64) return false;
+  try {
+    const crypto6 = require("crypto");
+    const key = crypto6.createPublicKey({
+      key: Buffer.concat([Buffer.from("302a300506032b6570032100", "hex"), Buffer.from(pubkeyBytes)]),
+      format: "der",
+      type: "spki"
+    });
+    return crypto6.verify(null, Buffer.from(message, "utf8"), key, Buffer.from(sigB64, "base64"));
+  } catch {
+    return false;
+  }
+}
 async function actionAirdrop(req, res) {
-  const { wallet: callerWallet, code: rawCode, tokens: rawTokens, pin: rawPin } = req.body ?? {};
+  const { wallet: callerWallet, code: rawCode, tokens: rawTokens } = req.body ?? {};
   let organiser;
   try {
     organiser = getOrganiser();
@@ -107323,15 +107362,16 @@ async function actionAirdrop(req, res) {
   if (!callerWallet || callerWallet !== organiser.publicKey.toBase58()) {
     return jsonErr(res, 403, "Only the organiser wallet can do this.");
   }
-  const ORGANISER_AIRDROP_PIN = process.env.ORGANISER_AIRDROP_PIN;
-  if (!ORGANISER_AIRDROP_PIN) return jsonErr(res, 500, "ORGANISER_AIRDROP_PIN not set \u2014 server misconfigured.");
-  if (String(rawPin || "") !== ORGANISER_AIRDROP_PIN) {
-    return jsonErr(res, 403, "Incorrect PIN.");
-  }
   const code = String(rawCode || "").trim().toUpperCase();
   if (!CODE_RE.test(code)) return jsonErr(res, 400, "invalid code");
   const tokens = Math.round(parseFloat(rawTokens) * 100) / 100;
   if (!Number.isFinite(tokens) || tokens <= 0) return jsonErr(res, 400, "tokens must be a positive amount");
+  if (!verifyOrganiserSignature(organiser.publicKey.toBytes(), airdropMessage(code, tokens, req.body?.ts), req.body?.signature, req.body?.ts)) {
+    return jsonErr(res, 403, "Organiser wallet signature missing or invalid. Approve the message in Solflare and try again.");
+  }
+  return payOut(res, organiser, code, tokens);
+}
+async function payOut(res, organiser, code, tokens) {
   const spreadsheetId = process.env.GOOGLE_SHEET_ID;
   if (!spreadsheetId) return jsonErr(res, 500, "Google Sheet not configured");
   try {
@@ -107384,6 +107424,58 @@ async function actionAirdrop(req, res) {
     return jsonErr(res, 500, err.message);
   }
 }
+function captureRes() {
+  const r2 = { code: 200, body: null, setHeader() {
+  }, status(c) {
+    r2.code = c;
+    return r2;
+  }, json(b) {
+    r2.body = b;
+    return r2;
+  } };
+  return r2;
+}
+async function actionValidateAirdrop(req, res) {
+  const { wallet: callerWallet, code: rawCode, kg: rawKg, tokens: rawTokens, ts, signature } = req.body ?? {};
+  let organiser;
+  try {
+    organiser = getOrganiser();
+  } catch (e2) {
+    console.error("[donate:validateAirdrop]", e2);
+    return jsonErr(res, 500, e2.message || "Server misconfigured.");
+  }
+  if (!callerWallet || callerWallet !== organiser.publicKey.toBase58()) {
+    return jsonErr(res, 403, "Only the organiser wallet can do this.");
+  }
+  const code = String(rawCode || "").trim().toUpperCase();
+  if (!CODE_RE.test(code)) return jsonErr(res, 400, "invalid code");
+  const kg = parseFloat(rawKg);
+  if (!Number.isFinite(kg) || kg <= 0) return jsonErr(res, 400, "kg must be a positive number");
+  const tokens = Math.round(parseFloat(rawTokens) * 100) / 100;
+  if (!Number.isFinite(tokens) || tokens <= 0) return jsonErr(res, 400, "tokens must be a positive amount");
+  if (!verifyOrganiserSignature(organiser.publicKey.toBytes(), validateAirdropMessage(code, kg, tokens, ts), signature, ts)) {
+    return jsonErr(res, 403, "Organiser wallet signature missing or invalid. Approve the message in Solflare and try again.");
+  }
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+  if (!spreadsheetId) return jsonErr(res, 500, "Google Sheet not configured");
+  try {
+    const { sheetsGetValues } = require_google();
+    const rows = await sheetsGetValues({ spreadsheetId, range: "A2:F" });
+    const row = rows.find((r2) => (r2[0] || "").toUpperCase() === code);
+    if (!row) return jsonErr(res, 404, "Code not found.");
+    const status = row[5] || "pending";
+    if (status === "paid") return jsonErr(res, 400, "This code has already been paid out.");
+    if (status !== "validated") {
+      const cap = captureRes();
+      await actionValidate({ body: { code, kg } }, cap);
+      if (cap.code !== 200) return jsonErr(res, cap.code, cap.body?.error || "Validation failed.");
+    }
+    return payOut(res, organiser, code, tokens);
+  } catch (err) {
+    console.error("[donate:validateAirdrop]", err);
+    return jsonErr(res, 500, err.message);
+  }
+}
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return jsonErr(res, 405, "POST only");
   const action = req.body?.action || "log";
@@ -107402,6 +107494,8 @@ module.exports = async function handler(req, res) {
       return actionValidate(req, res);
     case "airdrop":
       return actionAirdrop(req, res);
+    case "validateAirdrop":
+      return actionValidateAirdrop(req, res);
     default:
       return jsonErr(res, 400, `unknown action: ${action}`);
   }

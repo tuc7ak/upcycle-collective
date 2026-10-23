@@ -310,13 +310,32 @@ async function actionValidate(req, res) {
   }
 }
 
+// ── organiser signature check (replaces the old airdrop PIN) ──
+// Message the Solflare wallet signs; must match wallet.html's confirmAirdrop().
+function airdropMessage(code, tokens, ts) { return `TUC airdrop|${code}|${tokens}|${ts}`; }
+function validateAirdropMessage(code, kg, tokens, ts) { return `TUC validate+airdrop|${code}|${kg}|${tokens}|${ts}`; }
+
+function verifyOrganiserSignature(pubkeyBytes, message, sigB64, ts) {
+  const age = Math.abs(Date.now() - Number(ts));
+  if (!Number.isFinite(age) || age > 2 * 60 * 1000) return false;       // stale or missing
+  if (typeof sigB64 !== 'string' || !sigB64) return false;
+  try {
+    const crypto = require('crypto');
+    const key = crypto.createPublicKey({
+      key: Buffer.concat([Buffer.from('302a300506032b6570032100', 'hex'), Buffer.from(pubkeyBytes)]),
+      format: 'der', type: 'spki',
+    });
+    return crypto.verify(null, Buffer.from(message, 'utf8'), key, Buffer.from(sigB64, 'base64'));
+  } catch { return false; }
+}
+
 // ── action: airdrop — organiser-wallet-only, actually mints tokens for an
 // already-validated code. This is the deliberately separate, higher-
 // privilege step referenced in actionValidate's comment above: a leaked or
 // shared staff PIN never reaches this, only someone connected with the
 // organiser's own wallet address can call it at all.
 async function actionAirdrop(req, res) {
-  const { wallet: callerWallet, code: rawCode, tokens: rawTokens, pin: rawPin } = req.body ?? {};
+  const { wallet: callerWallet, code: rawCode, tokens: rawTokens } = req.body ?? {};
   let organiser;
   try { organiser = getOrganiser(); } catch (e) {
     console.error('[donate:airdrop]', e);
@@ -326,22 +345,24 @@ async function actionAirdrop(req, res) {
     return jsonErr(res, 403, 'Only the organiser wallet can do this.');
   }
 
-  // The wallet check above is just a string sent in the request body — not a
-  // signature, so on its own it's spoofable by anyone who knows the
-  // organiser's public key (which is visible in the client source). This PIN
-  // is the actual gate: checked server-side against an env var, never
-  // shipped to the browser, so a direct API call still can't mint without it.
-  const ORGANISER_AIRDROP_PIN = process.env.ORGANISER_AIRDROP_PIN;
-  if (!ORGANISER_AIRDROP_PIN) return jsonErr(res, 500, 'ORGANISER_AIRDROP_PIN not set — server misconfigured.');
-  if (String(rawPin || '') !== ORGANISER_AIRDROP_PIN) {
-    return jsonErr(res, 403, 'Incorrect PIN.');
-  }
-
   const code = String(rawCode || '').trim().toUpperCase();
   if (!CODE_RE.test(code)) return jsonErr(res, 400, 'invalid code');
   const tokens = Math.round(parseFloat(rawTokens) * 100) / 100;
   if (!Number.isFinite(tokens) || tokens <= 0) return jsonErr(res, 400, 'tokens must be a positive amount');
 
+  // No PIN: the organiser's own Solflare wallet signs "this code, this
+  // amount, right now" and we verify it against the organiser's public key.
+  // The wallet-address string above is spoofable; a signature is not.
+  if (!verifyOrganiserSignature(organiser.publicKey.toBytes(), airdropMessage(code, tokens, req.body?.ts), req.body?.signature, req.body?.ts)) {
+    return jsonErr(res, 403, 'Organiser wallet signature missing or invalid. Approve the message in Solflare and try again.');
+  }
+
+  return payOut(res, organiser, code, tokens);
+}
+
+// Mints the tokens for an already-validated code. Callers must have
+// authenticated the organiser first.
+async function payOut(res, organiser, code, tokens) {
   const spreadsheetId = process.env.GOOGLE_SHEET_ID;
   if (!spreadsheetId) return jsonErr(res, 500, 'Google Sheet not configured');
 
@@ -402,6 +423,58 @@ async function actionAirdrop(req, res) {
   }
 }
 
+// ── action: validateAirdrop — organiser-wallet-only, one step. Marks the code
+// validated (if it isn't already) and airdrops, authorised by a single
+// Solflare signature over code + weight + amount.
+function captureRes() {
+  const r = { code: 200, body: null, setHeader() {}, status(c) { r.code = c; return r; }, json(b) { r.body = b; return r; } };
+  return r;
+}
+
+async function actionValidateAirdrop(req, res) {
+  const { wallet: callerWallet, code: rawCode, kg: rawKg, tokens: rawTokens, ts, signature } = req.body ?? {};
+  let organiser;
+  try { organiser = getOrganiser(); } catch (e) {
+    console.error('[donate:validateAirdrop]', e);
+    return jsonErr(res, 500, e.message || 'Server misconfigured.');
+  }
+  if (!callerWallet || callerWallet !== organiser.publicKey.toBase58()) {
+    return jsonErr(res, 403, 'Only the organiser wallet can do this.');
+  }
+  const code = String(rawCode || '').trim().toUpperCase();
+  if (!CODE_RE.test(code)) return jsonErr(res, 400, 'invalid code');
+  const kg = parseFloat(rawKg);
+  if (!Number.isFinite(kg) || kg <= 0) return jsonErr(res, 400, 'kg must be a positive number');
+  const tokens = Math.round(parseFloat(rawTokens) * 100) / 100;
+  if (!Number.isFinite(tokens) || tokens <= 0) return jsonErr(res, 400, 'tokens must be a positive amount');
+
+  if (!verifyOrganiserSignature(organiser.publicKey.toBytes(), validateAirdropMessage(code, kg, tokens, ts), signature, ts)) {
+    return jsonErr(res, 403, 'Organiser wallet signature missing or invalid. Approve the message in Solflare and try again.');
+  }
+
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+  if (!spreadsheetId) return jsonErr(res, 500, 'Google Sheet not configured');
+
+  try {
+    const { sheetsGetValues } = require('./_google');
+    const rows = await sheetsGetValues({ spreadsheetId, range: 'A2:F' });
+    const row = rows.find(r => (r[0] || '').toUpperCase() === code);
+    if (!row) return jsonErr(res, 404, 'Code not found.');
+    const status = row[5] || 'pending';
+    if (status === 'paid') return jsonErr(res, 400, 'This code has already been paid out.');
+
+    if (status !== 'validated') {
+      const cap = captureRes();
+      await actionValidate({ body: { code, kg } }, cap);
+      if (cap.code !== 200) return jsonErr(res, cap.code, cap.body?.error || 'Validation failed.');
+    }
+    return payOut(res, organiser, code, tokens);
+  } catch (err) {
+    console.error('[donate:validateAirdrop]', err);
+    return jsonErr(res, 500, err.message);
+  }
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return jsonErr(res, 405, 'POST only');
   const action = req.body?.action || 'log';
@@ -413,6 +486,7 @@ module.exports = async function handler(req, res) {
     case 'scalePhoto': return actionScalePhoto(req, res);
     case 'validate':   return actionValidate(req, res);
     case 'airdrop':    return actionAirdrop(req, res);
+    case 'validateAirdrop': return actionValidateAirdrop(req, res);
     default:           return jsonErr(res, 400, `unknown action: ${action}`);
   }
 };

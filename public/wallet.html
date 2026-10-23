@@ -419,7 +419,7 @@
 
         <div id="organiser-panel" style="display:none;margin-top:20px;">
           <div class="section-label">Airdrop tokens</div>
-          <label>Code (must already be validated)</label>
+          <label>Code</label>
           <input id="airdrop-code-input" type="text" maxlength="10" placeholder="e.g. 7F3K9Q" autocapitalize="characters" style="text-transform:uppercase;">
           <button class="btn btn-outline-wide" id="airdrop-lookup-btn" style="margin-top:8px;" onclick="submitAirdropLookup()">Look up code</button>
 
@@ -427,6 +427,11 @@
             <div><strong>Wallet:</strong> <span id="airdrop-wallet"></span></div>
             <div><strong>Status:</strong> <span id="airdrop-status-val"></span></div>
             <div><strong>Tokens owed (estimate):</strong> <span id="airdrop-tokens-owed"></span></div>
+          </div>
+
+          <div id="airdrop-kg-wrap" style="display:none;">
+            <label style="margin-top:16px;display:block;">Weight (kg) — not validated yet, this will validate it too</label>
+            <input id="airdrop-kg-input" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="e.g. 2.50" oninput="document.getElementById('airdrop-tokens-input').value = this.value">
           </div>
 
           <label style="margin-top:16px;display:block;">Tokens to send</label>
@@ -541,13 +546,11 @@
     </div>
     <h3 style="color:var(--rust);">Confirm airdrop</h3>
     <p style="font-size:14px;color:var(--text-primary);line-height:1.6;margin:12px 0 20px;">
-      Send <strong id="airdrop-confirm-tokens">—</strong> wTUC to <strong id="airdrop-confirm-wallet">—</strong> for code <strong id="airdrop-confirm-code">—</strong>?
+      <span id="airdrop-confirm-kg"></span>Send <strong id="airdrop-confirm-tokens">—</strong> wTUC to <strong id="airdrop-confirm-wallet">—</strong> for code <strong id="airdrop-confirm-code">—</strong>?
     </p>
     <div style="background:var(--rust-15);border:1px solid var(--rust);border-radius:12px;padding:12px 14px;margin-bottom:18px;text-align:left;">
       <p style="font-size:12.5px;color:var(--rust);line-height:1.6;margin:0;">This action is <strong>irreversible</strong> — tokens will be minted immediately.</p>
     </div>
-    <input id="airdrop-pin-input" type="password" maxlength="10" placeholder="Airdrop PIN" inputmode="numeric" autocomplete="off"
-      style="text-align:center;letter-spacing:0.3em;margin-bottom:14px;" onkeydown="if(event.key==='Enter')confirmAirdrop()">
     <button class="btn btn-gold" style="width:100%;" onclick="confirmAirdrop()">Confirm and send</button>
     <button class="btn btn-outline-wide" style="width:100%;margin-top:8px;" onclick="closeSheet('airdrop-confirm-sheet')">Cancel</button>
   </div>
@@ -1925,6 +1928,7 @@ function toggleOrganiserMode() {
 }
 
 let currentAirdropCode = null;
+let currentAirdropStatus = null;
 
 async function submitAirdropLookup() {
   const code = document.getElementById('airdrop-code-input').value.trim().toUpperCase();
@@ -1943,6 +1947,9 @@ async function submitAirdropLookup() {
     if (!data.success) { setAirdropStatus('err', '❌ ' + (data.error || 'Failed')); return; }
 
     currentAirdropCode = code;
+    currentAirdropStatus = data.status;
+    document.getElementById('airdrop-kg-wrap').style.display = (data.status === 'paid' || data.status === 'validated') ? 'none' : 'block';
+    document.getElementById('airdrop-kg-input').value = '';
     document.getElementById('airdrop-wallet').textContent = data.wallet;
     document.getElementById('airdrop-status-val').textContent = data.status;
     document.getElementById('airdrop-tokens-owed').textContent = data.tokensOwed ?? '—';
@@ -1951,7 +1958,7 @@ async function submitAirdropLookup() {
     document.getElementById('airdrop-status').innerHTML = '';
 
     if (data.status === 'paid') setAirdropStatus('err', 'This code has already been paid out.');
-    else if (data.status !== 'validated') setAirdropStatus('err', `Not validated yet (status: ${data.status}).`);
+    else if (data.status !== 'validated') setAirdropStatus('info', 'Not validated yet — enter the weight and Validate and Airdrop does both.');
   } catch (e) {
     setAirdropStatus('err', '❌ ' + (e.message || 'Something went wrong'));
   } finally {
@@ -1964,6 +1971,11 @@ function submitAirdrop() {
   const tokens = Math.round(parseFloat(document.getElementById('airdrop-tokens-input').value) * 100) / 100;
   if (!Number.isFinite(tokens) || tokens <= 0) { setAirdropStatus('err', 'Enter how many tokens to send.'); return; }
 
+  const needsValidation = currentAirdropStatus !== 'validated';
+  const kg = parseFloat(document.getElementById('airdrop-kg-input').value);
+  if (currentAirdropStatus === 'paid') { setAirdropStatus('err', 'This code has already been paid out.'); return; }
+  if (needsValidation && (!Number.isFinite(kg) || kg <= 0)) { setAirdropStatus('err', 'Enter the weight in kg.'); return; }
+  document.getElementById('airdrop-confirm-kg').innerHTML = needsValidation ? `Validate <strong>${kg} kg</strong>, then ` : '';
   const donorWallet = document.getElementById('airdrop-wallet').textContent;
   document.getElementById('airdrop-confirm-tokens').textContent = tokens;
   document.getElementById('airdrop-confirm-wallet').textContent = donorWallet;
@@ -1977,20 +1989,31 @@ function submitAirdrop() {
 // UI. A sheet, like everywhere else this app confirms something, always
 // works the same way regardless of host.
 async function confirmAirdrop() {
-  const pin = document.getElementById('airdrop-pin-input').value;
-  document.getElementById('airdrop-pin-input').value = ''; // never leave a PIN sitting in the DOM
-  if (!pin) { setAirdropStatus('err', 'Enter the airdrop PIN.'); return; }
-
   closeSheet('airdrop-confirm-sheet');
   const tokens = Math.round(parseFloat(document.getElementById('airdrop-tokens-input').value) * 100) / 100;
 
   const btn = document.getElementById('airdrop-submit-btn');
   btn.disabled = true;
-  setAirdropStatus('info', '⏳ Sending tokens…');
   try {
+    // No PIN: one tap in Solflare signs this exact code + amount, and the
+    // server checks the signature against the organiser's public key.
+    if (!walletProvider?.signMessage) { setAirdropStatus('err', '❌ Connect with Solflare to sign the airdrop.'); return; }
+    setAirdropStatus('info', '⏳ Approve the message in Solflare…');
+    const ts = Date.now();
+    const needsValidation = currentAirdropStatus !== 'validated';
+    const kg = parseFloat(document.getElementById('airdrop-kg-input').value);
+    const msg = new TextEncoder().encode(needsValidation
+      ? `TUC validate+airdrop|${currentAirdropCode}|${kg}|${tokens}|${ts}`
+      : `TUC airdrop|${currentAirdropCode}|${tokens}|${ts}`);
+    const signed = await walletProvider.signMessage(msg, 'utf8');
+    const sigBytes = signed?.signature ?? signed;
+    const signature = btoa(String.fromCharCode(...new Uint8Array(sigBytes)));
+    setAirdropStatus('info', '⏳ Sending tokens…');
     const res = await fetch('/api/donate', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'airdrop', wallet: walletPubkey, code: currentAirdropCode, tokens, pin }),
+      body: JSON.stringify(needsValidation
+        ? { action: 'validateAirdrop', wallet: walletPubkey, code: currentAirdropCode, kg, tokens, ts, signature }
+        : { action: 'airdrop', wallet: walletPubkey, code: currentAirdropCode, tokens, ts, signature }),
     });
     const data = await res.json();
     if (!data.success) { setAirdropStatus('err', '❌ ' + (data.error || 'Failed')); return; }
@@ -1999,8 +2022,10 @@ async function confirmAirdrop() {
     toast('Tokens sent!');
     document.getElementById('airdrop-code-input').value = '';
     document.getElementById('airdrop-tokens-input').value = '';
+    document.getElementById('airdrop-kg-input').value = '';
+    document.getElementById('airdrop-kg-wrap').style.display = 'none';
     document.getElementById('airdrop-lookup-result').style.display = 'none';
-    currentAirdropCode = null;
+    currentAirdropCode = null; currentAirdropStatus = null;
   } catch (e) {
     setAirdropStatus('err', '❌ ' + (e.message || 'Something went wrong'));
   } finally {
