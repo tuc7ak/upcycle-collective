@@ -44573,6 +44573,9 @@ var require_utils4 = __commonJS({
       if (!mint) throw new Error("TOKEN_MINT not set");
       return new PublicKey2(mint);
     }
+    function sgtIso2(d = /* @__PURE__ */ new Date()) {
+      return new Date(d.getTime() + 8 * 3600 * 1e3).toISOString().replace(/\.\d+Z$/, "+08:00");
+    }
     function jsonOk2(res, data) {
       res.setHeader("Content-Type", "application/json");
       res.status(200).json(data);
@@ -44587,6 +44590,7 @@ var require_utils4 = __commonJS({
       getMintPublicKey: getMintPublicKey2,
       jsonOk: jsonOk2,
       jsonErr: jsonErr2,
+      sgtIso: sgtIso2,
       MEMO_PREFIX: MEMO_PREFIX2,
       TOKEN_DECIMALS,
       TOKEN_SYMBOL,
@@ -107048,7 +107052,7 @@ var {
   createMintToInstruction
 } = require_cjs4();
 var { createMemoInstruction } = require_cjs5();
-var { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr, MEMO_PREFIX, toRawAmount } = require_utils4();
+var { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr, sgtIso, MEMO_PREFIX, toRawAmount } = require_utils4();
 var crypto5 = require("crypto");
 var bs58 = require_bs583();
 var TYPES = ["GENERAL", "CLOTHES", "ELECTRONICS", "PLASTICS", "PAPER"];
@@ -107157,7 +107161,7 @@ async function actionPhoto(req, res) {
           batch,
           photoLink,
           "pending",
-          (/* @__PURE__ */ new Date()).toISOString(),
+          sgtIso(),
           "",
           "",
           `https://solscan.io/tx/${photoSig}`,
@@ -107306,7 +107310,7 @@ async function actionValidate(req, res) {
         if (idx !== -1) {
           const row = idx + 2;
           await sheetsUpdateRange({ spreadsheetId: spreadsheetId2, range: `F${row}`, values: ["validated"] });
-          await sheetsUpdateRange({ spreadsheetId: spreadsheetId2, range: `I${row}`, values: [(/* @__PURE__ */ new Date()).toISOString()] });
+          await sheetsUpdateRange({ spreadsheetId: spreadsheetId2, range: `I${row}`, values: [sgtIso()] });
           await sheetsUpdateRange({ spreadsheetId: spreadsheetId2, range: `K${row}`, values: [`https://solscan.io/tx/${signature}`] });
           await sheetsUpdateRange({ spreadsheetId: spreadsheetId2, range: `L${row}`, values: [tokensOwed] });
         }

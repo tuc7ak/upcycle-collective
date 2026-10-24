@@ -51582,6 +51582,9 @@ var require_utils5 = __commonJS({
       if (!mint) throw new Error("TOKEN_MINT not set");
       return new PublicKey(mint);
     }
+    function sgtIso2(d = /* @__PURE__ */ new Date()) {
+      return new Date(d.getTime() + 8 * 3600 * 1e3).toISOString().replace(/\.\d+Z$/, "+08:00");
+    }
     function jsonOk2(res, data) {
       res.setHeader("Content-Type", "application/json");
       res.status(200).json(data);
@@ -51596,6 +51599,7 @@ var require_utils5 = __commonJS({
       getMintPublicKey,
       jsonOk: jsonOk2,
       jsonErr: jsonErr2,
+      sgtIso: sgtIso2,
       MEMO_PREFIX,
       TOKEN_DECIMALS,
       TOKEN_SYMBOL,
@@ -115430,7 +115434,7 @@ var require_resend = __commonJS({
 
 // src/api/tickets.js
 var Stripe = require_stripe_cjs_node();
-var { jsonOk, jsonErr } = require_utils5();
+var { jsonOk, jsonErr, sgtIso } = require_utils5();
 var TIERS = {
   student: { label: "Student Ticket", envVar: "STRIPE_PRICE_STUDENT" },
   normal: { label: "Normal Ticket", envVar: "STRIPE_PRICE_NORMAL" },
@@ -115513,7 +115517,7 @@ async function actionRegister(req, res) {
           range: REGISTRATIONS_SHEET_RANGE_APPEND,
           valueInputOption: "RAW",
           // preserves the contact number's leading 0
-          values: [(/* @__PURE__ */ new Date()).toISOString(), name, email, contact, tierKey, mode, String(date || ""), workshopsStr, session.id]
+          values: [sgtIso(), name, email, contact, tierKey, mode, String(date || ""), workshopsStr, session.id]
         });
       } catch (sheetErr) {
         console.error("[tickets:register] sheet append failed", sheetErr);
@@ -115553,7 +115557,7 @@ async function actionConfirm(req, res) {
       await sheetsAppendRow({
         spreadsheetId,
         range: DEPOSITS_SHEET_RANGE_APPEND,
-        values: [sessionId, email, tierKey, amountPaid, (/* @__PURE__ */ new Date()).toISOString(), "", code]
+        values: [sessionId, email, tierKey, amountPaid, sgtIso(), "", code]
       });
       if (email) {
         try {
@@ -115644,7 +115648,7 @@ async function actionAttend(req, res) {
     const rows = await sheetsGetValues({ spreadsheetId, range: `${ATTENDANCE_TAB}!A2:D` });
     const dup = rows.find((r2) => r2[1] === workshop && r2[3] === walletStr);
     if (dup) return jsonOk(res, { success: true, already: true, workshop: label, at: dup[0] });
-    const at = (/* @__PURE__ */ new Date()).toISOString();
+    const at = sgtIso();
     await sheetsAppendRow({
       spreadsheetId,
       range: `${ATTENDANCE_TAB}!A:D`,

@@ -5,7 +5,7 @@ const {
   createMintToInstruction,
 } = require('@solana/spl-token');
 const { createMemoInstruction } = require('@solana/spl-memo');
-const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr, MEMO_PREFIX, toRawAmount } = require('./_utils');
+const { getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr, sgtIso, MEMO_PREFIX, toRawAmount } = require('./_utils');
 const crypto = require('crypto');
 const bs58 = require('bs58');
 
@@ -135,7 +135,7 @@ async function actionPhoto(req, res) {
       await sheetsAppendRow({
         spreadsheetId, range: 'A:K',
         values: [
-          code, wallet, type, batch, photoLink, 'pending', new Date().toISOString(),
+          code, wallet, type, batch, photoLink, 'pending', sgtIso(),
           '', '', `https://solscan.io/tx/${photoSig}`, '',
         ],
       });
@@ -292,7 +292,7 @@ async function actionValidate(req, res) {
         if (idx !== -1) {
           const row = idx + 2;
           await sheetsUpdateRange({ spreadsheetId, range: `F${row}`, values: ['validated'] });
-          await sheetsUpdateRange({ spreadsheetId, range: `I${row}`, values: [new Date().toISOString()] });
+          await sheetsUpdateRange({ spreadsheetId, range: `I${row}`, values: [sgtIso()] });
           await sheetsUpdateRange({ spreadsheetId, range: `K${row}`, values: [`https://solscan.io/tx/${signature}`] });
           await sheetsUpdateRange({ spreadsheetId, range: `L${row}`, values: [tokensOwed] });
         }

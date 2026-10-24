@@ -1067,13 +1067,13 @@ function renderLiveItem(idx) {
 function titleCase(s) { return s ? s.charAt(0) + s.slice(1).toLowerCase() : ''; }
 function fmtShortDate(blockTime) {
   if (!blockTime) return '—';
-  return new Date(blockTime * 1000).toLocaleDateString('en-MY', { day: 'numeric', month: 'short' });
+  return new Date(blockTime * 1000).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', timeZone: 'Asia/Singapore' });
 }
 // Same short style, but for the ISO timestamp strings the Sheet stores
 // (donated/validated-at), not the on-chain blockTime (unix seconds).
 function fmtDateTime(iso) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleString('en-MY', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+  return new Date(iso).toLocaleString('en-MY', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Singapore' }) + ' SGT';
 }
 
 // Scanning is newest-first, but a code's lifecycle (pending -> validated ->

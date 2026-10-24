@@ -1,5 +1,5 @@
 const Stripe = require('stripe');
-const { jsonOk, jsonErr } = require('./_utils');
+const { jsonOk, jsonErr, sgtIso } = require('./_utils');
 
 // Single dispatcher for ticket purchases AND deposits, kept as one Vercel
 // function (not several) — the Hobby plan caps a deployment at 12 Serverless
@@ -119,7 +119,7 @@ async function actionRegister(req, res) {
         await sheetsAppendRow({
           spreadsheetId, range: REGISTRATIONS_SHEET_RANGE_APPEND,
           valueInputOption: 'RAW', // preserves the contact number's leading 0
-          values: [new Date().toISOString(), name, email, contact, tierKey, mode, String(date || ''), workshopsStr, session.id],
+          values: [sgtIso(), name, email, contact, tierKey, mode, String(date || ''), workshopsStr, session.id],
         });
       } catch (sheetErr) {
         console.error('[tickets:register] sheet append failed', sheetErr);
@@ -172,7 +172,7 @@ async function actionConfirm(req, res) {
       code = generateCode();
       await sheetsAppendRow({
         spreadsheetId, range: DEPOSITS_SHEET_RANGE_APPEND,
-        values: [sessionId, email, tierKey, amountPaid, new Date().toISOString(), '', code],
+        values: [sessionId, email, tierKey, amountPaid, sgtIso(), '', code],
       });
 
       // Best-effort — the Sheet row above is the real record; email delivery
@@ -277,7 +277,7 @@ async function actionAttend(req, res) {
     const dup = rows.find(r => r[1] === workshop && r[3] === walletStr);
     if (dup) return jsonOk(res, { success: true, already: true, workshop: label, at: dup[0] });
 
-    const at = new Date().toISOString();
+    const at = sgtIso();
     await sheetsAppendRow({
       spreadsheetId, range: `${ATTENDANCE_TAB}!A:D`, valueInputOption: 'RAW',
       values: [at, workshop, label, walletStr],

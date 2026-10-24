@@ -40,6 +40,13 @@ function getMintPublicKey() {
   return new PublicKey(mint);
 }
 
+// Singapore time (UTC+8, no DST) as an ISO string with an explicit +08:00
+// offset, so the Sheets' logs read in SGT and new Date(iso) still parses
+// them correctly everywhere.
+function sgtIso(d = new Date()) {
+  return new Date(d.getTime() + 8 * 3600 * 1000).toISOString().replace(/\.\d+Z$/, '+08:00');
+}
+
 function jsonOk(res, data) {
   res.setHeader('Content-Type', 'application/json');
   res.status(200).json(data);
@@ -51,6 +58,6 @@ function jsonErr(res, code, message) {
 }
 
 module.exports = {
-  getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr,
+  getConnection, getOrganiser, getMintPublicKey, jsonOk, jsonErr, sgtIso,
   MEMO_PREFIX, TOKEN_DECIMALS, TOKEN_SYMBOL, toRawAmount, fromRawAmount,
 };
