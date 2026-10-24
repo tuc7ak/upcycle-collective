@@ -92,15 +92,9 @@
     <input type="tel" id="fContact" required>
   </div>
 
-  <div class="card" id="studentSection" hidden>
-    <div class="section-title">Your Workshop</div>
-    <p class="section-note">Next Gen Pass is fixed to the following — no changes needed.</p>
-    <div class="locked-box">📅 24 October 2026 (Saturday) — TUC: Charms Keychain Workshop</div>
-  </div>
-
   <div class="card" id="normalSection" hidden>
     <div class="section-title">Choose Your Date</div>
-    <p class="section-note">Your Circular Pass is valid for one day — pick which one.</p>
+    <p class="section-note" id="normalNote">Your Circular Pass is valid for one day — pick which one, then choose any one workshop.</p>
     <div class="date-options">
       <button type="button" class="date-btn" data-date="24">24 October (Saturday)</button>
       <button type="button" class="date-btn" data-date="25">25 October (Sunday)</button>
@@ -155,12 +149,11 @@
     submitBtn.disabled = true;
   } else {
     subtitleEl.textContent = TIER_LABELS[tier] + ' — ' + (mode === 'reserve' ? '50% Deposit Reservation' : 'Full Payment');
-    if (tier === 'student') {
-      document.getElementById('studentSection').hidden = false;
-      state.date = '24';
-      state.workshopsNormal = [{ id: 'charms', vendor: 'TUC', name: 'Charms Keychain Workshop' }];
-    } else if (tier === 'normal') {
+    if (tier === 'student' || tier === 'normal') {
+      // Next Gen (student) and Circular share the same flow: pick one day, then any one workshop.
       document.getElementById('normalSection').hidden = false;
+      document.getElementById('normalNote').textContent =
+        'Your ' + TIER_LABELS[tier] + ' is valid for one day — pick which one, then choose any one workshop.';
       setupNormalSection();
     } else if (tier === 'premium') {
       document.getElementById('premiumSection').hidden = false;
@@ -279,8 +272,7 @@
     var basicsOk = name && email && contact;
 
     var workshopsOk = false;
-    if (tier === 'student') workshopsOk = true;
-    else if (tier === 'normal') workshopsOk = !!state.date && !!state.workshopsNormal;
+    if (tier === 'student' || tier === 'normal') workshopsOk = !!state.date && !!state.workshopsNormal;
     else if (tier === 'premium') workshopsOk = state.workshopsPremium.length === 2;
 
     submitBtn.disabled = !(basicsOk && workshopsOk);
@@ -296,10 +288,7 @@
     var contact = document.getElementById('fContact').value.trim();
 
     var date, workshops;
-    if (tier === 'student') {
-      date = '24';
-      workshops = ['TUC: Charms Keychain Workshop'];
-    } else if (tier === 'normal') {
+    if (tier === 'student' || tier === 'normal') {
       date = state.date;
       workshops = state.workshopsNormal.map(function(w){ return w.vendor + ': ' + w.name; });
     } else {
