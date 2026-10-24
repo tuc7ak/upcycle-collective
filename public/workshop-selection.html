@@ -153,7 +153,8 @@
       // Next Gen (student) and Circular share the same flow: pick one day, then any one workshop.
       document.getElementById('normalSection').hidden = false;
       document.getElementById('normalNote').textContent =
-        'Your ' + TIER_LABELS[tier] + ' is valid for one day — pick which one, then choose any one workshop.';
+        'Your ' + TIER_LABELS[tier] + ' is valid for one day — pick which one, then choose any one workshop.'
+        + (tier === 'student' ? ' The Figurine Painting Workshop (25 Oct) is exclusive to Next Gen and Patron passes.' : '');
       setupNormalSection();
     } else if (tier === 'premium') {
       document.getElementById('premiumSection').hidden = false;
@@ -189,13 +190,15 @@
     function renderNormalWorkshops() {
       workshopsContainer.innerHTML = '';
       var list = state.date === '24' ? WORKSHOPS_24 : (state.date === '25' ? WORKSHOPS_25 : []);
+      // Figurine Painting (25 Oct) is exclusive to Next Gen and Patron — never offered to Circular.
+      if (tier === 'student' && state.date === '25') list = list.concat([FIGURINE]);
       if (state.date === '25' && list.length === 1) {
         // Only one option — auto-select it, still show it for clarity.
         state.workshopsNormal = [list[0]];
       }
       list.forEach(function(w){
         var isChecked = !!(state.workshopsNormal && state.workshopsNormal[0] && state.workshopsNormal[0].id === w.id);
-        var el = renderWorkshopOption(w, state.date + ' Oct (' + dayName(state.date) + ')', isChecked, 'normal');
+        var el = renderWorkshopOption(w, state.date + ' Oct (' + dayName(state.date) + ')' + (w.id === 'figurine' ? ' · Exclusive' : ''), isChecked, 'normal');
         el.querySelector('input').addEventListener('change', function(){
           document.querySelectorAll('#normalWorkshops .workshop-option').forEach(function(o){ o.classList.remove('is-selected'); });
           el.classList.add('is-selected');

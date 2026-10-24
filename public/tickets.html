@@ -140,21 +140,11 @@
 
 <div id="banner" style="position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:9999;padding:14px 22px;border-radius:12px;font-family:'Nunito',sans-serif;font-weight:800;font-size:14px;display:none;box-shadow:0 8px 24px rgba(0,0,0,.15);"></div>
 <script>
-  // Buy/Reserve no longer go straight to Stripe — both now route through
-  // the workshop-selection form first, which collects name/email/contact
+  // Buy doesn't go straight to Stripe — it routes through the
+  // workshop-selection form first, which collects name/email/contact
   // and the date/workshop choice before creating the Checkout Session.
   function buyTicket(tier) {
     window.location.href = `/workshop-selection.html?tier=${encodeURIComponent(tier)}&mode=buy`;
-  }
-  function reserveTicket(tier) {
-    window.location.href = `/workshop-selection.html?tier=${encodeURIComponent(tier)}&mode=reserve`;
-  }
-  function setTicketMode(mode) {
-    var grid = document.getElementById('tuc-tier-cards-v2');
-    if (!grid) return;
-    grid.setAttribute('data-mode', mode);
-    var btns = grid.querySelectorAll('.tuc-mode-btn');
-    btns.forEach(function(b){ b.classList.toggle('is-active', b.dataset.mode === mode); });
   }
   function showBanner(type, text) {
     const el = document.getElementById('banner');
@@ -284,7 +274,7 @@
         <span class="faq-q">What's the difference between the passes?</span>
         <svg class="faq-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
       </summary>
-      <p class="faq-answer">Free entry lets you explore TUC and enjoy the public experience. Next Gen gets you a door gift and one workshop of your choice, for students and children. Circular Pass also includes one workshop of your choice, while Patron Pass includes two workshops and the exclusive Eco-Warrior Figurine Painting Workshop and door gifts.</p>
+      <p class="faq-answer">Free entry lets you explore TUC and enjoy the public experience. Next Gen gets you a door gift and one workshop of your choice, for students and children, including the exclusive Eco-Warrior Figurine Painting Workshop. Circular Pass also includes one workshop of your choice (excluding Figurine Painting), while Patron Pass includes two workshops and the exclusive Eco-Warrior Figurine Painting Workshop and door gifts.</p>
     </details>
     <details class="faq-item">
       <summary>
@@ -379,7 +369,7 @@
       <div class="terms-h4">1.3 Next Gen Pass &mdash; RM15</div>
       <p class="terms-clause">The Next Gen Pass is available to students and children and includes:</p>
       <ul class="terms-sub-ul">
-        <li>1&times; Workshop of choice</li>
+        <li>1&times; Workshop of choice, including the exclusive TUC Eco-Warrior Figurine Painting Workshop</li>
         <li>1&times; TUC Door Gift</li>
         <li>Access to the TUC Marketplace</li>
         <li>Access to the Experience Floor</li>
@@ -394,7 +384,7 @@
         <li>Access to the TUC Marketplace</li>
         <li>Access to the Experience Floor</li>
       </ul>
-      <p class="terms-clause">Workshop selection is subject to availability and any applicable booking requirements.</p>
+      <p class="terms-clause">Workshop selection is subject to availability and any applicable booking requirements. The TUC Eco-Warrior Figurine Painting Workshop is exclusive to the Next Gen Pass and Patron Pass and is not available under the Circular Pass.</p>
 
       <div class="terms-h4">1.5 Patron Pass &mdash; RM100</div>
       <p class="terms-clause">The Patron Pass includes:</p>
@@ -436,8 +426,8 @@
       <p class="terms-clause"><span class="terms-num">5.3</span> Workshop and date selection is subject to availability at the time of purchase.</p>
       <p class="terms-clause"><span class="terms-num">5.4</span> Workshop access is based on the Ticket purchased:</p>
       <ul class="terms-sub-ul">
-        <li>Next Gen Pass: 1 &times; Workshop of choice</li>
-        <li>Circular Pass: 1 &times; Workshop of choice</li>
+        <li>Next Gen Pass: 1 &times; Workshop of choice (including the exclusive Eco-Warrior Figurine Painting Workshop)</li>
+        <li>Circular Pass: 1 &times; Workshop of choice (excluding the Eco-Warrior Figurine Painting Workshop)</li>
         <li>Patron Pass: 2 &times; Workshop access + Eco-Warrior Figurine Painting Workshop</li>
       </ul>
       <p class="terms-clause"><span class="terms-num">5.5</span> If a selected workshop becomes unavailable before payment is completed, the purchaser may be required to select another available workshop, subject to the applicable Ticket entitlement.</p>
@@ -599,23 +589,15 @@
   <p class="free-entry-headline">Everyone is welcome to explore TUC Experience Floor.</p>
   <p class="free-entry-sub">Want to join a workshop? Get a TUC Pass to unlock workshop access &amp; perks!</p>
 </div>
-<div class="tuc-mode-toggle-wrap">
-  <div class="tuc-mode-toggle">
-    <button class="tuc-mode-btn is-active" data-mode="buy" onclick="setTicketMode('buy')">Buy Now</button>
-    <button class="tuc-mode-btn" data-mode="reserve" onclick="setTicketMode('reserve')">Reserve</button>
-  </div>
-</div>
-<p class="tuc-reserve-note">Reserve now with a <strong>50% non-refundable deposit</strong>. Pay the remaining 50% in cash at the registration counter on event day.</p>
 <div class="tuc-tickets-grid">
   <div class="tuc-tier-card">
     <div class="tuc-tier-eyebrow">NEXT GEN</div>
     <div class="tuc-tier-price">RM 15</div>
     <span class="tuc-day-badge">1-DAY PASS</span>
     <p class="tuc-tier-desc">For students &amp; children, discount applies. A bright entry into the TUC Experience.</p>
-    <p class="tuc-tier-features">1x Workshop of Your Choice &middot; TUC Door Gift &middot; TUC Marketplace &middot; TUC Experience Floor</p>
+    <p class="tuc-tier-features">1x Workshop of Your Choice, incl. exclusive Figurine Painting &middot; TUC Door Gift &middot; TUC Marketplace &middot; TUC Experience Floor</p>
     <p class="tuc-tier-note">Student ID required at registration.</p>
     <button class="tuc-buy-btn outline tuc-buy-only" onclick="buyTicket('student', this)">Buy Next Gen ticket</button>
-    <button class="tuc-buy-btn outline tuc-reserve-only" onclick="reserveTicket('student', this)">Reserve Next Gen</button>
   </div>
   <div class="tuc-tier-card is-popular">
     <div class="tuc-tier-eyebrow">MOST POPULAR &middot; CIRCULAR PASS</div>
@@ -625,7 +607,6 @@
     <p class="tuc-tier-features">1x Workshop of Your Choice &middot; TUC Door Gift &middot; TUC Marketplace &middot; TUC Experience Floor</p>
     <p class="tuc-tier-note">Come for one day. Come back for more.</p>
     <button class="tuc-buy-btn solid tuc-buy-only" onclick="buyTicket('normal', this)">Buy Circular Pass</button>
-    <button class="tuc-buy-btn solid tuc-reserve-only" onclick="reserveTicket('normal', this)">Reserve Circular Pass</button>
   </div>
   <div class="tuc-tier-card">
     <div class="tuc-tier-eyebrow">PATRON PASS</div>
@@ -634,7 +615,6 @@
     <p class="tuc-tier-desc">For loop champions who want to support TUC.</p>
     <p class="tuc-tier-features">2x Workshop of Your Choice &middot; 1x TUC Eco-Warrior Figurine Painting Workshop &middot; TUC Door Gift &middot; TUC Marketplace &middot; TUC Experience Floor</p>
     <button class="tuc-buy-btn outline tuc-buy-only" onclick="buyTicket('premium', this)">Buy Patron Pass</button>
-    <button class="tuc-buy-btn outline tuc-reserve-only" onclick="reserveTicket('premium', this)">Reserve Patron Pass</button>
   </div>
 </div></div>`);
   }
